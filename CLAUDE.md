@@ -621,7 +621,7 @@ event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol);
 ```solidity
 error Nothing();        // Empty name or symbol
 error SellFailed();     // ETH transfer failed
-error StakeLow();     // Payment < 0.001 ETH
+error StakeLow();     // Stake < 0.001 ETH
 error MadeAlready();    // Solid already exists
 ```
 

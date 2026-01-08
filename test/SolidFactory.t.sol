@@ -240,31 +240,31 @@ contract SolidFactoryTest is BaseTest {
         assertEq(address(this).balance, balanceBefore - 2 * N.STAKE(), "should have spent 2 * STAKE");
     }
 
-    function test_MakeWithExcessPaymentRefunds() public {
+    function test_MakeWithExcessStakeRefunds() public {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
 
         uint256 balanceBefore = address(this).balance;
-        uint256 excessPayment = 5 * N.STAKE();
+        uint256 excessStake = 5 * N.STAKE();
 
-        factory.make{value: N.STAKE() + excessPayment}(solids);
+        factory.make{value: N.STAKE() + excessStake}(solids);
 
         // Verify excess was refunded
         assertEq(address(this).balance, balanceBefore - N.STAKE(), "should have refunded excess and only spent STAKE");
     }
 
-    function test_MakeRevertsWithInsufficientPayment() public {
+    function test_MakeRevertsWithInsufficientStake() public {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](2);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
         solids[1] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"});
 
-        uint256 insufficientPayment = N.STAKE(); // Need 2 * STAKE
+        uint256 insufficientStake = N.STAKE(); // Need 2 * STAKE
 
-        vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, insufficientPayment, 2 * N.STAKE()));
-        factory.make{value: insufficientPayment}(solids);
+        vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, insufficientStake, 2 * N.STAKE()));
+        factory.make{value: insufficientStake}(solids);
     }
 
-    function test_MakeRevertsWithNoPayment() public {
+    function test_MakeRevertsWithNoStake() public {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
 
@@ -315,7 +315,7 @@ contract SolidFactoryTest is BaseTest {
         factory.make{value: 2 * N.STAKE()}(solids);
     }
 
-    function test_MakeFuzzWithRandomPayment(uint256 stake, uint256 count) public {
+    function test_MakeFuzzWithRandomStake(uint256 stake, uint256 count) public {
         // Bound inputs
         count = bound(count, 1, 10);
         uint256 requiredFee = count * N.STAKE();

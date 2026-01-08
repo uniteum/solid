@@ -44,7 +44,7 @@ contract SolidTest is BaseTest {
         assertEq(address(H).balance, N.STAKE(), "pool should have STAKE ETH");
     }
 
-    function test_MakeWithExtraPayment() public {
+    function test_MakeWithExtraStake() public {
         ISolid H = N.make{value: N.STAKE() * 2}("Helium", "He");
         uint256 supply = getSupply(H);
         assertEq(H.totalSupply(), supply);
@@ -53,13 +53,13 @@ contract SolidTest is BaseTest {
         assertEq(address(H).balance, N.STAKE() * 2, "pool should have double STAKE ETH");
     }
 
-    function test_MakeRevertsWithInsufficientPayment() public {
-        uint256 insufficientPayment = N.STAKE() - 1;
-        vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, insufficientPayment, N.STAKE()));
-        N.make{value: insufficientPayment}("Lithium", "Li");
+    function test_MakeRevertsWithInsufficientStake() public {
+        uint256 insufficientStake = N.STAKE() - 1;
+        vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, insufficientStake, N.STAKE()));
+        N.make{value: insufficientStake}("Lithium", "Li");
     }
 
-    function test_MakeRevertsWithNoPayment() public {
+    function test_MakeRevertsWithNoStake() public {
         vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, 0, N.STAKE()));
         N.make("Beryllium", "Be");
     }
