@@ -6,13 +6,13 @@ import {SolidFactory} from "../src/SolidFactory.sol";
 
 /**
  * @notice Invoke SolidFactory to create Solids from a JSON file
- * @dev Usage: FACTORY_ADDRESS=0x... SOLIDS_PATH=path/to/solids.json forge script script/MakeSolids.sol -f $chain --private-key $tx_key --broadcast
+ * @dev Usage: forge script script/MakeSolids.sol -f $chain --private-key $tx_key --broadcast
  * @dev The script automatically calculates required ETH based on STAKE from the Solid contract
  */
 contract MakeSolids is Script {
     function run() external {
         // Get SolidFactory address from environment
-        address factoryAddress = vm.envAddress("FACTORY_ADDRESS");
+        address factoryAddress = vm.envAddress("SOLID_FACTORY");
         console2.log("Using SolidFactory at:", factoryAddress);
 
         // Read and parse solids directly into factory format
