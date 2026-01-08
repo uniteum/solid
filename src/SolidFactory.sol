@@ -80,14 +80,14 @@ contract SolidFactory {
         payable
         returns (SolidSpec[] memory done, SolidSpec[] memory created, uint256 stakePer, uint256 stake)
     {
-        // Get arrays of done and non-done solids
+        // Get arrays of done and TBD solids
         (done, created, stakePer, stake) = made(solids);
 
         if (msg.value < stake) {
             revert ISolid.PaymentLow(msg.value, stake);
         }
 
-        // Create the non-done ones
+        // Create the TBD ones
         for (uint256 i = 0; i < created.length; i++) {
             SOLID.make{value: stakePer}(created[i].name, created[i].symbol);
         }
