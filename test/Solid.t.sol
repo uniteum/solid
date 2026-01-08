@@ -309,4 +309,10 @@ contract SolidTest is BaseTest {
         vm.expectRevert(ISolid.Nothing.selector);
         N.buy{value: 1 ether}();
     }
+
+    function test_CannotSendETHToNOTHING() public {
+        // Attempt to send ETH directly to NOTHING should revert with Nothing()
+        vm.expectRevert(ISolid.Nothing.selector);
+        address(N).call{value: 1 ether}("");
+    }
 }
