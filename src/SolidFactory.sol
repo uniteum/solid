@@ -33,35 +33,35 @@ contract SolidFactory {
         view
         returns (SolidSpec[] memory done, SolidSpec[] memory tbd, uint256 stakePer, uint256 stake)
     {
-        uint256 existingCount = 0;
-        uint256 notExistingCount = 0;
+        uint256 doneCount = 0;
+        uint256 tbdCount = 0;
 
         // First pass: count
         for (uint256 i = 0; i < solids.length; i++) {
             (bool yes,,) = SOLID.made(solids[i].name, solids[i].symbol);
             if (yes) {
-                existingCount++;
+                doneCount++;
             } else {
-                notExistingCount++;
+                tbdCount++;
             }
         }
 
         stakePer = SOLID.STAKE();
-        stake = notExistingCount * stakePer;
+        stake = tbdCount * stakePer;
 
         // Allocate arrays
-        done = new SolidSpec[](existingCount);
-        tbd = new SolidSpec[](notExistingCount);
+        done = new SolidSpec[](doneCount);
+        tbd = new SolidSpec[](tbdCount);
 
         // Second pass: populate
-        uint256 existingIndex = 0;
-        uint256 notExistingIndex = 0;
+        uint256 doneIndex = 0;
+        uint256 tbdIndex = 0;
         for (uint256 i = 0; i < solids.length; i++) {
             (bool yes,,) = SOLID.made(solids[i].name, solids[i].symbol);
             if (yes) {
-                done[existingIndex++] = solids[i];
+                done[doneIndex++] = solids[i];
             } else {
-                tbd[notExistingIndex++] = solids[i];
+                tbd[tbdIndex++] = solids[i];
             }
         }
     }
