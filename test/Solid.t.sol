@@ -275,7 +275,7 @@ contract SolidTest is BaseTest {
 
         // Transfer some H tokens to owen
         uint256 amount = initialSupply / 10;
-        H.transfer(address(owen), amount);
+        assertTrue(H.transfer(address(owen), amount));
         assertEq(H.balanceOf(address(owen)), amount, "owen should have received tokens");
 
         // Owen vaporizes half their tokens

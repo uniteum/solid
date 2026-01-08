@@ -18,6 +18,7 @@ contract MakeSolids is Script {
         // Read and parse solids directly into factory format
         string memory path = vm.envString("SOLIDS_PATH");
         string memory fullPath = string.concat(vm.projectRoot(), "/", path);
+        // forge-lint: disable-next-line(unsafe-cheatcode)
         string memory json = vm.readFile(fullPath);
 
         SolidFactory.SolidSpec[] memory solids = abi.decode(vm.parseJson(json, "$"), (SolidFactory.SolidSpec[]));
