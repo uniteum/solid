@@ -27,22 +27,22 @@ interface ISolid is IERC20Metadata {
     function pool() external view returns (uint256 solPool, uint256 ethPool);
 
     /**
-     * @notice Withdraws ETH from the pool by depositing SOL tokens
+     * @notice Sells SOL tokens for ETH from the pool
      * @dev Uses constant-product formula: eth = ethPool - ethPool * solPool / (solPool + sol)
      * Transfers SOL tokens from caller to pool, sends ETH to caller.
      * Protected by reentrancy guard.
-     * @param sol The amount of SOL tokens to deposit into the pool
-     * @return eth The amount of ETH withdrawn from the pool
+     * @param sol The amount of SOL tokens to sell
+     * @return eth The amount of ETH received
      */
-    function withdraw(uint256 sol) external returns (uint256 eth);
+    function sell(uint256 sol) external returns (uint256 eth);
 
     /**
-     * @notice Deposits ETH into the pool and receives SOL tokens
+     * @notice Buys SOL tokens with ETH from the pool
      * @dev Uses constant-product formula: sol = solPool - solPool * (ethPool - eth) / ethPool
      * Transfers SOL tokens from pool to caller. Does not mint new tokens.
-     * @return sol The amount of SOL tokens received from the pool
+     * @return sol The amount of SOL tokens received
      */
-    function deposit() external payable returns (uint256 sol);
+    function buy() external payable returns (uint256 sol);
 
     /**
      * @notice Burns (vaporizes) SOL tokens from the caller's balance
@@ -86,20 +86,20 @@ interface ISolid is IERC20Metadata {
     event Make(ISolid indexed solid, string indexed name, string indexed symbol);
 
     /**
-     * @notice Emitted when ETH is deposited into the pool for SOL tokens
-     * @param solid The Solid instance where deposit occurred
-     * @param eth The amount of ETH deposited
-     * @param sol The amount of SOL tokens received from the pool
+     * @notice Emitted when SOL tokens are bought with ETH
+     * @param solid The Solid instance where buy occurred
+     * @param eth The amount of ETH spent
+     * @param sol The amount of SOL tokens received
      */
-    event Deposit(ISolid indexed solid, uint256 eth, uint256 sol);
+    event Buy(ISolid indexed solid, uint256 eth, uint256 sol);
 
     /**
-     * @notice Emitted when SOL is deposited into the pool for ETH
-     * @param solid The Solid instance where withdrawal occurred
-     * @param sol The amount of SOL tokens deposited
-     * @param eth The amount of ETH withdrawn
+     * @notice Emitted when SOL tokens are sold for ETH
+     * @param solid The Solid instance where sell occurred
+     * @param sol The amount of SOL tokens sold
+     * @param eth The amount of ETH received
      */
-    event Withdraw(ISolid indexed solid, uint256 sol, uint256 eth);
+    event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
 
     /**
      * @notice Emitted when SOL tokens are vaporized (burned)
@@ -115,9 +115,9 @@ interface ISolid is IERC20Metadata {
     error Nothing();
 
     /**
-     * @notice Thrown when ETH transfer to withdrawer fails
+     * @notice Thrown when ETH transfer to seller fails
      */
-    error WithdrawFailed();
+    error SellFailed();
 
     /**
      * @notice Thrown when payment is less than MAKER_FEE in make()

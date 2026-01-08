@@ -13,10 +13,10 @@ contract SolidHandler is Test {
     Solid public solid;
 
     // Track cumulative actions for debugging
-    uint256 public depositCount;
-    uint256 public withdrawCount;
-    uint256 public totalDeposited;
-    uint256 public totalWithdrawn;
+    uint256 public buyCount;
+    uint256 public sellCount;
+    uint256 public totalBought;
+    uint256 public totalSold;
 
     // Track individual actors
     address[] public actors;
@@ -35,9 +35,9 @@ contract SolidHandler is Test {
     }
 
     /**
-     * Deposit ETH for solids
+     * Buy solids with ETH
      */
-    function deposit(uint256 amount) public {
+    function buy(uint256 amount) public {
         // Bound to reasonable values (0.001 ETH to 10 ETH)
         amount = bound(amount, 1e15, 10 ether);
 
@@ -54,14 +54,14 @@ contract SolidHandler is Test {
         uint256 poolEthBefore = address(solid).balance;
 
         vm.prank(msg.sender);
-        uint256 solidsReceived = solid.deposit{value: amount}();
+        uint256 solidsReceived = solid.buy{value: amount}();
 
         uint256 solidsAfter = solid.balanceOf(msg.sender);
         uint256 poolEthAfter = address(solid).balance;
 
         // Update tracking
-        depositCount++;
-        totalDeposited += amount;
+        buyCount++;
+        totalBought += amount;
         ghostTotalEthDeposited += amount;
         ghostTotalSolidsMinted += solidsReceived;
 
@@ -71,9 +71,9 @@ contract SolidHandler is Test {
     }
 
     /**
-     * Withdraw ETH by burning solids
+     * Sell solids for ETH
      */
-    function withdraw(uint256 actorSeed) public {
+    function sell(uint256 actorSeed) public {
         // Skip if no actors
         if (actors.length == 0) return;
 
@@ -84,24 +84,24 @@ contract SolidHandler is Test {
         // Skip if actor has no solids
         if (solidsBalance == 0) return;
 
-        // Withdraw between 1% and 100% of balance
-        uint256 withdrawAmount = bound(actorSeed, solidsBalance / 100, solidsBalance);
-        if (withdrawAmount == 0) return;
+        // Sell between 1% and 100% of balance
+        uint256 sellAmount = bound(actorSeed, solidsBalance / 100, solidsBalance);
+        if (sellAmount == 0) return;
 
         uint256 ethBefore = actor.balance;
         uint256 poolEthBefore = address(solid).balance;
 
         vm.prank(actor);
-        uint256 ethReceived = solid.withdraw(withdrawAmount);
+        uint256 ethReceived = solid.sell(sellAmount);
 
         uint256 ethAfter = actor.balance;
         uint256 poolEthAfter = address(solid).balance;
 
         // Update tracking
-        withdrawCount++;
-        totalWithdrawn += ethReceived;
+        sellCount++;
+        totalSold += ethReceived;
         ghostTotalEthWithdrawn += ethReceived;
-        ghostTotalSolidsBurned += withdrawAmount;
+        ghostTotalSolidsBurned += sellAmount;
 
         // Sanity checks
         assertEq(ethAfter - ethBefore, ethReceived, "ETH received mismatch");
@@ -154,8 +154,8 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
 
         // Target specific functions
         bytes4[] memory selectors = new bytes4[](2);
-        selectors[0] = SolidHandler.deposit.selector;
-        selectors[1] = SolidHandler.withdraw.selector;
+        selectors[0] = SolidHandler.buy.selector;
+        selectors[1] = SolidHandler.sell.selector;
 
         targetSelector(FuzzSelector({addr: address(handler), selectors: selectors}));
     }
@@ -184,9 +184,9 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
 
         uint256 k = poolSolids * poolEth;
 
-        // After first deposit, k should remain relatively stable
+        // After first buy, k should remain relatively stable
         // We allow for small variations due to rounding
-        if (handler.depositCount() > 0) {
+        if (handler.buyCount() > 0) {
             assertGt(k, 0, "Product should be > 0");
         }
     }
@@ -258,8 +258,8 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
         (uint256 poolSolids, uint256 poolEth) = solid.pool();
 
         console.log("=== Final Invariant Test State ===");
-        console.log("Deposits:", handler.depositCount());
-        console.log("Withdrawals:", handler.withdrawCount());
+        console.log("Buys:", handler.buyCount());
+        console.log("Sells:", handler.sellCount());
         console.log("Pool Solids:", poolSolids);
         console.log("Pool ETH:", poolEth);
         console.log("Total Supply:", solid.totalSupply());

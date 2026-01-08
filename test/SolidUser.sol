@@ -30,13 +30,13 @@ contract SolidUser is User {
         console.log(string.concat(name, " ", method, " ", amount.toString(), " ", U.name()));
     }
 
-    function deposit(ISolid U, uint256 eth) public logging("deposit", U, eth) returns (uint256 solid) {
-        solid = U.deposit{value: eth}();
+    function buy(ISolid U, uint256 eth) public logging("buy", U, eth) returns (uint256 solid) {
+        solid = U.buy{value: eth}();
         console.log("solid:", solid);
     }
 
-    function withdraw(ISolid U, uint256 solid) public logging("back", U, solid) returns (uint256 eth) {
-        eth = U.withdraw(solid);
+    function sell(ISolid U, uint256 solid) public logging("sell", U, solid) returns (uint256 eth) {
+        eth = U.sell(solid);
         console.log("eth:", eth);
     }
 
@@ -46,7 +46,7 @@ contract SolidUser is User {
 
     function liquidate(ISolid U) public returns (uint256 eth, uint256 solid) {
         solid = U.balanceOf(address(this));
-        eth = withdraw(U, solid);
+        eth = sell(U, solid);
         assertHasNo(U);
     }
 }

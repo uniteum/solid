@@ -115,14 +115,14 @@ ISolid H = N.make{value: 0.001 ether}("Hydrogen", "H");
 // address(H).balance = 0.001 ether
 ```
 
-### 2. Deposit (ETH → SOL)
+### 2. Buy (ETH → SOL)
 
 ```solidity
-function deposit() public payable returns (uint256 sol)
+function buy() public payable returns (uint256 sol)
 ```
 
 **What it does:**
-- Deposits ETH to receive SOL tokens from pool
+- Buys SOL tokens with ETH from pool
 - Uses constant-product formula
 - Does NOT mint new tokens (transfers from pool)
 - Pool SOL decreases, pool ETH increases
@@ -136,19 +136,19 @@ sol = solPool - solPool * (ethPool - eth) / ethPool
 
 **Example:**
 ```solidity
-uint256 sol = H.deposit{value: 1 ether}();
+uint256 sol = H.buy{value: 1 ether}();
 // Transfers sol tokens from pool to msg.sender
 // Pool ETH increases by 1 ether
 ```
 
-### 3. Withdraw (SOL → ETH)
+### 3. Sell (SOL → ETH)
 
 ```solidity
-function withdraw(uint256 sol) external nonReentrant returns (uint256 eth)
+function sell(uint256 sol) external nonReentrant returns (uint256 eth)
 ```
 
 **What it does:**
-- Withdraws ETH by depositing SOL tokens to pool
+- Sells SOL tokens for ETH from pool
 - Uses constant-product formula
 - Does NOT burn tokens (transfers to pool)
 - Pool SOL increases, pool ETH decreases
@@ -160,7 +160,7 @@ eth = ethPool - ethPool * solPool / (solPool + sol)
 
 **Example:**
 ```solidity
-uint256 eth = H.withdraw(100);
+uint256 eth = H.sell(100);
 // Transfers 100 SOL from msg.sender to pool
 // Transfers calculated eth to msg.sender
 ```
@@ -201,7 +201,7 @@ solPool * ethPool = k  (approximately constant before and after trades)
 totalSupply() <= SUPPLY  (can only decrease via vaporize)
 ```
 
-Total supply is set to SUPPLY at creation. Deposit/withdraw only move tokens between users and pool. Only vaporize() can decrease total supply by burning tokens.
+Total supply is set to SUPPLY at creation. Buy/sell only move tokens between users and pool. Only vaporize() can decrease total supply by burning tokens.
 
 ### 3. Balance Integrity
 
@@ -283,8 +283,8 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 - `make(name, symbol)` - Create new Solid with deterministic address
 
 **Trading:**
-- `deposit()` - Buy SOL with ETH
-- `withdraw(sol)` - Sell SOL for ETH
+- `buy()` - Buy SOL with ETH
+- `sell(sol)` - Sell SOL for ETH
 
 **Internal:**
 - `zzz_(name, symbol, maker)` - Initialization function (called once during creation)
@@ -300,8 +300,8 @@ modifier nonReentrant() {
 }
 ```
 
-- `withdraw()` uses `nonReentrant` (sends ETH to msg.sender)
-- `deposit()` is payable, no reentrancy needed (receives ETH)
+- `sell()` uses `nonReentrant` (sends ETH to msg.sender)
+- `buy()` is payable, no reentrancy needed (receives ETH)
 - Transient storage clears after transaction
 
 ### Safe ETH Transfers
@@ -314,7 +314,7 @@ if (!ok) {
             revert(add(returnData, 32), mload(returnData))
         }
     } else {
-        revert WithdrawFailed();
+        revert SellFailed();
     }
 }
 ```
@@ -351,7 +351,7 @@ forge fmt            # Format code
 
 ```bash
 forge test --match-test test_MakeHydrogen
-forge test --match-test test_DepositWithdraw
+forge test --match-test test_BuySell
 forge test --match-contract SolidInvariant  # Run invariant tests
 ```
 
@@ -462,8 +462,8 @@ contract SolidTest is BaseTest {
 
 ```solidity
 contract SolidUser is User {
-    function deposit(ISolid U, uint256 eth) public returns (uint256 solid) { }
-    function withdraw(ISolid U, uint256 solid) public returns (uint256 eth) { }
+    function buy(ISolid U, uint256 eth) public returns (uint256 solid) { }
+    function sell(ISolid U, uint256 solid) public returns (uint256 eth) { }
     function liquidate(ISolid U) public returns (uint256 eth, uint256 solid) { }
 }
 ```
@@ -473,15 +473,15 @@ contract SolidUser is User {
 ### Example Test
 
 ```solidity
-function test_DepositWithdraw(uint256 seed, uint256 d) public {
+function test_BuySell(uint256 seed, uint256 d) public {
     (ISolid H,,) = makeHydrogen(seed);
     d = d % address(owen).balance;
     if (d != 0) {
-        uint256 deposited = owen.deposit(H, d);
-        uint256 withdrawn = owen.withdraw(H, deposited);
+        uint256 bought = owen.buy(H, d);
+        uint256 sold = owen.sell(H, bought);
 
         assertEq(H.balanceOf(address(owen)), 0, "should have no solids left");
-        assertGt(withdrawn, 0, "should receive some ETH");
+        assertGt(sold, 0, "should receive some ETH");
     }
 }
 ```
@@ -571,19 +571,19 @@ ISolid H = N.make{value: 0.001 ether}("Hydrogen", "H");
 // H.balanceOf(address(H)) = SUPPLY / 2
 ```
 
-### Adding Liquidity (Depositing ETH)
+### Buying SOL with ETH
 
 ```solidity
-uint256 sol = H.deposit{value: 1 ether}();
+uint256 sol = H.buy{value: 1 ether}();
 // Receive sol tokens from pool
 // Pool ETH increases by 1 ether
 // Pool SOL decreases by sol amount
 ```
 
-### Removing Liquidity (Withdrawing ETH)
+### Selling SOL for ETH
 
 ```solidity
-uint256 eth = H.withdraw(500);
+uint256 eth = H.sell(500);
 // Send 500 SOL to pool
 // Receive eth back
 // Pool ETH decreases by eth amount
@@ -611,8 +611,8 @@ MAKER_FEE = 0.001 ether // Minimum payment to create Solid
 
 ```solidity
 event Make(ISolid indexed solid, string indexed name, string indexed symbol);
-event Deposit(ISolid indexed solid, uint256 eth, uint256 sol);
-event Withdraw(ISolid indexed solid, uint256 sol, uint256 eth);
+event Buy(ISolid indexed solid, uint256 eth, uint256 sol);
+event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
 event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol);
 ```
 
@@ -620,7 +620,7 @@ event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol);
 
 ```solidity
 error Nothing();        // Empty name or symbol
-error WithdrawFailed(); // ETH transfer failed
+error SellFailed();     // ETH transfer failed
 error PaymentLow();     // Payment < 0.001 ETH
 error MadeAlready();    // Solid already exists
 ```
@@ -638,11 +638,11 @@ uint256 supply = solid.totalSupply();  // Always SUPPLY
 ### Trading Formulas
 
 ```solidity
-// Deposit: ETH → SOL
+// Buy: ETH → SOL
 sol = solPool - solPool * (ethPool - eth) / ethPool
 // Simplified: sol = solPool * eth / ethPool
 
-// Withdraw: SOL → ETH
+// Sell: SOL → ETH
 eth = ethPool - ethPool * solPool / (solPool + sol)
 ```
 
