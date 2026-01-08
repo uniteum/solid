@@ -136,7 +136,7 @@ contract SolidHandler is Test {
 contract SolidInvariantTest is StdInvariant, BaseTest {
     Solid public solid;
     SolidHandler public handler;
-    uint256 public SUPPLY;
+    uint256 public supply;
 
     function setUp() public override {
         super.setUp();
@@ -144,7 +144,7 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
         // Create a new solid token
         Solid nothing = new Solid();
         solid = Solid(payable(address(nothing.make{value: nothing.MAKER_FEE()}("Hydrogen", "H"))));
-        SUPPLY = solid.totalSupply();
+        supply = solid.totalSupply();
 
         // Create handler
         handler = new SolidHandler(solid);
@@ -196,7 +196,7 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
      * Solids are transferred from pool to users, not minted/burned
      */
     function invariant_totalSupply() public view {
-        assertEq(solid.totalSupply(), SUPPLY, "Total supply changed");
+        assertEq(solid.totalSupply(), supply, "Total supply changed");
     }
 
     /**
@@ -214,7 +214,7 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
             sum += solid.balanceOf(actorList[i]);
         }
 
-        assertEq(sum, SUPPLY, "Sum of balances != total supply");
+        assertEq(sum, supply, "Sum of balances != total supply");
     }
 
     /**
@@ -236,7 +236,7 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
         address[] memory actorList = handler.getActors();
         for (uint256 i = 0; i < actorList.length; i++) {
             uint256 balance = solid.balanceOf(actorList[i]);
-            assertLe(balance, SUPPLY, "Actor balance > total supply");
+            assertLe(balance, supply, "Actor balance > total supply");
         }
     }
 

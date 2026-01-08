@@ -18,8 +18,8 @@ contract SolidFactoryTest is BaseTest {
         vm.deal(address(this), ETH);
     }
 
-    // Helper to get SUPPLY from a Solid instance
-    function SUPPLY(ISolid solid) internal view returns (uint256) {
+    // Helper to get supply from a Solid instance
+    function getSupply(ISolid solid) internal view returns (uint256) {
         return solid.totalSupply();
     }
 
