@@ -175,7 +175,7 @@ Au.vaporize(totalHoldings * 90 / 100);  // Burn 90% of all holdings
 - Unlike sell, vaporize doesn't extract ETH - it's purely deflationary
 - Can be used to signal long-term commitment to a Solid's value
 
-**Key Difference from Withdraw:**
+**Key Difference from Sell:**
 - `sell()`: Transfers tokens to pool, returns ETH based on AMM formula, maintains total supply
 - `vaporize()`: Destroys tokens permanently, no ETH returned, reduces total supply
 
@@ -223,12 +223,12 @@ Emitted when ETH is deposited for SOL tokens.
 event Deposit(ISolid indexed solid, uint256 eth, uint256 sol);
 ```
 
-### `Withdraw(ISolid indexed solid, uint256 sol, uint256 eth)`
+### `Sell(ISolid indexed solid, uint256 sol, uint256 eth)`
 
 Emitted when SOL is deposited for ETH.
 
 ```solidity
-event Withdraw(ISolid indexed solid, uint256 sol, uint256 eth);
+event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
 ```
 
 ### `Vaporize(ISolid indexed solid, address indexed burner, uint256 sol)`

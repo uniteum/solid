@@ -161,14 +161,14 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
     }
 
     /**
-     * INVARIANT: Pool ETH balance should equal deposited - withdrawn
+     * INVARIANT: Pool ETH balance should equal bought - sold
      * (ghostTotalEthDeposited is initialized with the MAKER_FEE creation payment)
      */
     function invariant_ethBalance() public view {
         uint256 poolEth = address(solid).balance;
         uint256 expectedEth = handler.ghostTotalEthDeposited() - handler.ghostTotalEthWithdrawn();
 
-        assertEq(poolEth, expectedEth, "Pool ETH != (deposited - withdrawn)");
+        assertEq(poolEth, expectedEth, "Pool ETH != (bought - sold)");
     }
 
     /**

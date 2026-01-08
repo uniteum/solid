@@ -69,15 +69,15 @@ solid.buy{value: 1 ether}();
 // Returns tokens based on constant-product formula
 ```
 
-**Withdraw tokens, get ETH:**
+**Sell tokens, get ETH:**
 ```solidity
 // Sell tokens back for ETH
 solid.sell(1000000000);
 ```
 
-**Increase the ETH pool (add intrinsic value):**
+**Increase the ETH pool and hence the price:**
 
-Simply send ETH directly to the token contract address (like you would send to any wallet). This permanently increases the intrinsic value and price floor of all tokens - the ETH can never be withdrawn except through selling tokens on the AMM.
+Simply send ETH directly to the token contract address like you would send to any wallet, which increases the price of tokens.
 
 The AMM uses the **constant-product formula** (x × y = k) just like Uniswap, but it's built into the token itself.
 
@@ -104,7 +104,7 @@ With traditional DEX pools, liquidity providers can sell at any time, killing yo
 
 **With Solids, the initial 50% token liquidity is permanently locked in the contract.** The tokens in the pool can never be removed (only traded). Your token is always tradeable.
 
-**Even better:** The ETH pool represents **intrinsic value** that can only increase. Anyone can send ETH directly to the contract to permanently boost the floor price, but that ETH can never be withdrawn except by selling tokens through the AMM. This creates a constantly rising price floor.
+**Even better:** The ETH pool represents **intrinsic value** that can only increase. Anyone can send ETH directly to the contract to boost the price.
 
 ### 3. Fair Launch by Default
 
@@ -128,12 +128,6 @@ The same name and symbol always produce the same contract address. This means:
 The total supply is **6.02214076 billion** tokens (10,000 mol × Avogadro's number, scaled by 18 decimals).
 
 Why? Because if you're going to make internet money, you might as well make it represent actual physical quantities. The decimal point lands exactly where it appears in Avogadro's number: **6.02214076**. This isn't accidental - it's 10,000 mol worth of tokens.
-
-**The ETH pool = intrinsic value:**
-- Starts with whatever ETH the maker sends (minimum 0.001 ETH)
-- Can only increase when people send ETH to the contract
-- Can never be withdrawn except by selling tokens through the AMM
-- Creates a **permanent price floor** that can only rise
 
 It's nerdy. It's fun. It's memorable. And unlike most tokens, Solids have actual backing value.
 
@@ -193,7 +187,7 @@ Thanks to EIP-1167 minimal proxy cloning, Solids are extremely gas-efficient:
   - At 25 gwei: **$1.50**
   - At 50 gwei: **$3.00**
 - **Deposit ETH**: ~50,000 gas ($0.30-$1.50)
-- **Withdraw tokens**: ~60,000 gas ($0.40-$1.80)
+- **Sell tokens**: ~60,000 gas ($0.40-$1.80)
 
 **Why so cheap?** EIP-1167 clones don't redeploy the full contract bytecode. They deploy a tiny proxy that delegates to the NOTHING template. This makes the gas portion **10-50x cheaper** than deploying a traditional token contract.
 
