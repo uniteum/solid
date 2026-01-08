@@ -27,19 +27,19 @@ contract MakeSolids is Script {
         // Create factory instance
         SolidFactory factory = SolidFactory(factoryAddress);
 
-        // Check which solids already exist and calculate exact fee BEFORE broadcast
+        // Check which solids already exist and calculate exact stake BEFORE broadcast
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory toCreate,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.made(solids);
 
         console2.log("\nPre-flight check:");
-        console2.log("  STAKE per token:", feePer);
+        console2.log("  STAKE per token:", stakePer);
         console2.log("  Already exist:", existing.length);
         console2.log("  To create:", toCreate.length);
-        console2.log("  Required ETH:", fee);
+        console2.log("  Required ETH:", stake);
 
         // Show existing tokens
         if (existing.length > 0) {
@@ -66,7 +66,7 @@ contract MakeSolids is Script {
         console2.log("\nStarting broadcast...");
         vm.startBroadcast();
         (SolidFactory.SolidSpec[] memory existingFinal, SolidFactory.SolidSpec[] memory created,,) =
-            factory.make{value: fee}(solids);
+            factory.make{value: stake}(solids);
 
         console2.log("\nSummary:");
         console2.log("  Created:", created.length);

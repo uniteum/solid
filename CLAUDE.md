@@ -193,7 +193,7 @@ H.vaporize(100);
 solPool * ethPool = k  (approximately constant before and after trades)
 ```
 
-**Note:** Due to the formulas used, the product actually increases slightly after each trade, providing a built-in fee mechanism.
+**Note:** Due to rounding in the formulas, the product may change infinitesimally after each trade.
 
 ### 2. Total Supply Conservation
 

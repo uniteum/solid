@@ -292,13 +292,13 @@ Pool Share = 50% (3.01107038e27)
 
 ### Constant Product AMM
 
-The pool maintains approximately constant product:
+The pool maintains constant product:
 
 ```
 solPool * ethPool ≈ k
 ```
 
-Due to rounding in the formulas, the product actually increases slightly after each trade, providing a built-in fee mechanism.
+Due to rounding in the formulas, the product may change infinitesimally after each trade.
 
 ### Security
 
@@ -319,7 +319,7 @@ function createOxygen() public payable returns (ISolid O) {
     if (exists) {
         O = ISolid(addr);
     } else {
-        // Create with minimum fee
+        // Create with minimum stake
         O = NOTHING.make{value: 0.001 ether}("Oxygen", "O");
     }
 }

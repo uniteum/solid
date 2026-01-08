@@ -32,14 +32,14 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory notExisting,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.made(solids);
 
         assertEq(existing.length, 0, "should have no existing");
         assertEq(notExisting.length, 0, "should have no notExisting");
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, 0, "fee should be 0");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, 0, "stake should be 0");
     }
 
     function test_MadeWithOneNonExisting() public view {
@@ -49,16 +49,16 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory notExisting,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.made(solids);
 
         assertEq(existing.length, 0, "should have no existing");
         assertEq(notExisting.length, 1, "should have one notExisting");
         assertEq(notExisting[0].name, "Hydrogen", "name should match");
         assertEq(notExisting[0].symbol, "H", "symbol should match");
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, N.STAKE(), "fee should be STAKE");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, N.STAKE(), "stake should be STAKE");
     }
 
     function test_MadeWithOneExisting() public {
@@ -71,16 +71,16 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory notExisting,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.made(solids);
 
         assertEq(existing.length, 1, "should have one existing");
         assertEq(existing[0].name, "Hydrogen", "name should match");
         assertEq(existing[0].symbol, "H", "symbol should match");
         assertEq(notExisting.length, 0, "should have no notExisting");
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, 0, "fee should be 0");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, 0, "stake should be 0");
     }
 
     function test_MadeWithMixedExistingAndNonExisting() public {
@@ -97,8 +97,8 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory notExisting,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.made(solids);
 
         assertEq(existing.length, 2, "should have two existing");
@@ -113,8 +113,8 @@ contract SolidFactoryTest is BaseTest {
         assertEq(notExisting[1].name, "Beryllium", "second notExisting name should match");
         assertEq(notExisting[1].symbol, "Be", "second notExisting symbol should match");
 
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, 2 * N.STAKE(), "fee should be 2 * STAKE");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, 2 * N.STAKE(), "stake should be 2 * STAKE");
     }
 
     function test_MakeWithEmptyArray() public {
@@ -122,14 +122,14 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory created,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.make{value: 0}(solids);
 
         assertEq(existing.length, 0, "should have no existing");
         assertEq(created.length, 0, "should have no created");
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, 0, "fee should be 0");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, 0, "stake should be 0");
     }
 
     function test_MakeWithOneNewSolid() public {
@@ -141,16 +141,16 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory created,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.make{value: N.STAKE()}(solids);
 
         assertEq(existing.length, 0, "should have no existing");
         assertEq(created.length, 1, "should have one created");
         assertEq(created[0].name, "Hydrogen", "name should match");
         assertEq(created[0].symbol, "H", "symbol should match");
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, N.STAKE(), "fee should be STAKE");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, N.STAKE(), "stake should be STAKE");
 
         // Verify the Solid was actually created
         (bool yes, address home,) = N.made("Hydrogen", "H");
@@ -172,8 +172,8 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory created,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.make{value: 3 * N.STAKE()}(solids);
 
         assertEq(existing.length, 0, "should have no existing");
@@ -184,8 +184,8 @@ contract SolidFactoryTest is BaseTest {
         assertEq(created[1].symbol, "He", "second symbol should match");
         assertEq(created[2].name, "Lithium", "third name should match");
         assertEq(created[2].symbol, "Li", "third symbol should match");
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, 3 * N.STAKE(), "fee should be 3 * STAKE");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, 3 * N.STAKE(), "stake should be 3 * STAKE");
 
         // Verify all Solids were actually created
         (bool yes1,,) = N.made("Hydrogen", "H");
@@ -213,8 +213,8 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory created,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.make{value: 2 * N.STAKE()}(solids);
 
         assertEq(existing.length, 1, "should have one existing");
@@ -227,8 +227,8 @@ contract SolidFactoryTest is BaseTest {
         assertEq(created[1].name, "Lithium", "second created name should match");
         assertEq(created[1].symbol, "Li", "second created symbol should match");
 
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, 2 * N.STAKE(), "fee should be 2 * STAKE");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, 2 * N.STAKE(), "stake should be 2 * STAKE");
 
         // Verify new Solids were created
         (bool yes1,,) = N.made("Helium", "He");
@@ -286,14 +286,14 @@ contract SolidFactoryTest is BaseTest {
         (
             SolidFactory.SolidSpec[] memory existing,
             SolidFactory.SolidSpec[] memory created,
-            uint256 feePer,
-            uint256 fee
+            uint256 stakePer,
+            uint256 stake
         ) = factory.make{value: 0}(solids);
 
         assertEq(existing.length, 2, "should have two existing");
         assertEq(created.length, 0, "should have no created");
-        assertEq(feePer, N.STAKE(), "feePer should be STAKE");
-        assertEq(fee, 0, "fee should be 0");
+        assertEq(stakePer, N.STAKE(), "stakePer should be STAKE");
+        assertEq(stake, 0, "stake should be 0");
 
         // Verify no balance change
         assertEq(address(this).balance, balanceBefore, "should have spent nothing");
@@ -318,7 +318,7 @@ contract SolidFactoryTest is BaseTest {
     function test_MakeFuzzWithRandomStake(uint256 stake, uint256 count) public {
         // Bound inputs
         count = bound(count, 1, 10);
-        uint256 requiredFee = count * N.STAKE();
+        uint256 stakeNeeded = count * N.STAKE();
 
         // Create array of solids
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](count);
@@ -329,9 +329,9 @@ contract SolidFactoryTest is BaseTest {
             });
         }
 
-        if (stake < requiredFee) {
+        if (stake < stakeNeeded) {
             // Should revert with insufficient stake
-            vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, stake, requiredFee));
+            vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, stake, stakeNeeded));
             factory.make{value: stake}(solids);
         } else {
             // Should succeed
@@ -340,12 +340,12 @@ contract SolidFactoryTest is BaseTest {
 
             factory.make{value: stake}(solids);
 
-            // Verify balance change (should only spend requiredFee)
-            assertEq(address(this).balance, balanceBefore - requiredFee, "should have spent only required fee");
+            // Verify balance change (should only spend stakeNeeded)
+            assertEq(address(this).balance, balanceBefore - stakeNeeded, "should have spent only required stake");
         }
     }
 
-    function test_MadeFeesCalculation() public view {
+    function test_MadeStakeCalculation() public view {
         // Test with varying numbers of non-existing solids
         for (uint256 i = 0; i <= 5; i++) {
             SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](i);
@@ -356,8 +356,8 @@ contract SolidFactoryTest is BaseTest {
                 });
             }
 
-            (,,, uint256 fee) = factory.made(solids);
-            assertEq(fee, i * N.STAKE(), "fee should be count * STAKE");
+            (,,, uint256 stake) = factory.made(solids);
+            assertEq(stake, i * N.STAKE(), "stake should be count * STAKE");
         }
     }
 

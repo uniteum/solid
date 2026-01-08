@@ -93,10 +93,10 @@ The AMM uses the **constant-product formula** (x × y = k) just like Uniswap, bu
 - **Total: $155+ and 4 transactions** (at 25 gwei)
 
 **Solids approach (using EIP-1167 cloning):**
-- Make token: ~198,000 gas (~$1.50 at 25 gwei) + 0.001 ETH fee (~$3)
+- Make token: ~198,000 gas (~$1.50 at 25 gwei) + 0.001 ETH stake (~$3)
 - **Total: ~$4.50 and 1 transaction**
 
-You save **97%** on total costs plus all the complexity. The gas portion is negligible - most of your cost is the 0.001 ETH creation fee.
+You save **97%** on total costs plus all the complexity. The gas portion is negligible - most of your cost is the 0.001 ETH initial stake.
 
 ### 2. Liquidity Can't Leave - Only Grow
 
@@ -193,7 +193,7 @@ Thanks to EIP-1167 minimal proxy cloning, Solids are extremely gas-efficient:
 
 Compare:
 - Traditional ERC-20 + Uniswap setup: ~$155 total (mostly gas)
-- Solids: ~$4.50 total (mostly the 0.001 ETH fee, gas is only ~$1.50)
+- Solids: ~$4.50 total (mostly the 0.001 ETH stake, gas is only ~$1.50)
 
 ## Getting Started
 
@@ -286,7 +286,7 @@ A: Ethereum mainnet and major L2s (Base, Arbitrum, Optimism, Polygon).
 A: The code uses battle-tested OpenZeppelin primitives and standard AMM math. Review the code yourself - it's only 86 lines.
 
 **Q: What's the catch?**
-A: No catch. It's an experiment in minimal viable liquidity. The 0.001 ETH fee prevents spam.
+A: No catch. It's an experiment in minimal viable liquidity. The 0.001 ETH stake prevents spam.
 
 **Q: Can I use this for serious projects?**
 A: The contracts are simple and secure, but do your own research. Start small, test thoroughly.
