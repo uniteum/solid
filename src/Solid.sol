@@ -51,7 +51,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         (uint256 solPool, uint256 ethPool) = pool();
         uint256 eth = msg.value;
         sol = eth * solPool * CONDENSE_PERCENT / 100 / (ethPool - eth);
-        _update(address(this), msg.sender, sol);
+        _mint(msg.sender, sol);
         emit Condense(this, msg.sender, eth, sol);
     }
 
