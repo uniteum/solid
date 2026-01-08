@@ -18,7 +18,7 @@ contract SolidFactoryDeploy is Script {
         vm.startBroadcast();
 
         // Deploy SolidFactory with Solid reference
-        SolidFactory factory = new SolidFactory(Solid(payable(nothing)));
+        SolidFactory factory = new SolidFactory{salt: 0}(Solid(payable(nothing)));
         console2.log("SolidFactory deployed at:", address(factory));
 
         vm.stopBroadcast();
