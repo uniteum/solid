@@ -23,15 +23,15 @@ contract SolidHandler is Test {
     mapping(address => bool) public isActor;
 
     // Ghost variables for tracking invariants
-    uint256 public ghostTotalEthDeposited;
-    uint256 public ghostTotalEthWithdrawn;
-    uint256 public ghostTotalSolidsMinted;
-    uint256 public ghostTotalSolidsBurned;
+    uint256 public ghostTotalEthBought;
+    uint256 public ghostTotalEthSold;
+    uint256 public ghostTotalSolidsReceived;
+    uint256 public ghostTotalSolidsSold;
 
     constructor(Solid _solid) {
         solid = _solid;
         // Initialize ghost variables with the creation payment
-        ghostTotalEthDeposited = _solid.MAKER_FEE();
+        ghostTotalEthBought = _solid.MAKER_FEE();
     }
 
     /**
@@ -62,8 +62,8 @@ contract SolidHandler is Test {
         // Update tracking
         buyCount++;
         totalBought += amount;
-        ghostTotalEthDeposited += amount;
-        ghostTotalSolidsMinted += solidsReceived;
+        ghostTotalEthBought += amount;
+        ghostTotalSolidsReceived += solidsReceived;
 
         // Sanity checks
         assertEq(solidsAfter - solidsBefore, solidsReceived, "Solids mismatch");
@@ -100,8 +100,8 @@ contract SolidHandler is Test {
         // Update tracking
         sellCount++;
         totalSold += ethReceived;
-        ghostTotalEthWithdrawn += ethReceived;
-        ghostTotalSolidsBurned += sellAmount;
+        ghostTotalEthSold += ethReceived;
+        ghostTotalSolidsSold += sellAmount;
 
         // Sanity checks
         assertEq(ethAfter - ethBefore, ethReceived, "ETH received mismatch");
@@ -162,11 +162,11 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
 
     /**
      * INVARIANT: Pool ETH balance should equal bought - sold
-     * (ghostTotalEthDeposited is initialized with the MAKER_FEE creation payment)
+     * (ghostTotalEthBought is initialized with the MAKER_FEE creation payment)
      */
     function invariant_ethBalance() public view {
         uint256 poolEth = address(solid).balance;
-        uint256 expectedEth = handler.ghostTotalEthDeposited() - handler.ghostTotalEthWithdrawn();
+        uint256 expectedEth = handler.ghostTotalEthBought() - handler.ghostTotalEthSold();
 
         assertEq(poolEth, expectedEth, "Pool ETH != (bought - sold)");
     }
@@ -241,14 +241,14 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
     }
 
     /**
-     * INVARIANT: Pool should never have more ETH than deposited
-     * (ghostTotalEthDeposited includes the initial MAKER_FEE payment)
+     * INVARIANT: Pool should never have more ETH than bought
+     * (ghostTotalEthBought includes the initial MAKER_FEE payment)
      */
     function invariant_ethSolvency() public view {
         uint256 poolEth = address(solid).balance;
-        uint256 totalDeposited = handler.ghostTotalEthDeposited();
+        uint256 totalBought = handler.ghostTotalEthBought();
 
-        assertLe(poolEth, totalDeposited, "Pool ETH > deposited");
+        assertLe(poolEth, totalBought, "Pool ETH > bought");
     }
 
     /**
