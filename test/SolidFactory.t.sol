@@ -260,7 +260,7 @@ contract SolidFactoryTest is BaseTest {
 
         uint256 insufficientPayment = N.STAKE(); // Need 2 * STAKE
 
-        vm.expectRevert(abi.encodeWithSelector(ISolid.PaymentLow.selector, insufficientPayment, 2 * N.STAKE()));
+        vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, insufficientPayment, 2 * N.STAKE()));
         factory.make{value: insufficientPayment}(solids);
     }
 
@@ -268,7 +268,7 @@ contract SolidFactoryTest is BaseTest {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
 
-        vm.expectRevert(abi.encodeWithSelector(ISolid.PaymentLow.selector, 0, N.STAKE()));
+        vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, 0, N.STAKE()));
         factory.make{value: 0}(solids);
     }
 
@@ -331,7 +331,7 @@ contract SolidFactoryTest is BaseTest {
 
         if (payment < requiredFee) {
             // Should revert with insufficient payment
-            vm.expectRevert(abi.encodeWithSelector(ISolid.PaymentLow.selector, payment, requiredFee));
+            vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, payment, requiredFee));
             factory.make{value: payment}(solids);
         } else {
             // Should succeed

@@ -71,7 +71,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
             sol = NOTHING.make{value: msg.value}(name, symbol);
             require(sol.transfer(msg.sender, SUPPLY / 2), "Transfer failed");
         } else {
-            if (msg.value < STAKE) revert PaymentLow(msg.value, STAKE);
+            if (msg.value < STAKE) revert StakeLow(msg.value, STAKE);
             (bool yes, address home, bytes32 salt) = made(name, symbol);
             if (yes) revert MadeAlready(name, symbol);
             home = Clones.cloneDeterministic(address(NOTHING), salt, 0);

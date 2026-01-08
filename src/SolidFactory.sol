@@ -84,7 +84,7 @@ contract SolidFactory {
         (done, created, stakePer, stake) = made(solids);
 
         if (msg.value < stake) {
-            revert ISolid.PaymentLow(msg.value, stake);
+            revert ISolid.StakeLow(msg.value, stake);
         }
 
         // Create the TBD ones

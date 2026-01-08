@@ -199,10 +199,10 @@ ISolid factory = H.NOTHING();
 
 #### `STAKE() → uint256`
 
-Returns the minimum payment required to create a Solid (0.001 ether).
+Returns the minimum stake required to create a Solid (0.001 ether).
 
 ```solidity
-uint256 fee = H.STAKE();
+uint256 stake = H.STAKE();
 ```
 
 ## Events
@@ -249,9 +249,9 @@ Thrown when name or symbol is empty in `made()` or `make()`.
 
 Thrown when ETH transfer to sell fails.
 
-### `PaymentLow(uint256 sent, uint256 required)`
+### `StakeLow(uint256 sent, uint256 required)`
 
-Thrown when payment is less than STAKE in `make()`.
+Thrown when ETH sent is less than STAKE in `make()`.
 
 ### `MadeAlready(string name, string symbol)`
 

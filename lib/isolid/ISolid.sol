@@ -124,7 +124,7 @@ interface ISolid is IERC20Metadata {
      * @param sent The amount of ETH sent
      * @param required The required minimum ETH payment
      */
-    error PaymentLow(uint256 sent, uint256 required);
+    error StakeLow(uint256 sent, uint256 required);
 
     /**
      * @notice Thrown when attempting to make a Solid that has already been made
