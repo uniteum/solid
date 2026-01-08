@@ -14,8 +14,8 @@ interface ISolid is IERC20Metadata {
     function NOTHING() external view returns (ISolid);
 
     /**
-     * @notice Returns the minimum payment required to make a new Solid
-     * @return The minimum ETH payment required (default 0.001 ether)
+     * @notice Returns the minimum stake required to make a new Solid
+     * @return The minimum ETH stake required (default 0.001 ether)
      */
     function STAKE() external view returns (uint256);
 
@@ -68,7 +68,7 @@ interface ISolid is IERC20Metadata {
 
     /**
      * @notice Makes a new Solid instance with the given name and symbol
-     * @dev Requires minimum payment of STAKE. Reverts if already made.
+     * @dev Requires minimum stake of STAKE. Reverts if already made.
      * Mints 50% of SUPPLY to maker and 50% to pool. Initial ETH becomes pool liquidity.
      * Uses CREATE2 for deterministic deployment based on name and symbol.
      * @param name The name of the Solid token
@@ -120,9 +120,9 @@ interface ISolid is IERC20Metadata {
     error SellFailed();
 
     /**
-     * @notice Thrown when payment is less than STAKE in make()
+     * @notice Thrown when stake is less than STAKE in make()
      * @param sent The amount of ETH sent
-     * @param required The required minimum ETH payment
+     * @param required The required minimum ETH stake
      */
     error StakeLow(uint256 sent, uint256 required);
 

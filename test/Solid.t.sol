@@ -65,10 +65,10 @@ contract SolidTest is BaseTest {
     }
 
     function test_MakeRevertsWhenAlreadyMade() public {
-        uint256 payment = N.STAKE();
-        N.make{value: payment}("Carbon", "C");
+        uint256 stake = N.STAKE();
+        N.make{value: stake}("Carbon", "C");
         vm.expectRevert(abi.encodeWithSelector(ISolid.MadeAlready.selector, "Carbon", "C"));
-        N.make{value: payment}("Carbon", "C");
+        N.make{value: stake}("Carbon", "C");
     }
 
     function test_BuyDoesNotCreateTokens() public {

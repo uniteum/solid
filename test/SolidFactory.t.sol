@@ -315,7 +315,7 @@ contract SolidFactoryTest is BaseTest {
         factory.make{value: 2 * N.STAKE()}(solids);
     }
 
-    function test_MakeFuzzWithRandomPayment(uint256 payment, uint256 count) public {
+    function test_MakeFuzzWithRandomPayment(uint256 stake, uint256 count) public {
         // Bound inputs
         count = bound(count, 1, 10);
         uint256 requiredFee = count * N.STAKE();
@@ -329,16 +329,16 @@ contract SolidFactoryTest is BaseTest {
             });
         }
 
-        if (payment < requiredFee) {
-            // Should revert with insufficient payment
-            vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, payment, requiredFee));
-            factory.make{value: payment}(solids);
+        if (stake < requiredFee) {
+            // Should revert with insufficient stake
+            vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, stake, requiredFee));
+            factory.make{value: stake}(solids);
         } else {
             // Should succeed
             uint256 balanceBefore = address(this).balance;
-            vm.assume(balanceBefore >= payment); // Ensure we have enough balance
+            vm.assume(balanceBefore >= stake); // Ensure we have enough balance
 
-            factory.make{value: payment}(solids);
+            factory.make{value: stake}(solids);
 
             // Verify balance change (should only spend requiredFee)
             assertEq(address(this).balance, balanceBefore - requiredFee, "should have spent only required fee");

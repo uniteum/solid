@@ -92,9 +92,9 @@ function make(string calldata name, string calldata symbol) external payable ret
 
 **What it does:**
 - Creates new Solid with name `name` and symbol `symbol`
-- Requires minimum 0.001 ETH payment
+- Requires minimum 0.001 ETH stake
 - Mints SUPPLY total supply (50% to maker, 50% to pool)
-- Initial ETH payment becomes pool liquidity
+- Initial ETH stake becomes pool liquidity
 - Uses CREATE2 for deterministic addresses
 
 **Formula:**
@@ -604,7 +604,7 @@ uint256 eth = H.sell(500);
 MOL = 6.02214076e23        // Avogadro's number
 MOLS = 10000                // Number of mols
 SUPPLY = MOLS * MOL       // Total supply (6.02214076e27)
-STAKE = 0.001 ether // Minimum payment to create Solid
+STAKE = 0.001 ether // Minimum stake to create Solid
 ```
 
 ## Events
