@@ -131,6 +131,54 @@ eth = ethPool - ethPool * solPool / (solPool + sol)
 - Transfers ETH from pool to caller
 - Protected by reentrancy guard
 
+#### `vaporize(uint256 sol)`
+
+Permanently burns SOL tokens, reducing total supply and making remaining tokens more scarce.
+
+```solidity
+H.vaporize(100 * 1e18);
+```
+
+**Requirements:**
+- Caller must have sufficient SOL balance
+
+**Effects:**
+- Permanently destroys SOL tokens from caller's balance
+- Reduces total supply (cannot be recovered)
+- No ETH is returned (unlike withdraw)
+- Emits `Vaporize` event
+
+**Use Cases:**
+
+Makers can strategically use vaporize to create scarcity and potentially increase value:
+
+```solidity
+// Strategy: Burn tokens to create artificial scarcity
+ISolid Au = NOTHING.make{value: 0.001 ether}("Gold", "Au");
+
+// Maker receives 50% of supply initially
+uint256 makerShare = Au.balanceOf(address(this));
+
+// Option 1: Burn initial allocation to signal commitment
+Au.vaporize(makerShare / 10);  // Burn 10% of maker allocation
+
+// Option 2: Buy more from pool, then burn to maximize scarcity
+Au.deposit{value: 10 ether}();  // Buy Au from pool
+uint256 totalHoldings = Au.balanceOf(address(this));
+Au.vaporize(totalHoldings * 90 / 100);  // Burn 90% of all holdings
+// This significantly reduces circulating supply
+```
+
+**Strategic Considerations:**
+- Burning increases scarcity but permanently destroys value
+- Makers may buy heavily from the pool before burning to maximize effect
+- Unlike withdraw, vaporize doesn't extract ETH - it's purely deflationary
+- Can be used to signal long-term commitment to a Solid's value
+
+**Key Difference from Withdraw:**
+- `withdraw()`: Transfers tokens to pool, returns ETH based on AMM formula, maintains total supply
+- `vaporize()`: Destroys tokens permanently, no ETH returned, reduces total supply
+
 ### Query Functions
 
 #### `pool() → (uint256 solPool, uint256 ethPool)`
@@ -181,6 +229,14 @@ Emitted when SOL is deposited for ETH.
 
 ```solidity
 event Withdraw(ISolid indexed solid, uint256 sol, uint256 eth);
+```
+
+### `Vaporize(ISolid indexed solid, address indexed burner, uint256 sol)`
+
+Emitted when SOL tokens are permanently burned.
+
+```solidity
+event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol);
 ```
 
 ## Errors
@@ -248,7 +304,8 @@ Due to rounding in the formulas, the product actually increases slightly after e
 
 - `withdraw()` uses reentrancy guard (EIP-1153 transient storage)
 - ETH transfers propagate revert reasons
-- No minting/burning after creation (fixed supply)
+- No minting after creation (initial supply is fixed at 6.02214076e27)
+- Total supply can only decrease via `vaporize()` (deflationary mechanism)
 
 ## Examples
 
