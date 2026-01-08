@@ -215,17 +215,17 @@ Emitted when a new Solid is created.
 event Make(ISolid indexed solid, string indexed name, string indexed symbol);
 ```
 
-### `Deposit(ISolid indexed solid, uint256 eth, uint256 sol)`
+### `Buy(ISolid indexed solid, uint256 eth, uint256 sol)`
 
-Emitted when ETH is deposited for SOL tokens.
+Emitted when ETH is used to buy SOL tokens.
 
 ```solidity
-event Deposit(ISolid indexed solid, uint256 eth, uint256 sol);
+event Buy(ISolid indexed solid, uint256 eth, uint256 sol);
 ```
 
 ### `Sell(ISolid indexed solid, uint256 sol, uint256 eth)`
 
-Emitted when SOL is deposited for ETH.
+Emitted when SOL is sold for ETH.
 
 ```solidity
 event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
