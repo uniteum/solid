@@ -7,7 +7,7 @@ import {SolidFactory} from "../src/SolidFactory.sol";
 
 /**
  * @notice Deploy the SolidFactory with reference to Solid protofactory
- * @dev Usage: forge script script/SolidFactory.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
+ * @dev Usage: forge script script/SolidFactory.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
  */
 contract SolidFactoryDeploy is Script {
     function run() external {
