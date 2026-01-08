@@ -299,4 +299,14 @@ contract SolidTest is BaseTest {
         assertEq(H.totalSupply(), initialSupply - creatorBalance, "total supply should decrease");
         assertEq(H.balanceOf(address(this)), 0, "creator should have no tokens");
     }
+
+    function test_CannotBuyNOTHING() public {
+        // Verify NOTHING has no supply
+        assertEq(N.totalSupply(), 0, "NOTHING should have zero supply");
+        assertEq(N.balanceOf(address(N)), 0, "NOTHING pool should be empty");
+
+        // Attempt to buy from NOTHING should revert with Nothing()
+        vm.expectRevert(ISolid.Nothing.selector);
+        N.buy{value: 1 ether}();
+    }
 }

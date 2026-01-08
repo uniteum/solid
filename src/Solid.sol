@@ -22,6 +22,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     }
 
     function buy() public payable returns (uint256 sol) {
+        if (this == NOTHING) revert Nothing();
         (uint256 solPool, uint256 ethPool) = pool();
         uint256 eth = msg.value;
         sol = solPool - solPool * (ethPool - eth) / ethPool;
@@ -51,7 +52,9 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         emit Vaporize(this, msg.sender, sol);
     }
 
-    receive() external payable {}
+    receive() external payable {
+        if (this == NOTHING) revert Nothing();
+    }
 
     function made(string calldata name, string calldata symbol)
         public
