@@ -23,13 +23,15 @@ contract SolidFactory {
     /**
      * @notice Check which solids exist and which don't
      * @param solids Array of solids to check
-     * @return existing Array of SolidSpecs that already exist
-     * @return notExisting Array of SolidSpecs that don't exist yet
+     * @return done Array of SolidSpecs that already exist
+     * @return tbd Array of SolidSpecs that don't exist yet
+     * @return stakePer Stake required per Solid
+     * @return stake Total stake required to create the Solids
      */
     function made(SolidSpec[] calldata solids)
         public
         view
-        returns (SolidSpec[] memory existing, SolidSpec[] memory notExisting, uint256 feePer, uint256 fee)
+        returns (SolidSpec[] memory done, SolidSpec[] memory tbd, uint256 stakePer, uint256 stake)
     {
         uint256 existingCount = 0;
         uint256 notExistingCount = 0;
@@ -44,12 +46,12 @@ contract SolidFactory {
             }
         }
 
-        feePer = SOLID.STAKE();
-        fee = notExistingCount * feePer;
+        stakePer = SOLID.STAKE();
+        stake = notExistingCount * stakePer;
 
         // Allocate arrays
-        existing = new SolidSpec[](existingCount);
-        notExisting = new SolidSpec[](notExistingCount);
+        done = new SolidSpec[](existingCount);
+        tbd = new SolidSpec[](notExistingCount);
 
         // Second pass: populate
         uint256 existingIndex = 0;
@@ -57,9 +59,9 @@ contract SolidFactory {
         for (uint256 i = 0; i < solids.length; i++) {
             (bool yes,,) = SOLID.made(solids[i].name, solids[i].symbol);
             if (yes) {
-                existing[existingIndex++] = solids[i];
+                done[existingIndex++] = solids[i];
             } else {
-                notExisting[notExistingIndex++] = solids[i];
+                tbd[notExistingIndex++] = solids[i];
             }
         }
     }
@@ -68,30 +70,32 @@ contract SolidFactory {
      * @notice Create multiple Solids in a single transaction
      * @dev Refunds excess ETH to msg.sender
      * @param solids Array of solids to create
-     * @return existing Array of SolidSpecs that already existed
+     * @return done Array of SolidSpecs that already existed
      * @return created Array of SolidSpecs that were created
+     * @return stakePer Stake required per Solid
+     * @return stake Total stake used to create the Solids
      */
     function make(SolidSpec[] calldata solids)
         external
         payable
-        returns (SolidSpec[] memory existing, SolidSpec[] memory created, uint256 feePer, uint256 fee)
+        returns (SolidSpec[] memory done, SolidSpec[] memory created, uint256 stakePer, uint256 stake)
     {
-        // Get arrays of existing and non-existing solids
-        (existing, created, feePer, fee) = made(solids);
+        // Get arrays of done and non-done solids
+        (done, created, stakePer, stake) = made(solids);
 
-        if (msg.value < fee) {
-            revert ISolid.PaymentLow(msg.value, fee);
+        if (msg.value < stake) {
+            revert ISolid.PaymentLow(msg.value, stake);
         }
 
-        // Create the non-existing ones
+        // Create the non-done ones
         for (uint256 i = 0; i < created.length; i++) {
-            SOLID.make{value: feePer}(created[i].name, created[i].symbol);
+            SOLID.make{value: stakePer}(created[i].name, created[i].symbol);
         }
 
-        emit MadeBatch(created.length, existing.length, solids.length);
+        emit MadeBatch(created.length, done.length, solids.length);
 
         // Refund excess ETH
-        uint256 excess = msg.value - fee;
+        uint256 excess = msg.value - stake;
         if (excess > 0) {
             (bool ok,) = msg.sender.call{value: excess}("");
             require(ok, "Refund failed");
