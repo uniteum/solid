@@ -212,7 +212,7 @@ contract SolidTest is BaseTest {
         // Create a Solid with random initial ETH
         (ISolid H,,) = makeHydrogen(seed);
 
-        // Ensure owen has enough ETH and bound deposit amount
+        // Ensure owen has enough ETH and bound buy amount
         uint256 owenBalance = address(owen).balance;
         if (owenBalance < 1e15) {
             return; // Skip test if owen doesn't have minimum

@@ -219,7 +219,7 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
 
     /**
      * INVARIANT: Pool solids balance should be reasonable
-     * The pool can have 0 solids after users withdraw, but total supply is constant
+     * The pool can have 0 solids after users sell, but total supply is constant
      */
     function invariant_poolSolvency() public view {
         (uint256 poolSolids,) = solid.pool();

@@ -91,12 +91,12 @@ ISolid H = NOTHING.make{value: 0.001 ether}("Hydrogen", "H");
 
 ### Trading Functions
 
-#### `deposit() → uint256 sol`
+#### `buy() → uint256 sol`
 
 Deposits ETH to receive SOL tokens from the pool.
 
 ```solidity
-uint256 sol = H.deposit{value: 1 ether}();
+uint256 sol = H.buy{value: 1 ether}();
 ```
 
 **Formula:**
@@ -109,12 +109,12 @@ sol = solPool - solPool * (ethPool - eth) / ethPool
 - Increases pool ETH by `msg.value`
 - Decreases pool SOL by `sol`
 
-#### `withdraw(uint256 sol) → uint256 eth`
+#### `sell(uint256 sol) → uint256 eth`
 
 Withdraws ETH by depositing SOL tokens to the pool.
 
 ```solidity
-uint256 eth = H.withdraw(100 * 1e18);
+uint256 eth = H.sell(100 * 1e18);
 ```
 
 **Formula:**
@@ -145,7 +145,7 @@ H.vaporize(100 * 1e18);
 **Effects:**
 - Permanently destroys SOL tokens from caller's balance
 - Reduces total supply (cannot be recovered)
-- No ETH is returned (unlike withdraw)
+- No ETH is returned (unlike sell)
 - Emits `Vaporize` event
 
 **Use Cases:**
@@ -163,7 +163,7 @@ uint256 makerShare = Au.balanceOf(address(this));
 Au.vaporize(makerShare / 10);  // Burn 10% of maker allocation
 
 // Option 2: Buy more from pool, then burn to maximize scarcity
-Au.deposit{value: 10 ether}();  // Buy Au from pool
+Au.buy{value: 10 ether}();  // Buy Au from pool
 uint256 totalHoldings = Au.balanceOf(address(this));
 Au.vaporize(totalHoldings * 90 / 100);  // Burn 90% of all holdings
 // This significantly reduces circulating supply
@@ -172,11 +172,11 @@ Au.vaporize(totalHoldings * 90 / 100);  // Burn 90% of all holdings
 **Strategic Considerations:**
 - Burning increases scarcity but permanently destroys value
 - Makers may buy heavily from the pool before burning to maximize effect
-- Unlike withdraw, vaporize doesn't extract ETH - it's purely deflationary
+- Unlike sell, vaporize doesn't extract ETH - it's purely deflationary
 - Can be used to signal long-term commitment to a Solid's value
 
 **Key Difference from Withdraw:**
-- `withdraw()`: Transfers tokens to pool, returns ETH based on AMM formula, maintains total supply
+- `sell()`: Transfers tokens to pool, returns ETH based on AMM formula, maintains total supply
 - `vaporize()`: Destroys tokens permanently, no ETH returned, reduces total supply
 
 ### Query Functions
@@ -302,7 +302,7 @@ Due to rounding in the formulas, the product actually increases slightly after e
 
 ### Security
 
-- `withdraw()` uses reentrancy guard (EIP-1153 transient storage)
+- `sell()` uses reentrancy guard (EIP-1153 transient storage)
 - ETH transfers propagate revert reasons
 - No minting after creation (initial supply is fixed at 6.02214076e27)
 - Total supply can only decrease via `vaporize()` (deflationary mechanism)
@@ -330,13 +330,13 @@ function createOxygen() public payable returns (ISolid O) {
 ```solidity
 function buyAndSell(ISolid H) public payable {
     // Buy SOL with 1 ETH
-    uint256 solReceived = H.deposit{value: 1 ether}();
+    uint256 solReceived = H.buy{value: 1 ether}();
 
     // Get pool state
     (uint256 solPool, uint256 ethPool) = H.pool();
 
     // Sell half the SOL back
-    uint256 ethReceived = H.withdraw(solReceived / 2);
+    uint256 ethReceived = H.sell(solReceived / 2);
 }
 ```
 
@@ -345,7 +345,7 @@ function buyAndSell(ISolid H) public payable {
 ```solidity
 function provideLiquidity(ISolid H, uint256 amount) public {
     // Add ETH liquidity
-    uint256 sol = H.deposit{value: amount}();
+    uint256 sol = H.buy{value: amount}();
 
     // Keep SOL tokens as liquidity position
     // (No LP tokens - SOL tokens ARE the liquidity)

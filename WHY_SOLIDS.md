@@ -65,14 +65,14 @@ The clever bit: the decimal point lands right after the 6, mirroring how Avogadr
 **Deposit ETH, buy tokens:**
 ```solidity
 // Buy tokens by depositing ETH
-solid.deposit{value: 1 ether}();
+solid.buy{value: 1 ether}();
 // Returns tokens based on constant-product formula
 ```
 
 **Withdraw tokens, get ETH:**
 ```solidity
 // Sell tokens back for ETH
-solid.withdraw(1000000000);
+solid.sell(1000000000);
 ```
 
 **Increase the ETH pool (add intrinsic value):**
@@ -100,7 +100,7 @@ You save **97%** on total costs plus all the complexity. The gas portion is negl
 
 ### 2. Liquidity Can't Leave - Only Grow
 
-With traditional DEX pools, liquidity providers can withdraw at any time, killing your token's tradability.
+With traditional DEX pools, liquidity providers can sell at any time, killing your token's tradability.
 
 **With Solids, the initial 50% token liquidity is permanently locked in the contract.** The tokens in the pool can never be removed (only traded). Your token is always tradeable.
 
@@ -163,12 +163,12 @@ Make a token representing you. Trade it with friends. Use it as social money. Wi
 
 ### Constant-Product AMM
 
-When you deposit ETH (buy tokens):
+When you buy ETH (buy tokens):
 ```
 tokens_out = pool_tokens - (pool_tokens × pool_eth) / (pool_eth + eth_in)
 ```
 
-When you withdraw tokens (sell for ETH):
+When you sell tokens (sell for ETH):
 ```
 eth_out = pool_eth - (pool_eth × pool_tokens) / (pool_tokens + tokens_in)
 ```
@@ -235,17 +235,17 @@ After the transaction confirms:
 
 #### 4. Trade Your Solid via Etherscan
 
-To **buy tokens** (deposit ETH):
+To **buy tokens** (buy ETH):
 1. Go to your Solid's contract on Etherscan
 2. Click **Contract** → **Write Contract**
 3. Connect your wallet
-4. Find the **deposit** function
+4. Find the **buy** function
 5. Enter ETH amount in **payableAmount**
 6. Click **Write** and confirm
 
-To **sell tokens** (withdraw ETH):
+To **sell tokens** (sell ETH):
 1. Same contract, **Write Contract** tab
-2. Find the **withdraw** function
+2. Find the **sell** function
 3. Enter the amount of tokens to sell (in wei, with 18 decimals)
    - Example: `1000000000000000000` = 1 token
 4. Click **Write** and confirm

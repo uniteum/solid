@@ -174,7 +174,7 @@ function vaporize(uint256 sol) external
 **What it does:**
 - Burns (permanently destroys) SOL tokens from caller's balance
 - Reduces total supply permanently
-- No ETH is returned (unlike withdraw)
+- No ETH is returned (unlike sell)
 - This is a one-way operation - tokens cannot be recovered
 
 **Example:**
