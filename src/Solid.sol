@@ -21,6 +21,14 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         ethPool = address(this).balance;
     }
 
+    function buy() public payable returns (uint256 sol) {
+        (uint256 solPool, uint256 ethPool) = pool();
+        uint256 eth = msg.value;
+        sol = solPool - (solPool * (ethPool - eth)) / ethPool;
+        _update(address(this), msg.sender, sol);
+        emit Buy(this, eth, sol);
+    }
+
     function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
         (uint256 solPool, uint256 ethPool) = pool();
         eth = ethPool - (ethPool * solPool) / (solPool + sol);
@@ -36,14 +44,6 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
                 revert SellFailed();
             }
         }
-    }
-
-    function buy() public payable returns (uint256 sol) {
-        (uint256 solPool, uint256 ethPool) = pool();
-        uint256 eth = msg.value;
-        sol = solPool - (solPool * (ethPool - eth)) / ethPool;
-        _update(address(this), msg.sender, sol);
-        emit Buy(this, eth, sol);
     }
 
     function vaporize(uint256 sol) external {
