@@ -34,45 +34,45 @@ contract SolidTest is BaseTest {
     }
 
     function test_MakeHydrogen() public returns (ISolid H) {
-        H = N.make{value: N.MAKER_FEE()}("Hydrogen", "H");
+        H = N.make{value: N.STAKE()}("Hydrogen", "H");
         uint256 supply = getSupply(H);
         assertEq(H.totalSupply(), supply);
         assertEq(H.name(), "Hydrogen");
         assertEq(H.symbol(), "H");
         assertEq(H.balanceOf(address(this)), supply / 2, "creator should have 50% of supply");
         assertEq(H.balanceOf(address(H)), supply / 2, "pool should have 50% of supply");
-        assertEq(address(H).balance, N.MAKER_FEE(), "pool should have MAKER_FEE ETH");
+        assertEq(address(H).balance, N.STAKE(), "pool should have STAKE ETH");
     }
 
     function test_MakeWithExtraPayment() public {
-        ISolid H = N.make{value: N.MAKER_FEE() * 2}("Helium", "He");
+        ISolid H = N.make{value: N.STAKE() * 2}("Helium", "He");
         uint256 supply = getSupply(H);
         assertEq(H.totalSupply(), supply);
         assertEq(H.balanceOf(address(this)), supply / 2, "creator should have 50% of supply");
         assertEq(H.balanceOf(address(H)), supply / 2, "pool should have 50% of supply");
-        assertEq(address(H).balance, N.MAKER_FEE() * 2, "pool should have double MAKER_FEE ETH");
+        assertEq(address(H).balance, N.STAKE() * 2, "pool should have double STAKE ETH");
     }
 
     function test_MakeRevertsWithInsufficientPayment() public {
-        uint256 insufficientPayment = N.MAKER_FEE() - 1;
-        vm.expectRevert(abi.encodeWithSelector(ISolid.PaymentLow.selector, insufficientPayment, N.MAKER_FEE()));
+        uint256 insufficientPayment = N.STAKE() - 1;
+        vm.expectRevert(abi.encodeWithSelector(ISolid.PaymentLow.selector, insufficientPayment, N.STAKE()));
         N.make{value: insufficientPayment}("Lithium", "Li");
     }
 
     function test_MakeRevertsWithNoPayment() public {
-        vm.expectRevert(abi.encodeWithSelector(ISolid.PaymentLow.selector, 0, N.MAKER_FEE()));
+        vm.expectRevert(abi.encodeWithSelector(ISolid.PaymentLow.selector, 0, N.STAKE()));
         N.make("Beryllium", "Be");
     }
 
     function test_MakeRevertsWhenAlreadyMade() public {
-        uint256 payment = N.MAKER_FEE();
+        uint256 payment = N.STAKE();
         N.make{value: payment}("Carbon", "C");
         vm.expectRevert(abi.encodeWithSelector(ISolid.MadeAlready.selector, "Carbon", "C"));
         N.make{value: payment}("Carbon", "C");
     }
 
     function test_BuyDoesNotCreateTokens() public {
-        ISolid H = N.make{value: N.MAKER_FEE()}("TestToken", "TT");
+        ISolid H = N.make{value: N.STAKE()}("TestToken", "TT");
         uint256 supply = getSupply(H);
 
         uint256 supplyBefore = H.totalSupply();
@@ -100,7 +100,7 @@ contract SolidTest is BaseTest {
     }
 
     function test_BuySellBalanceIntegrity() public {
-        ISolid H = N.make{value: N.MAKER_FEE()}("Integrity", "INT");
+        ISolid H = N.make{value: N.STAKE()}("Integrity", "INT");
         uint256 supply = getSupply(H);
 
         // Have owen buy
@@ -122,8 +122,8 @@ contract SolidTest is BaseTest {
     function makeHydrogen(uint256 seed) public returns (ISolid H, uint256 h, uint256 e) {
         seed = seed % ETH;
         H = test_MakeHydrogen();
-        // H already has MAKER_FEE from make(), add seed on top
-        vm.deal(address(H), N.MAKER_FEE() + seed);
+        // H already has STAKE from make(), add seed on top
+        vm.deal(address(H), N.STAKE() + seed);
         (h, e) = H.pool();
     }
 
@@ -131,7 +131,7 @@ contract SolidTest is BaseTest {
         (H, h, e) = makeHydrogen(seed);
         uint256 supply = getSupply(H);
         assertEq(h, supply / 2, "h should be 50% of SUPPLY");
-        assertEq(e, N.MAKER_FEE() + (seed % ETH), "e should be MAKER_FEE + seed");
+        assertEq(e, N.STAKE() + (seed % ETH), "e should be STAKE + seed");
     }
 
     function test_StartingBuy(uint256 seed, uint256 d) public returns (ISolid H, uint256 h, uint256 e, uint256 symbol) {
@@ -254,13 +254,13 @@ contract SolidTest is BaseTest {
 
     function test_MakeFromNonNothingSendsSharesToCaller() public {
         // Create a first Solid (Hydrogen) from NOTHING
-        ISolid H = N.make{value: N.MAKER_FEE()}("Hydrogen", "H");
+        ISolid H = N.make{value: N.STAKE()}("Hydrogen", "H");
         uint256 supplyH = getSupply(H);
         assertEq(H.balanceOf(address(this)), supplyH / 2, "creator should have 50% of H");
 
         // Now call make from H (non-NOTHING) to create Helium
         // The maker shares should still go to msg.sender (this), not to H
-        ISolid he = Solid(payable(address(H))).make{value: N.MAKER_FEE()}("Helium", "He");
+        ISolid he = Solid(payable(address(H))).make{value: N.STAKE()}("Helium", "He");
         uint256 supplyHe = getSupply(he);
 
         // Verify maker shares went to the actual caller (this), not to H
@@ -270,7 +270,7 @@ contract SolidTest is BaseTest {
     }
 
     function test_Vaporize() public {
-        ISolid H = N.make{value: N.MAKER_FEE()}("Hydrogen", "H");
+        ISolid H = N.make{value: N.STAKE()}("Hydrogen", "H");
         uint256 initialSupply = H.totalSupply();
 
         // Transfer some H tokens to owen
@@ -288,7 +288,7 @@ contract SolidTest is BaseTest {
     }
 
     function test_VaporizeAll() public {
-        ISolid H = N.make{value: N.MAKER_FEE()}("Hydrogen", "H");
+        ISolid H = N.make{value: N.STAKE()}("Hydrogen", "H");
         uint256 initialSupply = H.totalSupply();
         uint256 creatorBalance = H.balanceOf(address(this));
 

@@ -259,7 +259,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     uint256 constant MOL = 6.02214076e23;
     uint256 constant MOLS = 10000;
     uint256 constant SUPPLY = MOLS * MOL;
-    uint256 constant MAKER_FEE = 0.001 ether;
+    uint256 constant STAKE = 0.001 ether;
 
     ISolid public immutable NOTHING = this;
 }
@@ -604,7 +604,7 @@ uint256 eth = H.sell(500);
 MOL = 6.02214076e23        // Avogadro's number
 MOLS = 10000                // Number of mols
 SUPPLY = MOLS * MOL       // Total supply (6.02214076e27)
-MAKER_FEE = 0.001 ether // Minimum payment to create Solid
+STAKE = 0.001 ether // Minimum payment to create Solid
 ```
 
 ## Events

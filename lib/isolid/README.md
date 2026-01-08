@@ -79,7 +79,7 @@ ISolid H = NOTHING.make{value: 0.001 ether}("Hydrogen", "H");
 ```
 
 **Requirements:**
-- `msg.value >= MAKER_FEE` (0.001 ether)
+- `msg.value >= STAKE` (0.001 ether)
 - Name and symbol must not be empty
 - Solid with same name/symbol must not exist
 
@@ -197,12 +197,12 @@ Returns the base NOTHING instance (the factory).
 ISolid factory = H.NOTHING();
 ```
 
-#### `MAKER_FEE() → uint256`
+#### `STAKE() → uint256`
 
 Returns the minimum payment required to create a Solid (0.001 ether).
 
 ```solidity
-uint256 fee = H.MAKER_FEE();
+uint256 fee = H.STAKE();
 ```
 
 ## Events
@@ -251,7 +251,7 @@ Thrown when ETH transfer to sell fails.
 
 ### `PaymentLow(uint256 sent, uint256 required)`
 
-Thrown when payment is less than MAKER_FEE in `make()`.
+Thrown when payment is less than STAKE in `make()`.
 
 ### `MadeAlready(string name, string symbol)`
 

@@ -44,7 +44,7 @@ contract SolidFactory {
             }
         }
 
-        feePer = SOLID.MAKER_FEE();
+        feePer = SOLID.STAKE();
         fee = notExistingCount * feePer;
 
         // Allocate arrays

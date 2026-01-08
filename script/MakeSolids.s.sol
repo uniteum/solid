@@ -7,7 +7,7 @@ import {SolidFactory} from "../src/SolidFactory.sol";
 /**
  * @notice Invoke SolidFactory to create Solids from a JSON file
  * @dev Usage: FACTORY_ADDRESS=0x... SOLIDS_PATH=path/to/solids.json forge script script/MakeSolids.sol -f $chain --private-key $tx_key --broadcast
- * @dev The script automatically calculates required ETH based on MAKER_FEE from the Solid contract
+ * @dev The script automatically calculates required ETH based on STAKE from the Solid contract
  */
 contract MakeSolids is Script {
     function run() external {
@@ -36,7 +36,7 @@ contract MakeSolids is Script {
         ) = factory.made(solids);
 
         console2.log("\nPre-flight check:");
-        console2.log("  MAKER_FEE per token:", feePer);
+        console2.log("  STAKE per token:", feePer);
         console2.log("  Already exist:", existing.length);
         console2.log("  To create:", toCreate.length);
         console2.log("  Required ETH:", fee);
