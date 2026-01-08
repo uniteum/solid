@@ -43,4 +43,8 @@ bitsy    = "https://rpc.bitsy.network"
 10       = "https://optimism-rpc.publicnode.com"            # Optimism Mainnet
 11155420 = "https://optimism-sepolia-rpc.publicnode.com"    # Optimism Sepolia
 
+# Deployed contract addresses
+[profile.default.env]
+NOTHING = "0x16cF8EeB96DE6666254F498E3A3C8523454EFf54"
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

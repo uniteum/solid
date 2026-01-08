@@ -2,6 +2,11 @@
 
 Liquid is a liquidity protocol on Ethereum where liquids are ERC-20 tokens with built-in liquidity.
 
+## Deployed Contracts
+
+### Mainnet
+- **NOTHING (Proto-factory)**: `0x16cF8EeB96DE6666254F498E3A3C8523454EFf54`
+
 ## Overview
 
 - **Built-in Liquidity**

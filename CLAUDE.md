@@ -501,6 +501,11 @@ This creates a Hydrogen Solid with random ETH in the pool for fuzz testing.
 
 ## Deployment
 
+### Deployed Addresses
+
+**Mainnet (Ethereum):**
+- NOTHING: `0x16cF8EeB96DE6666254F498E3A3C8523454EFf54`
+
 ### Environment Variables
 
 ```bash
