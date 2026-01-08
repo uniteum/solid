@@ -111,7 +111,7 @@ sol = solPool - solPool * (ethPool - eth) / ethPool
 
 #### `sell(uint256 sol) → uint256 eth`
 
-Withdraws ETH by depositing SOL tokens to the pool.
+Gets ETH by putting SOL tokens into the pool.
 
 ```solidity
 uint256 eth = H.sell(100 * 1e18);
@@ -245,9 +245,9 @@ event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol);
 
 Thrown when name or symbol is empty in `made()` or `make()`.
 
-### `WithdrawFailed()`
+### `SellFailed()`
 
-Thrown when ETH transfer to withdrawer fails.
+Thrown when ETH transfer to sell fails.
 
 ### `PaymentLow(uint256 sent, uint256 required)`
 
