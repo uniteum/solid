@@ -8,21 +8,22 @@ import {ReentrancyGuardTransient} from "reentrancy/ReentrancyGuardTransient.sol"
 
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     uint256 constant AVOGADRO = 6.02214076e23;
-    uint256 constant MOLS = 10000;
-    uint256 constant SUPPLY = AVOGADRO * MOLS;
+    uint256 constant MOLS = 10;
+    uint256 constant INITIAL_SUPPLY = AVOGADRO * MOLS;
 
     ISolid public immutable NOTHING = this;
     uint256 public immutable STAKE = 0.001 ether;
+    uint256 public immutable CONDENSE_PERCENT = 90;
 
     constructor() ERC20("", "") {}
 
     function pool() public view returns (uint256 solPool, uint256 ethPool) {
+        if (this == NOTHING) revert Nothing();
         solPool = balanceOf(address(this));
         ethPool = address(this).balance;
     }
 
     function buy() public payable returns (uint256 sol) {
-        if (this == NOTHING) revert Nothing();
         (uint256 solPool, uint256 ethPool) = pool();
         uint256 eth = msg.value;
         sol = solPool - solPool * (ethPool - eth) / ethPool;
@@ -30,12 +31,33 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         emit Buy(this, eth, sol);
     }
 
-    function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
+    function sell(uint256 sol) external returns (uint256 eth) {
         (uint256 solPool, uint256 ethPool) = pool();
         eth = ethPool - ethPool * solPool / (solPool + sol);
         _update(msg.sender, address(this), sol);
         emit Sell(this, sol, eth);
-        (bool ok, bytes memory returned) = msg.sender.call{value: eth}("");
+        sendEth(msg.sender, eth);
+    }
+
+    function vaporize(uint256 sol) external returns (uint256 eth) {
+        (uint256 solPool, uint256 ethPool) = pool();
+        eth = sol * ethPool / solPool;
+        _burn(msg.sender, sol);
+        sendEth(msg.sender, eth);
+        emit Vaporize(this, msg.sender, sol, eth);
+    }
+
+    function condense() external payable returns (uint256 sol) {
+        (uint256 solPool, uint256 ethPool) = pool();
+        uint256 eth = msg.value;
+        sol = eth * solPool * CONDENSE_PERCENT / 100 / (ethPool - eth);
+        _update(address(this), msg.sender, sol);
+        emit Condense(this, msg.sender, eth, sol);
+    }
+
+    function sendEth(address to, uint256 eth) private nonReentrant {
+        if (this == NOTHING) revert Nothing();
+        (bool ok, bytes memory returned) = to.call{value: eth}("");
         if (!ok) {
             if (returned.length > 0) {
                 assembly {
@@ -45,11 +67,6 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
                 revert SellFailed();
             }
         }
-    }
-
-    function vaporize(uint256 sol) external {
-        _burn(msg.sender, sol);
-        emit Vaporize(this, msg.sender, sol);
     }
 
     receive() external payable {
@@ -72,7 +89,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     function make(string calldata name, string calldata symbol) external payable returns (ISolid sol) {
         if (this != NOTHING) {
             sol = NOTHING.make{value: msg.value}(name, symbol);
-            require(sol.transfer(msg.sender, SUPPLY / 2), "Transfer failed");
+            require(sol.transfer(msg.sender, INITIAL_SUPPLY / 2), "Transfer failed");
         } else {
             if (msg.value < STAKE) revert StakeLow(msg.value, STAKE);
             (bool yes, address home, bytes32 salt) = made(name, symbol);
@@ -88,8 +105,8 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         if (bytes(_symbol).length == 0) {
             _name = name;
             _symbol = symbol;
-            _mint(address(this), SUPPLY / 2);
-            _mint(maker, SUPPLY / 2);
+            _mint(address(this), INITIAL_SUPPLY / 2);
+            _mint(maker, INITIAL_SUPPLY / 2);
         }
     }
 }
