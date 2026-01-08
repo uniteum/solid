@@ -83,7 +83,7 @@ interface ISolid is IERC20Metadata {
      * @param name The name of the Solid token (indexed)
      * @param symbol The symbol of the Solid token (indexed)
      */
-    event Make(ISolid indexed solid, string indexed name, string indexed symbol);
+    event Make(ISolid indexed solid, string name, string symbol);
 
     /**
      * @notice Emitted when SOL tokens are bought with ETH
