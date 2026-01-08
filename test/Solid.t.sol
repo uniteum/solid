@@ -313,6 +313,7 @@ contract SolidTest is BaseTest {
     function test_CannotSendETHToNOTHING() public {
         // Attempt to send ETH directly to NOTHING should revert with Nothing()
         vm.expectRevert(ISolid.Nothing.selector);
-        address(N).call{value: 1 ether}("");
+        (bool success,) = address(N).call{value: 1 ether}("");
+        success; // Acknowledge the return value to silence warnings
     }
 }
