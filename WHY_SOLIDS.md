@@ -102,7 +102,7 @@ You save **97%** on total costs plus all the complexity. The gas portion is negl
 
 With traditional DEX pools, liquidity providers can sell at any time, killing your token's tradability.
 
-**With Solids, the initial 50% token liquidity is permanently locked in the contract.** The tokens in the pool can never be removed (only traded). Your token is always tradeable.
+**With Solids, the initial 50% token liquidity is permanently locked in the contract.** The constant product in the pool can never decrease. Your token is always tradeable.
 
 **Even better:** The ETH pool represents **intrinsic value** that can only increase. Anyone can send ETH directly to the contract to boost the price.
 
