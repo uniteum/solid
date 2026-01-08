@@ -46,28 +46,27 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         emit Deposit(this, eth, sol);
     }
 
+    function vaporize(uint256 sol) external {
+        _burn(msg.sender, sol);
+        emit Vaporize(this, msg.sender, sol);
+    }
+
     receive() external payable {}
 
-    function made(
-        string calldata name,
-        string calldata symbol
-    ) public view returns (bool yes, address home, bytes32 salt) {
+    function made(string calldata name, string calldata symbol)
+        public
+        view
+        returns (bool yes, address home, bytes32 salt)
+    {
         if (bytes(name).length == 0 || bytes(symbol).length == 0) {
             revert Nothing();
         }
         salt = keccak256(abi.encode(name, symbol));
-        home = Clones.predictDeterministicAddress(
-            address(NOTHING),
-            salt,
-            address(NOTHING)
-        );
+        home = Clones.predictDeterministicAddress(address(NOTHING), salt, address(NOTHING));
         yes = home.code.length > 0;
     }
 
-    function make(
-        string calldata name,
-        string calldata symbol
-    ) external payable returns (ISolid sol) {
+    function make(string calldata name, string calldata symbol) external payable returns (ISolid sol) {
         if (this != NOTHING) {
             sol = NOTHING.make{value: msg.value}(name, symbol);
             require(sol.transfer(msg.sender, SUPPLY / 2), "Transfer failed");
@@ -76,21 +75,13 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
             (bool yes, address home, bytes32 salt) = made(name, symbol);
             if (yes) revert MadeAlready(name, symbol);
             home = Clones.cloneDeterministic(address(NOTHING), salt, 0);
-            Solid(payable(home)).zzz_{value: msg.value}(
-                name,
-                symbol,
-                msg.sender
-            );
+            Solid(payable(home)).zzz_{value: msg.value}(name, symbol, msg.sender);
             sol = ISolid(payable(home));
             emit Make(sol, name, symbol);
         }
     }
 
-    function zzz_(
-        string calldata name,
-        string calldata symbol,
-        address maker
-    ) external payable {
+    function zzz_(string calldata name, string calldata symbol, address maker) external payable {
         if (bytes(_symbol).length == 0) {
             _name = name;
             _symbol = symbol;

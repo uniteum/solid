@@ -40,6 +40,10 @@ contract SolidUser is User {
         console.log("eth:", eth);
     }
 
+    function vaporize(ISolid U, uint256 solid) public logging("vaporize", U, solid) {
+        U.vaporize(solid);
+    }
+
     function liquidate(ISolid U) public returns (uint256 eth, uint256 solid) {
         solid = U.balanceOf(address(this));
         eth = withdraw(U, solid);

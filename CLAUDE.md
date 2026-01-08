@@ -77,8 +77,8 @@ This file provides context for AI assistants (primarily Claude) to understand th
 
 ### Key Files
 
-- **[src/Solid.sol](src/Solid.sol)** (84 lines) - Main contract
-- **[src/ISolid.sol](src/ISolid.sol)** (102 lines) - Interface with comprehensive NatSpec
+- **[src/Solid.sol](src/Solid.sol)** (106 lines) - Main contract
+- **[lib/isolid/ISolid.sol](lib/isolid/ISolid.sol)** (135 lines) - Interface with comprehensive NatSpec
 - **[test/Solid.t.sol](test/Solid.t.sol)** (264 lines) - Core tests
 - **[test/SolidUser.sol](test/SolidUser.sol)** (49 lines) - Test helper
 
@@ -165,6 +165,26 @@ uint256 eth = H.withdraw(100);
 // Transfers calculated eth to msg.sender
 ```
 
+### 4. Vaporize (Burn SOL)
+
+```solidity
+function vaporize(uint256 sol) external
+```
+
+**What it does:**
+- Burns (permanently destroys) SOL tokens from caller's balance
+- Reduces total supply permanently
+- No ETH is returned (unlike withdraw)
+- This is a one-way operation - tokens cannot be recovered
+
+**Example:**
+```solidity
+H.vaporize(100);
+// Burns 100 SOL from msg.sender
+// Total supply decreases by 100
+// No ETH returned
+```
+
 ## Mathematical Invariants
 
 ### 1. Constant Product AMM
@@ -178,10 +198,10 @@ solPool * ethPool = k  (approximately constant before and after trades)
 ### 2. Total Supply Conservation
 
 ```
-totalSupply() = SUPPLY  (never changes after creation)
+totalSupply() <= SUPPLY  (can only decrease via vaporize)
 ```
 
-Total supply is set once at creation and never changes. Deposit/withdraw only move tokens between users and pool.
+Total supply is set to SUPPLY at creation. Deposit/withdraw only move tokens between users and pool. Only vaporize() can decrease total supply by burning tokens.
 
 ### 3. Balance Integrity
 
@@ -586,8 +606,9 @@ MAKER_FEE = 0.001 ether // Minimum payment to create Solid
 
 ```solidity
 event Make(ISolid indexed solid, string indexed name, string indexed symbol);
-event Deposit(ISolid indexed solid, uint256 sol, uint256 eth);
+event Deposit(ISolid indexed solid, uint256 eth, uint256 sol);
 event Withdraw(ISolid indexed solid, uint256 sol, uint256 eth);
+event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol);
 ```
 
 ## Errors

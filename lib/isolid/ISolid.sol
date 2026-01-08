@@ -45,6 +45,14 @@ interface ISolid is IERC20Metadata {
     function deposit() external payable returns (uint256 sol);
 
     /**
+     * @notice Burns (vaporizes) SOL tokens from the caller's balance
+     * @dev Permanently removes tokens from circulation, reducing total supply.
+     * This is a one-way operation - vaporized tokens cannot be recovered.
+     * @param sol The amount of SOL tokens to vaporize
+     */
+    function vaporize(uint256 sol) external;
+
+    /**
      * @notice Checks if a Solid exists and computes its deterministic address
      * @dev Uses CREATE2 with salt = keccak256(abi.encode(name, symbol)) for deterministic deployment
      * @param name The name of the Solid token
@@ -92,6 +100,14 @@ interface ISolid is IERC20Metadata {
      * @param eth The amount of ETH withdrawn
      */
     event Withdraw(ISolid indexed solid, uint256 sol, uint256 eth);
+
+    /**
+     * @notice Emitted when SOL tokens are vaporized (burned)
+     * @param solid The Solid instance where vaporization occurred
+     * @param burner The address that vaporized their tokens
+     * @param sol The amount of SOL tokens vaporized
+     */
+    event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol);
 
     /**
      * @notice Thrown when name or symbol is empty in made() or make()

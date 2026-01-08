@@ -274,4 +274,35 @@ contract SolidTest is BaseTest {
         assertEq(he.balanceOf(address(H)), 0, "H should not have any He tokens");
         assertEq(he.balanceOf(address(he)), supplyHe / 2, "He pool should have 50% of supply");
     }
+
+    function test_Vaporize() public {
+        ISolid H = N.make{value: N.MAKER_FEE()}("Hydrogen", "H");
+        uint256 initialSupply = H.totalSupply();
+
+        // Transfer some H tokens to owen
+        uint256 amount = initialSupply / 10;
+        H.transfer(address(owen), amount);
+        assertEq(H.balanceOf(address(owen)), amount, "owen should have received tokens");
+
+        // Owen vaporizes half their tokens
+        uint256 vaporizeAmount = amount / 2;
+        owen.vaporize(H, vaporizeAmount);
+
+        // Verify total supply decreased
+        assertEq(H.totalSupply(), initialSupply - vaporizeAmount, "total supply should decrease");
+        assertEq(H.balanceOf(address(owen)), amount - vaporizeAmount, "owen balance should decrease");
+    }
+
+    function test_VaporizeAll() public {
+        ISolid H = N.make{value: N.MAKER_FEE()}("Hydrogen", "H");
+        uint256 initialSupply = H.totalSupply();
+        uint256 creatorBalance = H.balanceOf(address(this));
+
+        // Vaporize all creator tokens
+        H.vaporize(creatorBalance);
+
+        // Verify total supply decreased by creator balance
+        assertEq(H.totalSupply(), initialSupply - creatorBalance, "total supply should decrease");
+        assertEq(H.balanceOf(address(this)), 0, "creator should have no tokens");
+    }
 }
