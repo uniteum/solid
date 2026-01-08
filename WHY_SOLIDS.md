@@ -283,7 +283,7 @@ A: Yes! Anyone can send ETH directly to the contract address (just like sending 
 A: Ethereum mainnet and major L2s (Base, Arbitrum, Optimism, Polygon).
 
 **Q: Is this audited?**
-A: The code uses battle-tested OpenZeppelin primitives and standard AMM math. Review the code yourself - it's only 86 lines.
+A: The code uses battle-tested OpenZeppelin primitives and standard AMM math. Review the code yourself - it's less than 100 lines.
 
 **Q: What's the catch?**
 A: No catch. It's an experiment in minimal viable liquidity. The 0.001 ETH stake prevents spam.
@@ -312,9 +312,7 @@ Then make another one for fun.
 
 ---
 
-**Ready to start?** Check out the [deployment guide](README.md) or dive into the [technical docs](CLAUDE.md).
-
-**Still skeptical?** Read the [smart contract code](src/Solid.sol) - it's only 86 lines. No hidden surprises.
+**Still skeptical?** Read the [smart contract code](https://etherscan.io/address/TBD#code) - it's less than 100 lines. No hidden surprises.
 
 **Built by crypto hobbyists, for crypto hobbyists.**
 
