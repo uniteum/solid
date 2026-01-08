@@ -34,11 +34,11 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         eth = ethPool - ethPool * solPool / (solPool + sol);
         _update(msg.sender, address(this), sol);
         emit Sell(this, sol, eth);
-        (bool ok, bytes memory returnData) = msg.sender.call{value: eth}("");
+        (bool ok, bytes memory returned) = msg.sender.call{value: eth}("");
         if (!ok) {
-            if (returnData.length > 0) {
+            if (returned.length > 0) {
                 assembly {
-                    revert(add(returnData, 32), mload(returnData))
+                    revert(add(returned, 32), mload(returned))
                 }
             } else {
                 revert SellFailed();
