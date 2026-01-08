@@ -7,7 +7,7 @@ import {Solid, ISolid} from "./Solid.sol";
  * @notice Factory for batch creation of Solid tokens
  */
 contract SolidFactory {
-    Solid public immutable SOLID;
+    Solid public immutable NOTHING;
 
     struct SolidSpec {
         string name;
@@ -17,7 +17,7 @@ contract SolidFactory {
     event MadeBatch(uint256 created, uint256 skipped, uint256 total);
 
     constructor(Solid solid) {
-        SOLID = solid;
+        NOTHING = solid;
     }
 
     /**
@@ -38,7 +38,7 @@ contract SolidFactory {
 
         // First pass: count
         for (uint256 i = 0; i < solids.length; i++) {
-            (bool yes,,) = SOLID.made(solids[i].name, solids[i].symbol);
+            (bool yes,,) = NOTHING.made(solids[i].name, solids[i].symbol);
             if (yes) {
                 doneCount++;
             } else {
@@ -46,7 +46,7 @@ contract SolidFactory {
             }
         }
 
-        stakePer = SOLID.STAKE();
+        stakePer = NOTHING.STAKE();
         stake = tbdCount * stakePer;
 
         // Allocate arrays
@@ -57,7 +57,7 @@ contract SolidFactory {
         uint256 doneIndex = 0;
         uint256 tbdIndex = 0;
         for (uint256 i = 0; i < solids.length; i++) {
-            (bool yes,,) = SOLID.made(solids[i].name, solids[i].symbol);
+            (bool yes,,) = NOTHING.made(solids[i].name, solids[i].symbol);
             if (yes) {
                 done[doneIndex++] = solids[i];
             } else {
@@ -89,7 +89,7 @@ contract SolidFactory {
 
         // Create the TBD ones
         for (uint256 i = 0; i < created.length; i++) {
-            SOLID.make{value: stakePer}(created[i].name, created[i].symbol);
+            NOTHING.make{value: stakePer}(created[i].name, created[i].symbol);
         }
 
         emit MadeBatch(created.length, done.length, solids.length);

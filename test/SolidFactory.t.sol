@@ -24,7 +24,7 @@ contract SolidFactoryTest is BaseTest {
     }
 
     function test_Constructor() public view {
-        assertEq(address(factory.SOLID()), address(N), "factory should reference N");
+        assertEq(address(factory.NOTHING()), address(N), "factory should reference N");
     }
 
     function test_MadeWithEmptyArray() public view {
