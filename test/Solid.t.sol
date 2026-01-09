@@ -32,7 +32,25 @@ contract SolidTest is BaseTest {
     function test_Setup() public view {
         assertEq(N.totalSupply(), 0);
         assertEq(N.name(), "");
-        assertEq(N.symbol(), "");
+        assertEq(N.symbol(), "NOTHING");
+    }
+
+    function test_CannotReinitializeNOTHING() public {
+        // This test would have caught the bug where NOTHING had an empty symbol
+        // If symbol is empty, zzz_() could be called to mint tokens on NOTHING
+        uint256 supplyBefore = N.totalSupply();
+        assertEq(supplyBefore, 0, "NOTHING should start with zero supply");
+
+        // Attempt to call zzz_() on NOTHING should fail silently (no-op)
+        // because _symbol is already set to "NOTHING"
+        N.zzz_{value: N.STAKE()}("Evil", "EVIL", address(this));
+
+        // Verify NOTHING was not reinitialized
+        uint256 supplyAfter = N.totalSupply();
+        assertEq(supplyAfter, 0, "NOTHING supply should remain zero");
+        assertEq(N.name(), "", "NOTHING name should remain empty");
+        assertEq(N.symbol(), "NOTHING", "NOTHING symbol should remain NOTHING");
+        assertEq(N.balanceOf(address(this)), 0, "attacker should not receive tokens");
     }
 
     function test_MakeHydrogen() public returns (ISolid H) {
