@@ -6,19 +6,15 @@ import {Clones} from "clones/Clones.sol";
 
 contract SolidSeller {
     SolidSeller public immutable PROTO = this;
-    ISolid public my;
+    ISolid public thiss;
     ISolid public that;
 
-    function balance() public view returns (uint256) {
-        return my.balanceOf(msg.sender);
+    function thisName() public view returns (string memory) {
+        return thiss.name();
     }
 
-    function name() public view returns (string memory) {
-        return my.name();
-    }
-
-    function symbol() public view returns (string memory) {
-        return my.symbol();
+    function thisSymbol() public view returns (string memory) {
+        return thiss.symbol();
     }
 
     function thatName() public view returns (string memory) {
@@ -30,13 +26,16 @@ contract SolidSeller {
     }
 
     function sells(uint256 mine) external view returns (uint256 thats) {
-        uint256 eth = my.sells(mine);
+        uint256 eth = thiss.sells(mine);
         thats = that.buys(eth);
     }
 
     function sell(uint256 mine) external returns (uint256 thats) {
-        uint256 eth = my.sell(mine);
+        thiss.approve(address(this), mine);
+        thiss.transferFrom(msg.sender, address(this), mine);
+        uint256 eth = thiss.sell(mine);
         thats = that.buy{value: eth}();
+        that.transfer(msg.sender, thats);
     }
 
     function made(ISolid my_, ISolid that_) public view returns (bool yes, address home, bytes32 salt) {
@@ -60,15 +59,15 @@ contract SolidSeller {
     }
 
     function zzz_(ISolid my_, ISolid that_) external {
-        if (address(my) == address(0)) {
-            my = my_;
+        if (address(thiss) == address(0)) {
+            thiss = my_;
             that = that_;
         }
     }
 
     constructor() {
-        my = ISolid(address(0xdead));
+        thiss = ISolid(address(0xdead));
     }
 
-    event Make(SolidSeller indexed seller, ISolid indexed my, ISolid indexed that);
+    event Make(SolidSeller indexed seller, ISolid indexed thiss, ISolid indexed that);
 }
