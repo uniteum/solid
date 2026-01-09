@@ -29,8 +29,7 @@ contract SolidFactoryTest is BaseTest {
 
     function test_MadeWithEmptyArray() public view {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](0);
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) =
-            factory.made(solids);
+        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) = factory.made(solids);
 
         assertEq(existing.length, 0, "should have no existing");
         assertEq(notExisting.length, 0, "should have no notExisting");
@@ -40,8 +39,7 @@ contract SolidFactoryTest is BaseTest {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) =
-            factory.made(solids);
+        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) = factory.made(solids);
 
         assertEq(existing.length, 0, "should have no existing");
         assertEq(notExisting.length, 1, "should have one notExisting");
@@ -56,8 +54,7 @@ contract SolidFactoryTest is BaseTest {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) =
-            factory.made(solids);
+        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) = factory.made(solids);
 
         assertEq(existing.length, 1, "should have one existing");
         assertEq(existing[0].name, "Hydrogen", "name should match");
@@ -76,8 +73,7 @@ contract SolidFactoryTest is BaseTest {
         solids[2] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"}); // existing
         solids[3] = SolidFactory.SolidSpec({name: "Beryllium", symbol: "Be"}); // new
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) =
-            factory.made(solids);
+        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) = factory.made(solids);
 
         assertEq(existing.length, 2, "should have two existing");
         assertEq(existing[0].name, "Hydrogen", "first existing name should match");

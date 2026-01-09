@@ -26,11 +26,7 @@ contract SolidFactory {
      * @return done Array of SolidSpecs that already exist
      * @return tbd Array of SolidSpecs that don't exist yet
      */
-    function made(SolidSpec[] calldata solids)
-        public
-        view
-        returns (SolidSpec[] memory done, SolidSpec[] memory tbd)
-    {
+    function made(SolidSpec[] calldata solids) public view returns (SolidSpec[] memory done, SolidSpec[] memory tbd) {
         uint256 doneCount = 0;
         uint256 tbdCount = 0;
 
@@ -67,10 +63,7 @@ contract SolidFactory {
      * @return done Array of SolidSpecs that already existed
      * @return created Array of SolidSpecs that were created
      */
-    function make(SolidSpec[] calldata solids)
-        external
-        returns (SolidSpec[] memory done, SolidSpec[] memory created)
-    {
+    function make(SolidSpec[] calldata solids) external returns (SolidSpec[] memory done, SolidSpec[] memory created) {
         // Get arrays of done and TBD solids
         (done, created) = made(solids);
 
