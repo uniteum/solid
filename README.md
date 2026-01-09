@@ -12,7 +12,7 @@ Solid is a constant-product AMM protocol on Ethereum where Solid tokens are trad
 Solid is a constant-product AMM where:
 - Each Solid token is a unique ERC-20 with built-in ETH liquidity pool
 - Tokens are created via a factory pattern with deterministic addresses (CREATE2)
-- Initial supply is fixed at 10000 mols (6.02214076e27 tokens)
+- Initial supply is 10 mols (6.02214076e24 tokens), reducible via vaporize
 - Makers receive 50% of supply, 50% goes to the liquidity pool
 - Buy/sell operations use constant-product formula (x * y = k)
 

@@ -73,7 +73,7 @@ This file provides context for AI assistants (primarily Claude) to understand th
 - **ETH** = Native Ethereum currency used for liquidity
 - **NOTHING** = Base Solid instance used as factory for creating new Solids
 - **Pool** = Contract balances of Solid tokens and ETH
-- **SUPPLY** = Initial total supply (10000 mols = 6.02214076e27)
+- **SUPPLY** = Initial total supply (10 mols = 6.02214076e24)
 
 ### Key Files
 
@@ -201,15 +201,15 @@ solPool * ethPool = k  (approximately constant before and after trades)
 totalSupply() <= SUPPLY  (can only decrease via vaporize)
 ```
 
-Total supply is set to SUPPLY at creation. Buy/sell only move tokens between users and pool. Only vaporize() can decrease total supply by burning tokens.
+Total supply starts at SUPPLY at creation. Buy/sell only move tokens between users and pool. Only vaporize() can decrease total supply by burning tokens.
 
 ### 3. Balance Integrity
 
 ```
-balanceOf(pool) + balanceOf(maker) + sum(other balances) = SUPPLY
+balanceOf(pool) + balanceOf(maker) + sum(other balances) = totalSupply()
 ```
 
-All balances must sum to total supply at all times.
+All balances must sum to total supply at all times (which may be less than SUPPLY if vaporize has been used).
 
 ## Factory Pattern
 
@@ -257,7 +257,7 @@ This allows any Solid to create new Solids, but always delegates to NOTHING.
 ```solidity
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     uint256 constant MOL = 6.02214076e23;
-    uint256 constant MOLS = 10000;
+    uint256 constant MOLS = 10;
     uint256 constant SUPPLY = MOLS * MOL;
     uint256 constant STAKE = 0.001 ether;
 
@@ -332,8 +332,8 @@ if (!ok) {
 
 **IMPORTANT:** These invariants MUST hold at all times:
 
-1. **Total supply never changes**: `totalSupply() == SUPPLY` always
-2. **Pool balance consistency**: `balanceOf(address(this)) + sum(user balances) == SUPPLY`
+1. **Total supply can only decrease**: `totalSupply() <= SUPPLY` (only via vaporize)
+2. **Pool balance consistency**: `balanceOf(address(this)) + sum(user balances) == totalSupply()`
 3. **ETH balance consistency**: `address(this).balance` accurately reflects pool liquidity
 
 ## Development Workflow
@@ -439,7 +439,7 @@ FOUNDRY_PROFILE=deep forge test --match-contract SolidInvariant
 ```solidity
 contract SolidTest is BaseTest {
     uint256 constant MOL = 6.02214076e23;
-    uint256 constant MOLS = 10000;
+    uint256 constant MOLS = 10;
     uint256 constant SUPPLY = MOLS * MOL;
     uint256 constant ETH = 1e9;
     Solid public N;
@@ -602,9 +602,9 @@ uint256 eth = H.sell(500);
 
 ```solidity
 MOL = 6.02214076e23        // Avogadro's number
-MOLS = 10000                // Number of mols
-SUPPLY = MOLS * MOL       // Total supply (6.02214076e27)
-STAKE = 0.001 ether // Minimum stake to create Solid
+MOLS = 10                   // Number of mols
+SUPPLY = MOLS * MOL        // Total supply (6.02214076e24)
+STAKE = 0.001 ether        // Minimum stake to create Solid
 ```
 
 ## Events
@@ -657,7 +657,7 @@ ISolid nothing = solid.NOTHING();     // Factory instance
 
 ## Key Differences from Traditional AMMs
 
-1. **Fixed Supply**: Total supply never changes (no minting/burning)
+1. **Reducible Supply**: Total supply starts fixed but can only decrease (via vaporize, no minting)
 2. **Native ETH**: Uses ETH directly (not WETH)
 3. **Deterministic Addresses**: CREATE2 based on name+symbol
 4. **Factory Pattern**: NOTHING instance creates all Solids
