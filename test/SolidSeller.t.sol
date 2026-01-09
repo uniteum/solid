@@ -53,7 +53,7 @@ contract SolidSellerTest is BaseTest {
      */
     function test_Setup() public view {
         assertEq(address(sellerProto.PROTO()), address(sellerProto), "PROTO should be self");
-        assertEq(address(sellerProto.thiss()), address(0xdead), "thiss should be initialized to dead");
+        assertEq(address(sellerProto.th1s()), address(0xdead), "th1s should be initialized to dead");
     }
 
     /**
@@ -62,7 +62,7 @@ contract SolidSellerTest is BaseTest {
     function test_MakeSeller() public {
         SolidSeller seller = sellerProto.make(H, O);
 
-        assertEq(address(seller.thiss()), address(H), "thiss should be H");
+        assertEq(address(seller.th1s()), address(H), "th1s should be H");
         assertEq(address(seller.that()), address(O), "that should be O");
         assertEq(seller.thisName(), "Hydrogen", "thisName should be Hydrogen");
         assertEq(seller.thisSymbol(), "H", "thisSymbol should be H");
@@ -186,7 +186,7 @@ contract SolidSellerTest is BaseTest {
         seller.zzz_(He, H);
 
         // Verify it didn't change
-        assertEq(address(seller.thiss()), address(H), "thiss should still be H");
+        assertEq(address(seller.th1s()), address(H), "th1s should still be H");
         assertEq(address(seller.that()), address(O), "that should still be O");
     }
 
