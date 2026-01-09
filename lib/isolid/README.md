@@ -6,10 +6,12 @@
 
 ISolid is the canonical interface for the Solid protocol, a novel AMM (Automated Market Maker) design where:
 
-- **SOL tokens** are traded against **ETH** using a constant-product formula
+- **Solid tokens** are traded against **ETH** using a constant-product formula
 - Contracts are deployed **deterministically** using CREATE2
 - A **factory pattern** creates new Solids from a base NOTHING instance
-- **50% of supply** goes to the creator, **50% to the pool** on creation
+- **No stake required** - anyone can create Solids for free
+- **100% of supply** goes to the pool on creation (0% to creator)
+- **Virtual 1 ETH pricing** creates elegant starting price and permanent price floor
 
 ## Installation
 
@@ -37,9 +39,9 @@ contract MyContract {
         NOTHING = nothing;
     }
 
-    function createHydrogen() external payable returns (ISolid H) {
-        // Creates "Hydrogen" with symbol "H"
-        H = NOTHING.make{value: 0.001 ether}("Hydrogen", "H");
+    function createHydrogen() external returns (ISolid H) {
+        // Creates "Hydrogen" with symbol "H" (no stake required)
+        H = NOTHING.make("Hydrogen", "H");
     }
 }
 ```
@@ -56,7 +58,7 @@ Checks if a Solid exists and computes its deterministic address.
 (bool exists, address addr, bytes32 salt) = NOTHING.made("Hydrogen", "H");
 
 if (!exists) {
-    ISolid H = NOTHING.make{value: 0.001 ether}("Hydrogen", "H");
+    ISolid H = NOTHING.make("Hydrogen", "H");
     assert(address(H) == addr);  // Address is deterministic!
 }
 ```
@@ -72,22 +74,22 @@ if (!exists) {
 
 #### `make(string name, string symbol) → ISolid sol`
 
-Creates a new Solid with deterministic deployment.
+Creates a new Solid with deterministic deployment. If a Solid with the given name and symbol already exists, returns the existing instance.
 
 ```solidity
-ISolid H = NOTHING.make{value: 0.001 ether}("Hydrogen", "H");
+ISolid H = NOTHING.make("Hydrogen", "H");
 ```
 
 **Requirements:**
-- `msg.value >= STAKE` (0.001 ether)
 - Name and symbol must not be empty
-- Solid with same name/symbol must not exist
+- No stake required (anyone can create for free)
 
 **Effects:**
-- Deploys new Solid at deterministic address
-- Mints 50% of SUPPLY to `msg.sender`
-- Mints 50% of SUPPLY to the pool
-- Deposits `msg.value` as initial pool liquidity
+- Deploys new Solid at deterministic address (or returns existing)
+- Mints exactly AVOGADRO (6.02214076e23) tokens, 100% to pool
+- Pool uses virtual 1 ETH for initial pricing
+- Starting price: 1 ETH = ~602,214.076 solids (~$0.005/solid @ $3k ETH)
+- Virtual 1 ETH creates permanent price floor - sell prices never fall below this
 
 ### Trading Functions
 
@@ -247,15 +249,7 @@ Thrown when name or symbol is empty in `made()` or `make()`.
 
 ### `SellFailed()`
 
-Thrown when ETH transfer to sell fails.
-
-### `StakeLow(uint256 sent, uint256 required)`
-
-Thrown when ETH sent is less than STAKE in `make()`.
-
-### `MadeAlready(string name, string symbol)`
-
-Thrown when attempting to make a Solid that already exists.
+Thrown when ETH transfer to seller fails during `sell()`.
 
 ## Constants
 
@@ -264,7 +258,7 @@ The ISolid interface extends `IERC20Metadata`, providing:
 - `name()` - Token name
 - `symbol()` - Token symbol
 - `decimals()` - Token decimals (18)
-- `totalSupply()` - Total supply (6.02214076e27)
+- `totalSupply()` - Total supply (6.02214076e23, exactly one Avogadro's number)
 - `balanceOf(address)` - Balance of account
 - `transfer(address, uint256)` - Transfer tokens
 - `approve(address, uint256)` - Approve spender

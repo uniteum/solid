@@ -364,10 +364,18 @@ forge fmt            # Format code
 ### Running Specific Tests
 
 ```bash
-forge test --match-test test_MakeHydrogen
-forge test --match-test test_BuySell
-forge test --match-contract SolidInvariant  # Run invariant tests
+forge test --match-test test_MakeHydrogen     # Run single test
+forge test --match-test test_BuySell          # Run specific test
+forge test --match-test test_Setup -vv        # Quick test with verbose output
+forge test --match-contract SolidInvariant    # Run invariant tests
 ```
+
+**Quick Test Tip:**
+For fast feedback during development, run a simple test like `test_Setup`:
+```bash
+forge test --match-test test_Setup -vv
+```
+This completes in milliseconds and verifies basic compilation and setup.
 
 ### Invariant Test Profiles
 
