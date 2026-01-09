@@ -94,6 +94,7 @@ function make(string calldata name, string calldata symbol) external returns (IS
 
 **What it does:**
 - Creates new Solid with name `name` and symbol `symbol`
+- If Solid already exists, returns the existing instance (does not revert)
 - No stake required (anyone can create for free)
 - Mints exactly AVOGADRO tokens (100% to pool, 0% to maker)
 - Pool starts with 0 actual ETH but uses virtual 1 ETH for pricing
@@ -576,6 +577,7 @@ always_use_create_2_factory = true
 
 ```solidity
 // Create "Hydrogen" "H" (no stake required)
+// If already exists, returns the existing instance (does not revert)
 ISolid H = N.make("Hydrogen", "H");
 // H.totalSupply() = AVOGADRO (6.02214076e23)
 // H.balanceOf(msg.sender) = 0  // Maker gets nothing
@@ -638,8 +640,6 @@ event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
 ```solidity
 error Nothing();        // Empty name or symbol, or called on NOTHING
 error SellFailed();     // ETH transfer failed during sell
-error StakeLow();       // Not used (historical)
-error MadeAlready();    // Solid with this name+symbol already exists
 ```
 
 ## Quick Reference
