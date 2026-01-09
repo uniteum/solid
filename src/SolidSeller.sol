@@ -31,7 +31,6 @@ contract SolidSeller {
     }
 
     function sell(uint256 mine) external returns (uint256 thats) {
-        thiss.approve(address(this), mine);
         thiss.transferFrom(msg.sender, address(this), mine);
         uint256 eth = thiss.sell(mine);
         thats = that.buy{value: eth}();
@@ -49,10 +48,10 @@ contract SolidSeller {
             seller = PROTO.make(my_, that_);
         } else {
             (bool yes, address home, bytes32 salt) = made(my_, that_);
-            seller = SolidSeller(home);
+            seller = SolidSeller(payable(home));
             if (!yes) {
                 home = Clones.cloneDeterministic(address(PROTO), salt, 0);
-                SolidSeller(home).zzz_(my_, that_);
+                SolidSeller(payable(home)).zzz_(my_, that_);
                 emit Make(seller, my_, that_);
             }
         }
@@ -68,6 +67,8 @@ contract SolidSeller {
     constructor() {
         thiss = ISolid(address(0xdead));
     }
+
+    receive() external payable {}
 
     event Make(SolidSeller indexed seller, ISolid indexed thiss, ISolid indexed that);
 }
