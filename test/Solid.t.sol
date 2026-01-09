@@ -82,12 +82,6 @@ contract SolidTest is BaseTest {
         assertEq(address(Li).balance, 0, "pool should have 0 ETH");
     }
 
-    function test_MakeRevertsWhenAlreadyMade() public {
-        N.make("Carbon", "C");
-        vm.expectRevert(abi.encodeWithSelector(ISolid.MadeAlready.selector, "Carbon", "C"));
-        N.make("Carbon", "C");
-    }
-
     function test_BuyDoesNotCreateTokens() public {
         ISolid H = N.make("TestToken", "TT");
         uint256 supply = getSupply(H);
@@ -272,7 +266,6 @@ contract SolidTest is BaseTest {
     function test_MakeFromNonNothingDelegates() public {
         // Create a first Solid (Hydrogen) from NOTHING
         ISolid H = N.make("Hydrogen", "H");
-        uint256 supplyH = getSupply(H);
         assertEq(H.balanceOf(address(this)), 0, "creator should have 0% of H");
 
         // Now call make from H (non-NOTHING) to create Helium

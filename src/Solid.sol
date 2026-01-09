@@ -80,11 +80,12 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
             sol = NOTHING.make(name, symbol);
         } else {
             (bool yes, address home, bytes32 salt) = made(name, symbol);
-            if (yes) revert MadeAlready(name, symbol);
-            home = Clones.cloneDeterministic(address(NOTHING), salt, 0);
-            Solid(payable(home)).zzz_(name, symbol);
             sol = ISolid(payable(home));
-            emit Make(sol, name, symbol);
+            if (!yes) {
+                home = Clones.cloneDeterministic(address(NOTHING), salt, 0);
+                Solid(payable(home)).zzz_(name, symbol);
+                emit Make(sol, name, symbol);
+            }
         }
     }
 

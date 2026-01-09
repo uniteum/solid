@@ -102,18 +102,4 @@ interface ISolid is IERC20Metadata {
      * @notice Thrown when ETH transfer to seller fails
      */
     error SellFailed();
-
-    /**
-     * @notice Thrown when stake is less than STAKE in make()
-     * @param sent The amount of ETH sent
-     * @param required The required minimum ETH stake
-     */
-    error StakeLow(uint256 sent, uint256 required);
-
-    /**
-     * @notice Thrown when attempting to make a Solid that has already been made
-     * @param name The name of the Solid
-     * @param symbol The symbol of the Solid
-     */
-    error MadeAlready(string name, string symbol);
 }
