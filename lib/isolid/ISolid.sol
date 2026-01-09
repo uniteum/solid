@@ -22,15 +22,32 @@ interface ISolid is IERC20Metadata {
     function pool() external view returns (uint256 solPool, uint256 ethPool);
 
     /**
+     * @notice Returns the amount of ETH received for selling Solid from the pool
+     * @dev Uses constant-product formula: eth = ethPool - ethPool * solPool / (solPool + sol)
+     * ETH payout is capped at actual balance (virtual pricing may calculate higher).
+     * @param sol The amount of Solid to sell
+     * @return eth The amount of ETH received
+     */
+    function sells(uint256 sol) external view returns (uint256 eth);
+
+    /**
      * @notice Sells Solid for ETH from the pool
      * @dev Uses constant-product formula: eth = ethPool - ethPool * solPool / (solPool + sol)
      * Transfers Solid from caller to pool, sends ETH to caller.
-     * ETH payout is capped at actual balance (virtual pricing may calculate higher).
+     * ETH payout is capped at actual balance (virtual pricing may calculate infinitesimally higher).
      * Protected by reentrancy guard.
      * @param sol The amount of Solid to sell
      * @return eth The amount of ETH received
      */
     function sell(uint256 sol) external returns (uint256 eth);
+
+    /**
+     * @notice Returns the amount of Solid received for buying with ETH from the pool
+     * @dev Uses constant-product formula: sol = solPool - solPool * (ethPool - eth) / ethPool
+     * @param eth The amount of ETH sent
+     * @return sol The amount of Solid received
+     */
+    function buys(uint256 eth) external view returns (uint256 sol);
 
     /**
      * @notice Buys Solid with ETH from the pool
