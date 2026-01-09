@@ -7,9 +7,9 @@ import {Clones} from "clones/Clones.sol";
 import {ReentrancyGuardTransient} from "reentrancy/ReentrancyGuardTransient.sol";
 
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
-    uint256 constant AVOGADRO = 6.02214076e23;
     uint256 constant MOLS = 10000;
-    uint256 constant INITIAL_SUPPLY = AVOGADRO * MOLS;
+    uint256 constant AVOGADRO = 6.02214076e23;
+    uint256 constant INITIAL_SUPPLY = MOLS * AVOGADRO;
 
     ISolid public immutable NOTHING = this;
     uint256 public immutable STAKE = 0.001 ether;
