@@ -74,7 +74,7 @@ This file provides context for AI assistants (primarily Claude) to understand th
 - **NOTHING** = Base Solid instance used as factory for creating new Solids
 - **Pool** = Contract balances of Solid tokens and ETH
 - **Total Supply** = Fixed at exactly Avogadro's number (6.02214076e23)
-- **Starting Price** = With virtual 1 ETH pricing, 1 ETH buys ~602,214.076 solids
+- **Starting Price** = 1 ETH buys ~602,214.076 solids (≈ $0.005 USD per solid when ETH = $3,000)
 
 ### Key Files
 
@@ -97,7 +97,9 @@ function make(string calldata name, string calldata symbol) external returns (IS
 - Mints exactly AVOGADRO tokens (100% to pool, 0% to maker)
 - Pool starts with 0 actual ETH but uses virtual 1 ETH for pricing
 - Uses CREATE2 for deterministic addresses
-- **Initial price**: 1 ETH = ~602,214.076 solids (elegant Avogadro relationship!)
+- **Initial price**: 1 ETH = ~602,214.076 solids
+  - Elegant Avogadro relationship: AVOGADRO / 10^18
+  - At ETH = $3,000: ~$0.005 USD per solid (half a penny)
 
 **Formula:**
 ```solidity
@@ -118,6 +120,7 @@ ISolid H = N.make("Hydrogen", "H");
 // address(H).balance = 0  // No actual ETH
 // pool() returns (AVOGADRO, 1 ether)  // Virtual 1 ETH for pricing
 // For 1 ETH, you can buy: AVOGADRO / 1e18 = ~602,214.076 solids
+// At $3,000/ETH: each solid costs ~$0.005 USD (half a penny)
 ```
 
 ### 2. Buy (ETH → Solid)
@@ -573,7 +576,7 @@ ISolid H = N.make("Hydrogen", "H");
 // H.balanceOf(msg.sender) = 0  // Maker gets nothing
 // H.balanceOf(address(H)) = AVOGADRO  // Pool gets 100%
 // address(H).balance = 0  // No actual ETH
-// Starting price: 1 ETH = ~602,214.076 solids
+// Starting price: 1 ETH = ~602,214.076 solids (~$0.005/solid @ $3k ETH)
 ```
 
 ### Buying Solid with ETH
@@ -611,7 +614,8 @@ AVOGADRO = 6.02214076e23        // Avogadro's number (total supply of each Solid
 
 **Key insight**: With virtual 1 ETH pricing and supply of exactly one Avogadro, the initial price is:
 - 1 ETH = AVOGADRO / 10^18 = ~602,214.076 solids
-- This elegant relationship makes "1 ETH buys Avogadro's number divided by 10^18"
+- This elegant relationship: "1 ETH buys Avogadro's number divided by 10^18"
+- **Practical price**: When ETH = $3,000, each solid starts at ~$0.005 USD (half a penny)
 
 ## Events
 

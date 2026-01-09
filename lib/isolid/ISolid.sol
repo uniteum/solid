@@ -59,6 +59,7 @@ interface ISolid is IERC20Metadata {
      * Mints exactly AVOGADRO (6.02214076e23) tokens, 100% to pool.
      * Pool uses virtual 1 ETH for initial pricing, resulting in elegant starting price:
      * 1 ETH = ~602,214.076 solids (AVOGADRO / 10^18).
+     * At $3,000/ETH, each solid starts at ~$0.005 USD (half a penny).
      * Uses CREATE2 for deterministic deployment based on name and symbol.
      * @param name The name of the Solid
      * @param symbol The symbol of the Solid
