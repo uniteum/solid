@@ -31,8 +31,8 @@ contract SolidHandler is Test {
 
     constructor(Solid _solid) {
         solid = _solid;
-        // Initialize ghost variables with the creation stake
-        ghostTotalEthBought = _solid.STAKE();
+        // Initialize ghost variables
+        ghostTotalEthBought = 0;
         ghostInitialSupply = _solid.totalSupply();
     }
 
@@ -145,7 +145,7 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
 
         // Create a new solid token
         Solid nothing = new Solid();
-        solid = Solid(payable(address(nothing.make{value: nothing.STAKE()}("Hydrogen", "H"))));
+        solid = Solid(payable(address(nothing.make("Hydrogen", "H"))));
         supply = solid.totalSupply();
 
         // Create handler

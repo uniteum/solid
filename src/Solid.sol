@@ -19,7 +19,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     function pool() public view returns (uint256 solPool, uint256 ethPool) {
         if (this == NOTHING) revert Nothing();
         solPool = balanceOf(address(this));
-        ethPool = address(this).balance;
+        ethPool = address(this).balance + 1 ether;
     }
 
     function buys(uint256 eth) public view returns (uint256 sol) {
@@ -41,6 +41,9 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
         eth = sells(sol);
+        // Cap eth to actual balance (virtual pricing may exceed real balance)
+        uint256 actualBalance = address(this).balance;
+        if (eth > actualBalance) eth = actualBalance;
         _update(msg.sender, address(this), sol);
         emit Sell(this, sol, eth);
         (bool ok, bytes memory returned) = msg.sender.call{value: eth}("");
@@ -72,27 +75,24 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         yes = home.code.length > 0;
     }
 
-    function make(string calldata name, string calldata symbol) external payable returns (ISolid sol) {
+    function make(string calldata name, string calldata symbol) external returns (ISolid sol) {
         if (this != NOTHING) {
-            sol = NOTHING.make{value: msg.value}(name, symbol);
-            require(sol.transfer(msg.sender, INITIAL_SUPPLY / 2), "Transfer failed");
+            sol = NOTHING.make(name, symbol);
         } else {
-            if (msg.value < STAKE) revert StakeLow(msg.value, STAKE);
             (bool yes, address home, bytes32 salt) = made(name, symbol);
             if (yes) revert MadeAlready(name, symbol);
             home = Clones.cloneDeterministic(address(NOTHING), salt, 0);
-            Solid(payable(home)).zzz_{value: msg.value}(name, symbol, msg.sender);
+            Solid(payable(home)).zzz_(name, symbol);
             sol = ISolid(payable(home));
             emit Make(sol, name, symbol);
         }
     }
 
-    function zzz_(string calldata name, string calldata symbol, address maker) external payable {
+    function zzz_(string calldata name, string calldata symbol) external {
         if (bytes(_symbol).length == 0) {
             _name = name;
             _symbol = symbol;
-            _mint(address(this), INITIAL_SUPPLY / 2);
-            _mint(maker, INITIAL_SUPPLY / 2);
+            _mint(address(this), INITIAL_SUPPLY);
         }
     }
 }

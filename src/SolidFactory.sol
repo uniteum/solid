@@ -25,13 +25,11 @@ contract SolidFactory {
      * @param solids Array of solids to check
      * @return done Array of SolidSpecs that already exist
      * @return tbd Array of SolidSpecs that don't exist yet
-     * @return stakePer Stake required per Solid
-     * @return stake Total stake required to create the Solids
      */
     function made(SolidSpec[] calldata solids)
         public
         view
-        returns (SolidSpec[] memory done, SolidSpec[] memory tbd, uint256 stakePer, uint256 stake)
+        returns (SolidSpec[] memory done, SolidSpec[] memory tbd)
     {
         uint256 doneCount = 0;
         uint256 tbdCount = 0;
@@ -45,9 +43,6 @@ contract SolidFactory {
                 tbdCount++;
             }
         }
-
-        stakePer = NOTHING.STAKE();
-        stake = tbdCount * stakePer;
 
         // Allocate arrays
         done = new SolidSpec[](doneCount);
@@ -68,37 +63,22 @@ contract SolidFactory {
 
     /**
      * @notice Create multiple Solids in a single transaction
-     * @dev Refunds excess ETH to msg.sender
      * @param solids Array of solids to create
      * @return done Array of SolidSpecs that already existed
      * @return created Array of SolidSpecs that were created
-     * @return stakePer Stake required per Solid
-     * @return stake Total stake used to create the Solids
      */
     function make(SolidSpec[] calldata solids)
         external
-        payable
-        returns (SolidSpec[] memory done, SolidSpec[] memory created, uint256 stakePer, uint256 stake)
+        returns (SolidSpec[] memory done, SolidSpec[] memory created)
     {
         // Get arrays of done and TBD solids
-        (done, created, stakePer, stake) = made(solids);
-
-        if (msg.value < stake) {
-            revert ISolid.StakeLow(msg.value, stake);
-        }
+        (done, created) = made(solids);
 
         // Create the TBD ones
         for (uint256 i = 0; i < created.length; i++) {
-            NOTHING.make{value: stakePer}(created[i].name, created[i].symbol);
+            NOTHING.make(created[i].name, created[i].symbol);
         }
 
         emit MadeBatch(created.length, done.length, solids.length);
-
-        // Refund excess ETH
-        uint256 excess = msg.value - stake;
-        if (excess > 0) {
-            (bool ok,) = msg.sender.call{value: excess}("");
-            require(ok, "Refund failed");
-        }
     }
 }

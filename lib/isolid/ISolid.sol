@@ -19,8 +19,9 @@ interface ISolid is IERC20Metadata {
 
     /**
      * @notice Returns the current pool balances of Solid and ETH
+     * @dev ethPool includes a virtual 1 ETH for initial pricing (actual balance + 1 ether)
      * @return solPool The amount of Solid in the pool
-     * @return ethPool The amount of ETH in the pool
+     * @return ethPool The virtual amount of ETH in the pool (actual + 1 ether)
      */
     function pool() external view returns (uint256 solPool, uint256 ethPool);
 
@@ -28,6 +29,7 @@ interface ISolid is IERC20Metadata {
      * @notice Sells Solid for ETH from the pool
      * @dev Uses constant-product formula: eth = ethPool - ethPool * solPool / (solPool + sol)
      * Transfers Solid from caller to pool, sends ETH to caller.
+     * ETH payout is capped at actual balance (virtual pricing may calculate higher).
      * Protected by reentrancy guard.
      * @param sol The amount of Solid to sell
      * @return eth The amount of ETH received
@@ -58,14 +60,14 @@ interface ISolid is IERC20Metadata {
 
     /**
      * @notice Makes a new Solid instance with the given name and symbol
-     * @dev Requires minimum stake of STAKE. Reverts if already made.
-     * Mints 50% of SUPPLY to maker and 50% to pool. Initial ETH becomes pool liquidity.
+     * @dev No stake required. Reverts if already made.
+     * Mints 100% of SUPPLY to pool. Pool uses virtual 1 ETH for initial pricing.
      * Uses CREATE2 for deterministic deployment based on name and symbol.
      * @param name The name of the Solid
      * @param symbol The symbol of the Solid
      * @return sol The newly made Solid instance
      */
-    function make(string calldata name, string calldata symbol) external payable returns (ISolid sol);
+    function make(string calldata name, string calldata symbol) external returns (ISolid sol);
 
     /**
      * @notice Emitted when a new Solid is made

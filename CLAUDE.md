@@ -87,14 +87,14 @@ This file provides context for AI assistants (primarily Claude) to understand th
 ### 1. Make (Create New Solid)
 
 ```solidity
-function make(string calldata name, string calldata symbol) external payable returns (ISolid sol)
+function make(string calldata name, string calldata symbol) external returns (ISolid sol)
 ```
 
 **What it does:**
 - Creates new Solid with name `name` and symbol `symbol`
-- Requires minimum 0.001 ETH stake
-- Mints INITIAL_SUPPLY total supply (50% to maker, 50% to pool)
-- Initial ETH stake becomes pool liquidity
+- No stake required (anyone can create for free)
+- Mints INITIAL_SUPPLY total supply (100% to pool, 0% to maker)
+- Pool starts with 0 actual ETH but uses virtual 1 ETH for pricing
 - Uses CREATE2 for deterministic addresses
 
 **Formula:**
@@ -103,16 +103,17 @@ function make(string calldata name, string calldata symbol) external payable ret
 salt = keccak256(abi.encode(name, symbol))
 
 // Supply split
-maker_share = INITIAL_SUPPLY / 2  // 50% to msg.sender
-pool_share = INITIAL_SUPPLY / 2   // 50% to contract
+maker_share = 0  // 0% to msg.sender (no tokens for maker)
+pool_share = INITIAL_SUPPLY  // 100% to contract
 ```
 
 **Example:**
 ```solidity
-ISolid H = N.make{value: 0.001 ether}("Hydrogen", "H");
-// H.balanceOf(msg.sender) = INITIAL_SUPPLY / 2
-// H.balanceOf(address(H)) = INITIAL_SUPPLY / 2
-// address(H).balance = 0.001 ether
+ISolid H = N.make("Hydrogen", "H");
+// H.balanceOf(msg.sender) = 0  // Maker gets nothing
+// H.balanceOf(address(H)) = INITIAL_SUPPLY  // Pool gets 100%
+// address(H).balance = 0  // No actual ETH
+// pool() returns (INITIAL_SUPPLY, 1 ether)  // Virtual 1 ETH for pricing
 ```
 
 ### 2. Buy (ETH → Solid)
@@ -213,7 +214,7 @@ function made(string calldata name, string calldata symbol)
 
 // Create if doesn't exist
 if (!exists) {
-    ISolid H = N.make{value: 0.001 ether}("Hydrogen", "H");
+    ISolid H = N.make("Hydrogen", "H");
     assert(address(H) == addr);  // Deterministic!
 }
 ```
@@ -223,8 +224,8 @@ if (!exists) {
 When `make()` is called on a non-NOTHING instance:
 ```solidity
 if (this != NOTHING) {
-    sol = NOTHING.make{value: msg.value}(name, symbol);
-    require(sol.transfer(msg.sender, INITIAL_SUPPLY / 2), "Transfer failed");
+    sol = NOTHING.make(name, symbol);
+    // No transfer needed - maker gets nothing
 }
 ```
 
@@ -255,7 +256,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 ### Key Functions
 
 **Balance Queries:**
-- `pool()` - Returns (solPool, ethPool) tuple
+- `pool()` - Returns (solPool, ethPool) tuple where ethPool = actualBalance + 1 ether
 - `balanceOf(address)` - Standard ERC20 balance query
 
 **Factory:**
@@ -267,7 +268,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 - `sell(sol)` - Sell Solid for ETH
 
 **Internal:**
-- `zzz_(name, symbol, maker)` - Initialization function (called once during creation)
+- `zzz_(name, symbol)` - Initialization function (called once during creation)
 
 ## Security
 
@@ -283,6 +284,29 @@ modifier nonReentrant() {
 - `sell()` uses `nonReentrant` (sends ETH to msg.sender)
 - `buy()` is payable, no reentrancy needed (receives ETH)
 - Transient storage clears after transaction
+
+### Virtual ETH Pricing
+
+```solidity
+function pool() public view returns (uint256 solPool, uint256 ethPool) {
+    if (this == NOTHING) revert Nothing();
+    solPool = balanceOf(address(this));
+    ethPool = address(this).balance + 1 ether;  // Virtual pricing
+}
+```
+
+- Pool adds 1 ether to actual balance for pricing calculations
+- Enables initial price discovery even with 0 actual ETH
+- `sell()` caps payout to actual balance to prevent reversion
+
+```solidity
+function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
+    eth = sells(sol);
+    uint256 actualBalance = address(this).balance;
+    if (eth > actualBalance) eth = actualBalance;  // Cap to actual
+    // ... transfer eth
+}
+```
 
 ### Safe ETH Transfers
 
@@ -471,9 +495,9 @@ function test_BuySell(uint256 seed, uint256 d) public {
 ```solidity
 function makeHydrogen(uint256 seed) public returns (ISolid H, uint256 h, uint256 e) {
     seed = seed % ETH;
-    H = N.make{value: 0.001 ether}("Hydrogen", "H");
-    vm.deal(address(H), 0.001 ether + seed);
-    (h, e) = H.pool();
+    H = N.make("Hydrogen", "H");
+    vm.deal(address(H), seed);  // Add random ETH to pool
+    (h, e) = H.pool();  // e will be seed + 1 ether (virtual)
 }
 ```
 
@@ -544,11 +568,12 @@ always_use_create_2_factory = true
 ### Creating a New Solid
 
 ```solidity
-// Create "Hydrogen" "H"
-ISolid H = N.make{value: 0.001 ether}("Hydrogen", "H");
+// Create "Hydrogen" "H" (no stake required)
+ISolid H = N.make("Hydrogen", "H");
 // H.totalSupply() = INITIAL_SUPPLY
-// H.balanceOf(msg.sender) = INITIAL_SUPPLY / 2
-// H.balanceOf(address(H)) = INITIAL_SUPPLY / 2
+// H.balanceOf(msg.sender) = 0  // Maker gets nothing
+// H.balanceOf(address(H)) = INITIAL_SUPPLY  // Pool gets 100%
+// address(H).balance = 0  // No actual ETH
 ```
 
 ### Buying Solid with ETH
@@ -575,7 +600,7 @@ uint256 eth = H.sell(500);
 ```solidity
 (uint256 solPool, uint256 ethPool) = H.pool();
 // solPool = Solid tokens in pool
-// ethPool = ETH in pool
+// ethPool = Virtual ETH in pool (actual balance + 1 ether)
 ```
 
 ## Constants Reference
@@ -584,7 +609,7 @@ uint256 eth = H.sell(500);
 AVOGADRO = 6.02214076e23        // Avogadro's number
 MOLS = 10000                     // Number of mols
 INITIAL_SUPPLY = AVOGADRO * MOLS // Fixed total supply (6.02214076e27)
-STAKE = 0.001 ether              // Minimum stake to create Solid
+STAKE = 0.001 ether              // Constant (not used for make(), historical reference)
 ```
 
 ## Events
@@ -598,10 +623,10 @@ event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
 ## Errors
 
 ```solidity
-error Nothing();        // Empty name or symbol
-error SellFailed();     // ETH transfer failed
-error StakeLow();     // Stake < 0.001 ETH
-error MadeAlready();    // Solid already exists
+error Nothing();        // Empty name or symbol, or called on NOTHING
+error SellFailed();     // ETH transfer failed during sell
+error StakeLow();       // Not used (historical)
+error MadeAlready();    // Solid with this name+symbol already exists
 ```
 
 ## Quick Reference
@@ -610,6 +635,7 @@ error MadeAlready();    // Solid already exists
 
 ```solidity
 (uint256 solPool, uint256 ethPool) = solid.pool();
+// ethPool = address(solid).balance + 1 ether (virtual pricing)
 uint256 balance = solid.balanceOf(address(user));
 uint256 supply = solid.totalSupply();  // Always equals INITIAL_SUPPLY
 ```
@@ -623,6 +649,7 @@ sol = solPool - solPool * (ethPool - eth) / ethPool
 
 // Sell: Solid → ETH (transfer to pool)
 eth = ethPool - ethPool * solPool / (solPool + sol)
+// Note: Capped to min(eth, actualBalance) before transfer
 ```
 
 ### Metadata
@@ -640,8 +667,10 @@ ISolid nothing = solid.NOTHING();     // Factory instance
 2. **Native ETH**: Uses ETH directly (not WETH)
 3. **Deterministic Addresses**: CREATE2 based on name+symbol
 4. **Factory Pattern**: NOTHING instance creates all Solids
-5. **Maker Share**: Creator receives 50% of initial supply
-6. **No Liquidity Tokens**: Solid tokens ARE the liquidity
+5. **Zero Maker Share**: Creator receives 0% (100% goes to pool)
+6. **Virtual Pricing**: Pool adds 1 ETH virtually for initial price discovery
+7. **No Liquidity Tokens**: Solid tokens ARE the liquidity
+8. **Permissionless Creation**: Anyone can create Solids for free
 
 ---
 

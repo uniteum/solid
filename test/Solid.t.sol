@@ -43,7 +43,7 @@ contract SolidTest is BaseTest {
 
         // Attempt to call zzz_() on NOTHING should fail silently (no-op)
         // because _symbol is already set to "NOTHING"
-        N.zzz_{value: N.STAKE()}("Evil", "EVIL", address(this));
+        N.zzz_("Evil", "EVIL");
 
         // Verify NOTHING was not reinitialized
         uint256 supplyAfter = N.totalSupply();
@@ -54,45 +54,42 @@ contract SolidTest is BaseTest {
     }
 
     function test_MakeHydrogen() public returns (ISolid H) {
-        H = N.make{value: N.STAKE()}("Hydrogen", "H");
+        H = N.make("Hydrogen", "H");
         uint256 supply = getSupply(H);
         assertEq(H.totalSupply(), supply);
         assertEq(H.name(), "Hydrogen");
         assertEq(H.symbol(), "H");
-        assertEq(H.balanceOf(address(this)), supply / 2, "creator should have 50% of supply");
-        assertEq(H.balanceOf(address(H)), supply / 2, "pool should have 50% of supply");
-        assertEq(address(H).balance, N.STAKE(), "pool should have STAKE ETH");
+        assertEq(H.balanceOf(address(this)), 0, "creator should have 0% of supply with no stake");
+        assertEq(H.balanceOf(address(H)), supply, "pool should have 100% of supply");
+        assertEq(address(H).balance, 0, "pool should have 0 ETH");
     }
 
     function test_MakeWithExtraStake() public {
-        ISolid H = N.make{value: N.STAKE() * 2}("Helium", "He");
+        ISolid H = N.make("Helium", "He");
         uint256 supply = getSupply(H);
         assertEq(H.totalSupply(), supply);
-        assertEq(H.balanceOf(address(this)), supply / 2, "creator should have 50% of supply");
-        assertEq(H.balanceOf(address(H)), supply / 2, "pool should have 50% of supply");
-        assertEq(address(H).balance, N.STAKE() * 2, "pool should have double STAKE ETH");
+        assertEq(H.balanceOf(address(this)), 0, "creator should have 0% of supply");
+        assertEq(H.balanceOf(address(H)), supply, "pool should have 100% of supply");
+        assertEq(address(H).balance, 0, "pool should have 0 ETH");
     }
 
-    function test_MakeRevertsWithInsufficientStake() public {
-        uint256 insufficientStake = N.STAKE() - 1;
-        vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, insufficientStake, N.STAKE()));
-        N.make{value: insufficientStake}("Lithium", "Li");
-    }
-
-    function test_MakeRevertsWithNoStake() public {
-        vm.expectRevert(abi.encodeWithSelector(ISolid.StakeLow.selector, 0, N.STAKE()));
-        N.make("Beryllium", "Be");
+    function test_MakeWithNoStakeCreatesPoolOnly() public {
+        ISolid Li = N.make("Lithium", "Li");
+        uint256 supply = getSupply(Li);
+        assertEq(Li.totalSupply(), supply);
+        assertEq(Li.balanceOf(address(this)), 0, "creator should have 0% of supply");
+        assertEq(Li.balanceOf(address(Li)), supply, "pool should have 100% of supply");
+        assertEq(address(Li).balance, 0, "pool should have 0 ETH");
     }
 
     function test_MakeRevertsWhenAlreadyMade() public {
-        uint256 stake = N.STAKE();
-        N.make{value: stake}("Carbon", "C");
+        N.make("Carbon", "C");
         vm.expectRevert(abi.encodeWithSelector(ISolid.MadeAlready.selector, "Carbon", "C"));
-        N.make{value: stake}("Carbon", "C");
+        N.make("Carbon", "C");
     }
 
     function test_BuyDoesNotCreateTokens() public {
-        ISolid H = N.make{value: N.STAKE()}("TestToken", "TT");
+        ISolid H = N.make("TestToken", "TT");
         uint256 supply = getSupply(H);
 
         uint256 supplyBefore = H.totalSupply();
@@ -120,7 +117,7 @@ contract SolidTest is BaseTest {
     }
 
     function test_BuySellBalanceIntegrity() public {
-        ISolid H = N.make{value: N.STAKE()}("Integrity", "INT");
+        ISolid H = N.make("Integrity", "INT");
         uint256 supply = getSupply(H);
 
         // Have owen buy
@@ -142,16 +139,16 @@ contract SolidTest is BaseTest {
     function makeHydrogen(uint256 seed) public returns (ISolid H, uint256 h, uint256 e) {
         seed = seed % ETH;
         H = test_MakeHydrogen();
-        // H already has STAKE from make(), add seed on top
-        vm.deal(address(H), N.STAKE() + seed);
+        // Add seed ETH to the pool
+        vm.deal(address(H), seed);
         (h, e) = H.pool();
     }
 
     function test_StartingPrice(uint256 seed) public returns (ISolid H, uint256 h, uint256 e) {
         (H, h, e) = makeHydrogen(seed);
         uint256 supply = getSupply(H);
-        assertEq(h, supply / 2, "h should be 50% of SUPPLY");
-        assertEq(e, N.STAKE() + (seed % ETH), "e should be STAKE + seed");
+        assertEq(h, supply, "h should be 100% of SUPPLY");
+        assertEq(e, (seed % ETH) + 1 ether, "e should be seed + 1 ether (virtual)");
     }
 
     function test_StartingBuy(uint256 seed, uint256 d) public returns (ISolid H, uint256 h, uint256 e, uint256 symbol) {
@@ -272,21 +269,21 @@ contract SolidTest is BaseTest {
         emit log_named_uint("final pool ETH", poolEthFinal);
     }
 
-    function test_MakeFromNonNothingSendsSharesToCaller() public {
+    function test_MakeFromNonNothingDelegates() public {
         // Create a first Solid (Hydrogen) from NOTHING
-        ISolid H = N.make{value: N.STAKE()}("Hydrogen", "H");
+        ISolid H = N.make("Hydrogen", "H");
         uint256 supplyH = getSupply(H);
-        assertEq(H.balanceOf(address(this)), supplyH / 2, "creator should have 50% of H");
+        assertEq(H.balanceOf(address(this)), 0, "creator should have 0% of H");
 
         // Now call make from H (non-NOTHING) to create Helium
-        // The maker shares should still go to msg.sender (this), not to H
-        ISolid he = Solid(payable(address(H))).make{value: N.STAKE()}("Helium", "He");
+        // This should delegate to NOTHING and create He with full supply in pool
+        ISolid he = Solid(payable(address(H))).make("Helium", "He");
         uint256 supplyHe = getSupply(he);
 
-        // Verify maker shares went to the actual caller (this), not to H
-        assertEq(he.balanceOf(address(this)), supplyHe / 2, "creator should have 50% of He");
+        // Verify full supply goes to pool (no maker shares)
+        assertEq(he.balanceOf(address(this)), 0, "creator should have 0% of He");
         assertEq(he.balanceOf(address(H)), 0, "H should not have any He tokens");
-        assertEq(he.balanceOf(address(he)), supplyHe / 2, "He pool should have 50% of supply");
+        assertEq(he.balanceOf(address(he)), supplyHe, "He pool should have 100% of supply");
     }
 
     function test_CannotBuyNOTHING() public {
