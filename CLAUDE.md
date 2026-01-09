@@ -65,14 +65,14 @@ This file provides context for AI assistants (primarily Claude) to understand th
 
 ## Overview
 
-**Solid** is a constant-product AMM protocol on Ethereum where SOL tokens are traded against ETH with deterministic deployment.
+**Solid** is a constant-product AMM protocol on Ethereum where Solid tokens are traded against ETH with deterministic deployment.
 
 ### Core Concepts
 
-- **SOL** = ERC-20 token created by the protocol (state variable: balances)
+- **Solid tokens** = ERC-20 tokens created by the protocol (state variable: balances)
 - **ETH** = Native Ethereum currency used for liquidity
 - **NOTHING** = Base Solid instance used as factory for creating new Solids
-- **Pool** = Contract balances of SOL tokens and ETH
+- **Pool** = Contract balances of Solid tokens and ETH
 - **SUPPLY** = Initial total supply (10000 mols = 6.02214076e27)
 
 ### Key Files
@@ -115,17 +115,17 @@ ISolid H = N.make{value: 0.001 ether}("Hydrogen", "H");
 // address(H).balance = 0.001 ether
 ```
 
-### 2. Buy (ETH → SOL)
+### 2. Buy (ETH → Solid)
 
 ```solidity
 function buy() public payable returns (uint256 sol)
 ```
 
 **What it does:**
-- Buys SOL tokens with ETH from pool
+- Buys Solid tokens with ETH from pool
 - Uses constant-product formula
 - Does NOT mint new tokens (transfers from pool)
-- Pool SOL decreases, pool ETH increases
+- Pool Solid decreases, pool ETH increases
 
 **Formula:**
 ```solidity
@@ -141,17 +141,17 @@ uint256 sol = H.buy{value: 1 ether}();
 // Pool ETH increases by 1 ether
 ```
 
-### 3. Sell (SOL → ETH)
+### 3. Sell (Solid → ETH)
 
 ```solidity
 function sell(uint256 sol) external nonReentrant returns (uint256 eth)
 ```
 
 **What it does:**
-- Sells SOL tokens for ETH from pool
+- Sells Solid tokens for ETH from pool
 - Uses constant-product formula
 - Does NOT burn tokens (transfers to pool)
-- Pool SOL increases, pool ETH decreases
+- Pool Solid increases, pool ETH decreases
 
 **Formula:**
 ```solidity
@@ -161,18 +161,18 @@ eth = ethPool - ethPool * solPool / (solPool + sol)
 **Example:**
 ```solidity
 uint256 eth = H.sell(100);
-// Transfers 100 SOL from msg.sender to pool
+// Transfers 100 Solid from msg.sender to pool
 // Transfers calculated eth to msg.sender
 ```
 
-### 4. Vaporize (Burn SOL)
+### 4. Vaporize (Burn Solid)
 
 ```solidity
 function vaporize(uint256 sol) external
 ```
 
 **What it does:**
-- Burns (permanently destroys) SOL tokens from caller's balance
+- Burns (permanently destroys) Solid tokens from caller's balance
 - Reduces total supply permanently
 - No ETH is returned (unlike sell)
 - This is a one-way operation - tokens cannot be recovered
@@ -180,7 +180,7 @@ function vaporize(uint256 sol) external
 **Example:**
 ```solidity
 H.vaporize(100);
-// Burns 100 SOL from msg.sender
+// Burns 100 Solid from msg.sender
 // Total supply decreases by 100
 // No ETH returned
 ```
@@ -283,8 +283,8 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 - `make(name, symbol)` - Create new Solid with deterministic address
 
 **Trading:**
-- `buy()` - Buy SOL with ETH
-- `sell(sol)` - Sell SOL for ETH
+- `buy()` - Buy Solid with ETH
+- `sell(sol)` - Sell Solid for ETH
 
 **Internal:**
 - `zzz_(name, symbol, maker)` - Initialization function (called once during creation)
@@ -571,30 +571,30 @@ ISolid H = N.make{value: 0.001 ether}("Hydrogen", "H");
 // H.balanceOf(address(H)) = SUPPLY / 2
 ```
 
-### Buying SOL with ETH
+### Buying Solid with ETH
 
 ```solidity
 uint256 sol = H.buy{value: 1 ether}();
 // Receive sol tokens from pool
 // Pool ETH increases by 1 ether
-// Pool SOL decreases by sol amount
+// Pool Solid decreases by sol amount
 ```
 
-### Selling SOL for ETH
+### Selling Solid for ETH
 
 ```solidity
 uint256 eth = H.sell(500);
-// Send 500 SOL to pool
+// Send 500 Solid to pool
 // Receive eth back
 // Pool ETH decreases by eth amount
-// Pool SOL increases by 500
+// Pool Solid increases by 500
 ```
 
 ### Checking Pool State
 
 ```solidity
 (uint256 solPool, uint256 ethPool) = H.pool();
-// solPool = SOL tokens in pool
+// solPool = Solid tokens in pool
 // ethPool = ETH in pool
 ```
 
@@ -638,11 +638,11 @@ uint256 supply = solid.totalSupply();  // Always SUPPLY
 ### Trading Formulas
 
 ```solidity
-// Buy: ETH → SOL
+// Buy: ETH → Solid
 sol = solPool - solPool * (ethPool - eth) / ethPool
 // Simplified: sol = solPool * eth / ethPool
 
-// Sell: SOL → ETH
+// Sell: Solid → ETH
 eth = ethPool - ethPool * solPool / (solPool + sol)
 ```
 
@@ -662,7 +662,7 @@ ISolid nothing = solid.NOTHING();     // Factory instance
 3. **Deterministic Addresses**: CREATE2 based on name+symbol
 4. **Factory Pattern**: NOTHING instance creates all Solids
 5. **Maker Share**: Creator receives 50% of initial supply
-6. **No Liquidity Tokens**: SOL tokens ARE the liquidity
+6. **No Liquidity Tokens**: Solid tokens ARE the liquidity
 
 ---
 
