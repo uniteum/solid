@@ -14,7 +14,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     ISolid public immutable NOTHING = this;
     uint256 public immutable STAKE = 0.001 ether;
 
-    constructor() ERC20("", "") {}
+    constructor() ERC20("", "NOTHING") {}
 
     function pool() public view returns (uint256 solPool, uint256 ethPool) {
         if (this == NOTHING) revert Nothing();
