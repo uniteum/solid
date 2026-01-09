@@ -73,7 +73,8 @@ This file provides context for AI assistants (primarily Claude) to understand th
 - **ETH** = Native Ethereum currency used for liquidity
 - **NOTHING** = Base Solid instance used as factory for creating new Solids
 - **Pool** = Contract balances of Solid tokens and ETH
-- **INITIAL_SUPPLY** = Fixed total supply (10000 mols = 6.02214076e27)
+- **Total Supply** = Fixed at exactly Avogadro's number (6.02214076e23)
+- **Starting Price** = With virtual 1 ETH pricing, 1 ETH buys ~602,214.076 solids
 
 ### Key Files
 
@@ -93,9 +94,10 @@ function make(string calldata name, string calldata symbol) external returns (IS
 **What it does:**
 - Creates new Solid with name `name` and symbol `symbol`
 - No stake required (anyone can create for free)
-- Mints INITIAL_SUPPLY total supply (100% to pool, 0% to maker)
+- Mints exactly AVOGADRO tokens (100% to pool, 0% to maker)
 - Pool starts with 0 actual ETH but uses virtual 1 ETH for pricing
 - Uses CREATE2 for deterministic addresses
+- **Initial price**: 1 ETH = ~602,214.076 solids (elegant Avogadro relationship!)
 
 **Formula:**
 ```solidity
@@ -104,16 +106,18 @@ salt = keccak256(abi.encode(name, symbol))
 
 // Supply split
 maker_share = 0  // 0% to msg.sender (no tokens for maker)
-pool_share = INITIAL_SUPPLY  // 100% to contract
+pool_share = AVOGADRO  // 100% to contract (6.02214076e23)
 ```
 
 **Example:**
 ```solidity
 ISolid H = N.make("Hydrogen", "H");
+// H.totalSupply() = AVOGADRO (6.02214076e23)
 // H.balanceOf(msg.sender) = 0  // Maker gets nothing
-// H.balanceOf(address(H)) = INITIAL_SUPPLY  // Pool gets 100%
+// H.balanceOf(address(H)) = AVOGADRO  // Pool gets 100%
 // address(H).balance = 0  // No actual ETH
-// pool() returns (INITIAL_SUPPLY, 1 ether)  // Virtual 1 ETH for pricing
+// pool() returns (AVOGADRO, 1 ether)  // Virtual 1 ETH for pricing
+// For 1 ETH, you can buy: AVOGADRO / 1e18 = ~602,214.076 solids
 ```
 
 ### 2. Buy (ETH → Solid)
@@ -179,10 +183,10 @@ solPool * ethPool = k  (approximately constant before and after trades)
 ### 2. Total Supply is Fixed
 
 ```
-totalSupply() = INITIAL_SUPPLY (always)
+totalSupply() = AVOGADRO (always, exactly 6.02214076e23)
 ```
 
-Total supply is fixed at INITIAL_SUPPLY. Buy/sell operations only transfer tokens between users and pool without changing total supply.
+Total supply is fixed at exactly Avogadro's number. Buy/sell operations only transfer tokens between users and pool without changing total supply.
 
 ### 3. Balance Integrity
 
@@ -238,11 +242,8 @@ This allows any Solid to create new Solids, but always delegates to NOTHING.
 ```solidity
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     uint256 constant AVOGADRO = 6.02214076e23;
-    uint256 constant MOLS = 10000;
-    uint256 constant INITIAL_SUPPLY = AVOGADRO * MOLS;
 
     ISolid public immutable NOTHING = this;
-    uint256 public immutable STAKE = 0.001 ether;
 }
 ```
 
@@ -336,8 +337,8 @@ if (!ok) {
 
 **IMPORTANT:** These invariants MUST hold at all times:
 
-1. **Total supply is fixed**: `totalSupply() == INITIAL_SUPPLY` (never changes)
-2. **Pool balance consistency**: `balanceOf(address(this)) + sum(user balances) == totalSupply()`
+1. **Total supply is fixed**: `totalSupply() == AVOGADRO` (never changes, exactly 6.02214076e23)
+2. **Pool balance consistency**: `balanceOf(address(this)) + sum(user balances) == AVOGADRO`
 3. **ETH balance consistency**: `address(this).balance` accurately reflects pool liquidity
 
 ## Development Workflow
@@ -443,8 +444,6 @@ FOUNDRY_PROFILE=deep forge test --match-contract SolidInvariant
 ```solidity
 contract SolidTest is BaseTest {
     uint256 constant AVOGADRO = 6.02214076e23;
-    uint256 constant MOLS = 10000;
-    uint256 constant INITIAL_SUPPLY = AVOGADRO * MOLS;
     uint256 constant ETH = 1e9;
     Solid public N;
     SolidUser public owen;
@@ -570,10 +569,11 @@ always_use_create_2_factory = true
 ```solidity
 // Create "Hydrogen" "H" (no stake required)
 ISolid H = N.make("Hydrogen", "H");
-// H.totalSupply() = INITIAL_SUPPLY
+// H.totalSupply() = AVOGADRO (6.02214076e23)
 // H.balanceOf(msg.sender) = 0  // Maker gets nothing
-// H.balanceOf(address(H)) = INITIAL_SUPPLY  // Pool gets 100%
+// H.balanceOf(address(H)) = AVOGADRO  // Pool gets 100%
 // address(H).balance = 0  // No actual ETH
+// Starting price: 1 ETH = ~602,214.076 solids
 ```
 
 ### Buying Solid with ETH
@@ -606,11 +606,12 @@ uint256 eth = H.sell(500);
 ## Constants Reference
 
 ```solidity
-AVOGADRO = 6.02214076e23        // Avogadro's number
-MOLS = 10000                     // Number of mols
-INITIAL_SUPPLY = AVOGADRO * MOLS // Fixed total supply (6.02214076e27)
-STAKE = 0.001 ether              // Constant (not used for make(), historical reference)
+AVOGADRO = 6.02214076e23        // Avogadro's number (total supply of each Solid)
 ```
+
+**Key insight**: With virtual 1 ETH pricing and supply of exactly one Avogadro, the initial price is:
+- 1 ETH = AVOGADRO / 10^18 = ~602,214.076 solids
+- This elegant relationship makes "1 ETH buys Avogadro's number divided by 10^18"
 
 ## Events
 
@@ -637,7 +638,7 @@ error MadeAlready();    // Solid with this name+symbol already exists
 (uint256 solPool, uint256 ethPool) = solid.pool();
 // ethPool = address(solid).balance + 1 ether (virtual pricing)
 uint256 balance = solid.balanceOf(address(user));
-uint256 supply = solid.totalSupply();  // Always equals INITIAL_SUPPLY
+uint256 supply = solid.totalSupply();  // Always equals AVOGADRO (6.02214076e23)
 ```
 
 ### Trading Formulas
@@ -663,14 +664,15 @@ ISolid nothing = solid.NOTHING();     // Factory instance
 
 ## Key Differences from Traditional AMMs
 
-1. **Fixed Supply**: Total supply is fixed at INITIAL_SUPPLY (never changes)
+1. **Fixed Supply**: Total supply is exactly Avogadro's number (6.02214076e23, never changes)
 2. **Native ETH**: Uses ETH directly (not WETH)
 3. **Deterministic Addresses**: CREATE2 based on name+symbol
 4. **Factory Pattern**: NOTHING instance creates all Solids
 5. **Zero Maker Share**: Creator receives 0% (100% goes to pool)
 6. **Virtual Pricing**: Pool adds 1 ETH virtually for initial price discovery
-7. **No Liquidity Tokens**: Solid tokens ARE the liquidity
-8. **Permissionless Creation**: Anyone can create Solids for free
+7. **Elegant Initial Price**: 1 ETH = ~602,214.076 solids (Avogadro / 10^18)
+8. **No Liquidity Tokens**: Solid tokens ARE the liquidity
+9. **Permissionless Creation**: Anyone can create Solids for free
 
 ---
 
