@@ -145,46 +145,46 @@ contract SolidTest is BaseTest {
         assertEq(e, (seed % ETH) + 1 ether, "e should be seed + 1 ether (virtual)");
     }
 
-    function test_StartingBuy(uint256 seed, uint256 d) public returns (ISolid H, uint256 h, uint256 e, uint256 symbol) {
+    function test_StartingBuy(uint256 seed, uint256 d) public returns (ISolid H, uint256 h, uint256 e, uint256 s) {
         (H, h, e) = makeHydrogen(seed);
         d = d % address(owen).balance;
         if (e != 0 || d != 0) {
             uint256 balanceBefore = address(owen).balance;
             uint256 poolSolidsBefore = H.balanceOf(address(H));
 
-            symbol = owen.buy(H, d);
+            s = owen.buy(H, d);
 
             uint256 balanceAfter = address(owen).balance;
             uint256 poolSolidsAfter = H.balanceOf(address(H));
 
             assertEq(balanceBefore - balanceAfter, d, "should have spent d ETH");
-            assertEq(H.balanceOf(address(owen)), symbol, "should have received symbol solids");
-            assertEq(poolSolidsBefore - poolSolidsAfter, symbol, "pool should have decreased by symbol solids");
+            assertEq(H.balanceOf(address(owen)), s, "should have received s solids");
+            assertEq(poolSolidsBefore - poolSolidsAfter, s, "pool should have decreased by s solids");
             if (d > 0) {
-                assertGt(symbol, 0, "should receive some solids");
+                assertGt(s, 0, "should receive some solids");
             }
 
-            emit log_named_uint("e", d);
-            emit log_named_uint("E", e);
-            emit log_named_uint("h", symbol);
-            emit log_named_uint("H", h);
+            emit log_named_uint("d", d);
+            emit log_named_uint("e", e);
+            emit log_named_uint("s", s);
+            emit log_named_uint("h", h);
         }
     }
 
-    function test_StartingBuy11() public returns (ISolid H, uint256 h, uint256 e, uint256 symbol) {
-        (H, h, e, symbol) = test_StartingBuy(1e6, 1e6);
+    function test_StartingBuy11() public returns (ISolid H, uint256 h, uint256 e, uint256 s) {
+        (H, h, e, s) = test_StartingBuy(1e6, 1e6);
     }
 
-    function test_StartingBuy12() public returns (ISolid H, uint256 h, uint256 e, uint256 symbol) {
-        (H, h, e, symbol) = test_StartingBuy(1e6, 2e6);
+    function test_StartingBuy12() public returns (ISolid H, uint256 h, uint256 e, uint256 s) {
+        (H, h, e, s) = test_StartingBuy(1e6, 2e6);
     }
 
-    function test_StartingBuy21() public returns (ISolid H, uint256 h, uint256 e, uint256 symbol) {
-        (H, h, e, symbol) = test_StartingBuy(2e6, 1e6);
+    function test_StartingBuy21() public returns (ISolid H, uint256 h, uint256 e, uint256 s) {
+        (H, h, e, s) = test_StartingBuy(2e6, 1e6);
     }
 
-    function test_StartingBuy22() public returns (ISolid H, uint256 h, uint256 e, uint256 symbol) {
-        (H, h, e, symbol) = test_StartingBuy(2e6, 2e6);
+    function test_StartingBuy22() public returns (ISolid H, uint256 h, uint256 e, uint256 s) {
+        (H, h, e, s) = test_StartingBuy(2e6, 2e6);
     }
 
     function test_BuySell(uint256 seed, uint256 d) public returns (ISolid H, uint256 bought, uint256 sold) {
@@ -209,9 +209,9 @@ contract SolidTest is BaseTest {
             assertEq(poolEthBefore - poolEthAfter, sold, "pool should have decreased by sold ETH");
             assertGt(sold, 0, "should receive some ETH");
 
-            emit log_named_uint("buy eth", d);
-            emit log_named_uint("received solids", bought);
-            emit log_named_uint("sold eth", sold);
+            emit log_named_uint("d", d);
+            emit log_named_uint("bought", bought);
+            emit log_named_uint("sold", sold);
         }
     }
 
@@ -254,13 +254,13 @@ contract SolidTest is BaseTest {
         // Verify user has no solids left
         assertEq(H.balanceOf(address(owen)), 0, "user should have no solids after full sell");
 
-        emit log_named_uint("initial pool solids", poolSolidsInitial);
-        emit log_named_uint("initial pool ETH", poolEthInitial);
-        emit log_named_uint("buy amount", d);
-        emit log_named_uint("solids received", solidsReceived);
-        emit log_named_uint("ETH received back", ethReceived);
-        emit log_named_uint("final pool solids", poolSolidsFinal);
-        emit log_named_uint("final pool ETH", poolEthFinal);
+        emit log_named_uint("poolSolidsInitial", poolSolidsInitial);
+        emit log_named_uint("poolEthInitial", poolEthInitial);
+        emit log_named_uint("d", d);
+        emit log_named_uint("solidsReceived", solidsReceived);
+        emit log_named_uint("ethReceived", ethReceived);
+        emit log_named_uint("poolSolidsFinal", poolSolidsFinal);
+        emit log_named_uint("poolEthFinal", poolEthFinal);
     }
 
     function test_MakeFromNonNothingDelegates() public {
