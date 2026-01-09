@@ -125,71 +125,28 @@ eth = ethPool - ethPool * solPool / (solPool + sol)
 ```
 
 **Requirements:**
-- Caller must have sufficient SOL balance
-- Caller must have approved the contract
+- Caller must have sufficient Solid token balance
+- No approval needed - caller sells their own tokens directly
 
 **Effects:**
-- Transfers SOL from caller to pool
+- Transfers Solid tokens from caller to pool
 - Transfers ETH from pool to caller
+- ETH payout capped at actual balance (virtual pricing may calculate higher)
 - Protected by reentrancy guard
-
-#### `vaporize(uint256 sol)`
-
-Permanently burns SOL tokens, reducing total supply and making remaining tokens more scarce.
-
-```solidity
-H.vaporize(100 * 1e18);
-```
-
-**Requirements:**
-- Caller must have sufficient SOL balance
-
-**Effects:**
-- Permanently destroys SOL tokens from caller's balance
-- Reduces total supply (cannot be recovered)
-- No ETH is returned (unlike sell)
-- Emits `Vaporize` event
-
-**Use Cases:**
-
-Makers can strategically use vaporize to create scarcity and potentially increase value:
-
-```solidity
-// Strategy: Burn tokens to create artificial scarcity
-ISolid Au = NOTHING.make{value: 0.001 ether}("Gold", "Au");
-
-// Maker receives 50% of supply initially
-uint256 makerShare = Au.balanceOf(address(this));
-
-// Option 1: Burn initial allocation to signal commitment
-Au.vaporize(makerShare / 10);  // Burn 10% of maker allocation
-
-// Option 2: Buy more from pool, then burn to maximize scarcity
-Au.buy{value: 10 ether}();  // Buy Au from pool
-uint256 totalHoldings = Au.balanceOf(address(this));
-Au.vaporize(totalHoldings * 90 / 100);  // Burn 90% of all holdings
-// This significantly reduces circulating supply
-```
-
-**Strategic Considerations:**
-- Burning increases scarcity but permanently destroys value
-- Makers may buy heavily from the pool before burning to maximize effect
-- Unlike sell, vaporize doesn't extract ETH - it's purely deflationary
-- Can be used to signal long-term commitment to a Solid's value
-
-**Key Difference from Sell:**
-- `sell()`: Transfers tokens to pool, returns ETH based on AMM formula, maintains total supply
-- `vaporize()`: Destroys tokens permanently, no ETH returned, reduces total supply
 
 ### Query Functions
 
 #### `pool() → (uint256 solPool, uint256 ethPool)`
 
-Returns current pool balances.
+Returns current pool balances. Note that `ethPool` includes a virtual 1 ETH added to the actual balance for pricing purposes.
 
 ```solidity
 (uint256 solPool, uint256 ethPool) = H.pool();
+// solPool = Solid tokens in pool
+// ethPool = address(H).balance + 1 ether (virtual pricing)
 ```
+
+The virtual 1 ETH creates an elegant starting price and permanent price floor - sell prices can never fall below the starting price.
 
 #### `NOTHING() → ISolid`
 
@@ -197,14 +154,6 @@ Returns the base NOTHING instance (the factory).
 
 ```solidity
 ISolid factory = H.NOTHING();
-```
-
-#### `STAKE() → uint256`
-
-Returns the minimum stake required to create a Solid (0.001 ether).
-
-```solidity
-uint256 stake = H.STAKE();
 ```
 
 ## Events
@@ -231,14 +180,6 @@ Emitted when SOL is sold for ETH.
 
 ```solidity
 event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
-```
-
-### `Vaporize(ISolid indexed solid, address indexed burner, uint256 sol)`
-
-Emitted when SOL tokens are permanently burned.
-
-```solidity
-event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol);
 ```
 
 ## Errors
@@ -279,9 +220,10 @@ Solids use CREATE2 with salt = `keccak256(abi.encode(name, symbol))`, ensuring:
 When a Solid is created:
 
 ```
-Total Supply = 6.02214076e27 (10,000 mols × Avogadro's number)
-Creator Share = 50% (3.01107038e27)
-Pool Share = 50% (3.01107038e27)
+Total Supply = 6.02214076e23 (exactly one Avogadro's number)
+Creator Share = 0% (no tokens for creator)
+Pool Share = 100% (6.02214076e23)
+Initial Price = ~602,214.076 solids per 1 ETH (~$0.005/solid @ $3k ETH)
 ```
 
 ### Constant Product AMM
@@ -298,24 +240,18 @@ Due to rounding in the formulas, the product may change infinitesimally after ea
 
 - `sell()` uses reentrancy guard (EIP-1153 transient storage)
 - ETH transfers propagate revert reasons
-- No minting after creation (initial supply is fixed at 6.02214076e27)
-- Total supply can only decrease via `vaporize()` (deflationary mechanism)
+- No minting after creation (total supply fixed at exactly one Avogadro's number: 6.02214076e23)
+- Total supply never changes (no burning mechanism)
+- Virtual 1 ETH pricing creates permanent price floor
 
 ## Examples
 
 ### Creating a New Element
 
 ```solidity
-function createOxygen() public payable returns (ISolid O) {
-    // Check if Oxygen exists
-    (bool exists, address addr,) = NOTHING.made("Oxygen", "O");
-
-    if (exists) {
-        O = ISolid(addr);
-    } else {
-        // Create with minimum stake
-        O = NOTHING.make{value: 0.001 ether}("Oxygen", "O");
-    }
+function createOxygen() public returns (ISolid O) {
+    // No need to check if exists - make() returns existing instance if already made
+    O = NOTHING.make("Oxygen", "O");
 }
 ```
 
