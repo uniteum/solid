@@ -13,11 +13,6 @@ interface ISolid is IERC20Metadata {
     function NOTHING() external view returns (ISolid);
 
     /**
-     * @return The minimum stake required to make a new Solid token
-     */
-    function STAKE() external view returns (uint256);
-
-    /**
      * @notice Returns the current pool balances of Solid and ETH
      * @dev ethPool includes a virtual 1 ETH for initial pricing (actual balance + 1 ether)
      * @return solPool The amount of Solid in the pool
