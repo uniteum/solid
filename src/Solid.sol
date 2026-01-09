@@ -30,17 +30,12 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         emit Buy(this, eth, sol);
     }
 
-    function sell(uint256 sol) external returns (uint256 eth) {
+    function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
         (uint256 solPool, uint256 ethPool) = pool();
         eth = ethPool - ethPool * solPool / (solPool + sol);
         _update(msg.sender, address(this), sol);
         emit Sell(this, sol, eth);
-        sendEth(msg.sender, eth);
-    }
-
-    function sendEth(address to, uint256 eth) private nonReentrant {
-        if (this == NOTHING) revert Nothing();
-        (bool ok, bytes memory returned) = to.call{value: eth}("");
+        (bool ok, bytes memory returned) = msg.sender.call{value: eth}("");
         if (!ok) {
             if (returned.length > 0) {
                 assembly {
