@@ -15,6 +15,7 @@ interface ISolid is IERC20Metadata {
     /**
      * @notice Returns the current pool balances of Solid and ETH
      * @dev ethPool includes a virtual 1 ETH for initial pricing (actual balance + 1 ether)
+     * The virtual 1 ETH creates a price floor - sell prices can never fall below starting price.
      * @return solPool The amount of Solid in the pool
      * @return ethPool The virtual amount of ETH in the pool (actual + 1 ether)
      */
@@ -60,6 +61,7 @@ interface ISolid is IERC20Metadata {
      * Pool uses virtual 1 ETH for initial pricing, resulting in elegant starting price:
      * 1 ETH = ~602,214.076 solids (AVOGADRO / 10^18).
      * At $3,000/ETH, each solid starts at ~$0.005 USD (half a penny).
+     * The virtual 1 ETH is permanent, creating a price floor - sell prices never fall below this.
      * Uses CREATE2 for deterministic deployment based on name and symbol.
      * @param name The name of the Solid
      * @param symbol The symbol of the Solid

@@ -75,6 +75,7 @@ This file provides context for AI assistants (primarily Claude) to understand th
 - **Pool** = Contract balances of Solid tokens and ETH
 - **Total Supply** = Fixed at exactly Avogadro's number (6.02214076e23)
 - **Starting Price** = 1 ETH buys ~602,214.076 solids (≈ $0.005 USD per solid when ETH = $3,000)
+- **Price Floor** = Virtual 1 ETH guarantees sell price never falls below starting price
 
 ### Key Files
 
@@ -100,6 +101,7 @@ function make(string calldata name, string calldata symbol) external returns (IS
 - **Initial price**: 1 ETH = ~602,214.076 solids
   - Elegant Avogadro relationship: AVOGADRO / 10^18
   - At ETH = $3,000: ~$0.005 USD per solid (half a penny)
+- **Price floor**: Virtual 1 ETH ensures sell price never falls below this starting price
 
 **Formula:**
 ```solidity
@@ -301,6 +303,9 @@ function pool() public view returns (uint256 solPool, uint256 ethPool) {
 
 - Pool adds 1 ether to actual balance for pricing calculations
 - Enables initial price discovery even with 0 actual ETH
+- **Price floor guarantee**: The virtual 1 ETH ensures the sell price can never fall below the starting price
+  - Even if all tokens are sold back to the pool, ethPool ≥ 1 ether
+  - This creates a natural price floor at ~602,214.076 solids per ETH
 - `sell()` caps payout to actual balance to prevent reversion
 
 ```solidity
@@ -612,10 +617,13 @@ uint256 eth = H.sell(500);
 AVOGADRO = 6.02214076e23        // Avogadro's number (total supply of each Solid)
 ```
 
-**Key insight**: With virtual 1 ETH pricing and supply of exactly one Avogadro, the initial price is:
-- 1 ETH = AVOGADRO / 10^18 = ~602,214.076 solids
-- This elegant relationship: "1 ETH buys Avogadro's number divided by 10^18"
+**Key insight**: With virtual 1 ETH pricing and supply of exactly one Avogadro:
+- **Initial price**: 1 ETH = AVOGADRO / 10^18 = ~602,214.076 solids
+- **Elegant relationship**: "1 ETH buys Avogadro's number divided by 10^18"
 - **Practical price**: When ETH = $3,000, each solid starts at ~$0.005 USD (half a penny)
+- **Price floor**: The virtual 1 ETH is permanent, so sell prices can never fall below this initial price
+  - Even with zero actual ETH in pool, ethPool ≥ 1 ether guarantees minimum valuation
+  - This protects against complete price collapse
 
 ## Events
 
@@ -675,8 +683,9 @@ ISolid nothing = solid.NOTHING();     // Factory instance
 5. **Zero Maker Share**: Creator receives 0% (100% goes to pool)
 6. **Virtual Pricing**: Pool adds 1 ETH virtually for initial price discovery
 7. **Elegant Initial Price**: 1 ETH = ~602,214.076 solids (Avogadro / 10^18)
-8. **No Liquidity Tokens**: Solid tokens ARE the liquidity
-9. **Permissionless Creation**: Anyone can create Solids for free
+8. **Price Floor Guarantee**: Virtual 1 ETH ensures sell price never falls below starting price
+9. **No Liquidity Tokens**: Solid tokens ARE the liquidity
+10. **Permissionless Creation**: Anyone can create Solids for free
 
 ---
 
