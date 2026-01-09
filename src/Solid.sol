@@ -34,13 +34,11 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     function sells(uint256 sol) public view returns (uint256 eth) {
         (uint256 solPool, uint256 ethPool) = pool();
         eth = ethPool - ethPool * solPool / (solPool + sol);
+        if (eth > ethPool - 1 ether) eth = ethPool - 1 ether;
     }
 
     function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
         eth = sells(sol);
-        // Cap eth to actual balance (virtual pricing may exceed real balance)
-        uint256 actualBalance = address(this).balance;
-        if (eth > actualBalance) eth = actualBalance;
         _update(msg.sender, address(this), sol);
         emit Sell(this, sol, eth);
         (bool ok, bytes memory returned) = msg.sender.call{value: eth}("");
