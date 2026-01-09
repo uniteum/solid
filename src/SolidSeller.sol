@@ -37,29 +37,29 @@ contract SolidSeller {
         that.transfer(msg.sender, thats);
     }
 
-    function made(ISolid my_, ISolid that_) public view returns (bool yes, address home, bytes32 salt) {
-        salt = keccak256(abi.encode(my_, that_));
+    function made(ISolid this_, ISolid that_) public view returns (bool yes, address home, bytes32 salt) {
+        salt = keccak256(abi.encode(this_, that_));
         home = Clones.predictDeterministicAddress(address(PROTO), salt, address(PROTO));
         yes = home.code.length > 0;
     }
 
-    function make(ISolid my_, ISolid that_) external returns (SolidSeller seller) {
+    function make(ISolid this_, ISolid that_) external returns (SolidSeller seller) {
         if (this != PROTO) {
-            seller = PROTO.make(my_, that_);
+            seller = PROTO.make(this_, that_);
         } else {
-            (bool yes, address home, bytes32 salt) = made(my_, that_);
+            (bool yes, address home, bytes32 salt) = made(this_, that_);
             seller = SolidSeller(payable(home));
             if (!yes) {
                 home = Clones.cloneDeterministic(address(PROTO), salt, 0);
-                SolidSeller(payable(home)).zzz_(my_, that_);
-                emit Make(seller, my_, that_);
+                SolidSeller(payable(home)).zzz_(this_, that_);
+                emit Make(seller, this_, that_);
             }
         }
     }
 
-    function zzz_(ISolid my_, ISolid that_) external {
+    function zzz_(ISolid this_, ISolid that_) external {
         if (address(th1s) == address(0)) {
-            th1s = my_;
+            th1s = this_;
             that = that_;
         }
     }
