@@ -8,12 +8,11 @@ import {ReentrancyGuardTransient} from "reentrancy/ReentrancyGuardTransient.sol"
 
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     uint256 constant AVOGADRO = 6.02214076e23;
-    uint256 constant MOLS = 10;
+    uint256 constant MOLS = 10000;
     uint256 constant INITIAL_SUPPLY = AVOGADRO * MOLS;
 
     ISolid public immutable NOTHING = this;
     uint256 public immutable STAKE = 0.001 ether;
-    uint256 public immutable CONDENSE_PERCENT = 90;
 
     constructor() ERC20("", "") {}
 
@@ -37,22 +36,6 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         _update(msg.sender, address(this), sol);
         emit Sell(this, sol, eth);
         sendEth(msg.sender, eth);
-    }
-
-    function vaporize(uint256 sol) external returns (uint256 eth) {
-        (uint256 solPool, uint256 ethPool) = pool();
-        eth = sol * ethPool / solPool;
-        _burn(msg.sender, sol);
-        sendEth(msg.sender, eth);
-        emit Vaporize(this, msg.sender, sol, eth);
-    }
-
-    function condense() external payable returns (uint256 sol) {
-        (uint256 solPool, uint256 ethPool) = pool();
-        uint256 eth = msg.value;
-        sol = eth * solPool * CONDENSE_PERCENT / 100 / (ethPool - eth);
-        _mint(msg.sender, sol);
-        emit Condense(this, msg.sender, eth, sol);
     }
 
     function sendEth(address to, uint256 eth) private nonReentrant {

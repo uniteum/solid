@@ -73,15 +73,14 @@ This file provides context for AI assistants (primarily Claude) to understand th
 - **ETH** = Native Ethereum currency used for liquidity
 - **NOTHING** = Base Solid instance used as factory for creating new Solids
 - **Pool** = Contract balances of Solid tokens and ETH
-- **INITIAL_SUPPLY** = Initial total supply (10 mols = 6.02214076e24)
-- **CONDENSE_PERCENT** = Discount rate for minting via condense (90%)
+- **INITIAL_SUPPLY** = Fixed total supply (10000 mols = 6.02214076e27)
 
 ### Key Files
 
-- **[src/Solid.sol](src/Solid.sol)** (106 lines) - Main contract
-- **[lib/isolid/ISolid.sol](lib/isolid/ISolid.sol)** (135 lines) - Interface with comprehensive NatSpec
-- **[test/Solid.t.sol](test/Solid.t.sol)** (264 lines) - Core tests
-- **[test/SolidUser.sol](test/SolidUser.sol)** (49 lines) - Test helper
+- **[src/Solid.sol](src/Solid.sol)** (~90 lines) - Main contract
+- **[lib/isolid/ISolid.sol](lib/isolid/ISolid.sol)** (~100 lines) - Interface with comprehensive NatSpec
+- **[test/Solid.t.sol](test/Solid.t.sol)** (~290 lines) - Core tests
+- **[test/SolidUser.sol](test/SolidUser.sol)** (~45 lines) - Test helper
 
 ## Core Operations
 
@@ -166,57 +165,6 @@ uint256 eth = H.sell(100);
 // Transfers calculated eth to msg.sender
 ```
 
-### 4. Vaporize (Burn Solid for ETH)
-
-```solidity
-function vaporize(uint256 sol) external returns (uint256 eth)
-```
-
-**What it does:**
-- Burns (permanently destroys) Solid tokens from caller's balance
-- Reduces total supply permanently
-- Returns proportional ETH from the pool based on token share
-- This is a one-way operation - tokens cannot be recovered
-
-**Formula:**
-```solidity
-eth = sol * ethPool / solPool
-```
-
-**Example:**
-```solidity
-uint256 eth = H.vaporize(100);
-// Burns 100 Solid from msg.sender
-// Total supply decreases by 100
-// Returns proportional ETH based on pool share
-```
-
-### 5. Condense (Mint Solid with ETH)
-
-```solidity
-function condense() external payable returns (uint256 sol)
-```
-
-**What it does:**
-- Mints new Solid tokens to caller's balance
-- Increases total supply
-- Requires ETH payment
-- Uses discounted rate (90% of pool ratio) to incentivize minting
-
-**Formula:**
-```solidity
-sol = eth * solPool * CONDENSE_PERCENT / 100 / (ethPool - eth)
-// where CONDENSE_PERCENT = 90
-```
-
-**Example:**
-```solidity
-uint256 sol = H.condense{value: 1 ether}();
-// Mints sol tokens to msg.sender
-// Total supply increases by sol
-// Pool receives 1 ether
-```
-
 ## Mathematical Invariants
 
 ### 1. Constant Product AMM
@@ -227,13 +175,13 @@ solPool * ethPool = k  (approximately constant before and after trades)
 
 **Note:** Due to rounding in the formulas, the product may change infinitesimally after each trade.
 
-### 2. Total Supply Dynamics
+### 2. Total Supply is Fixed
 
 ```
-totalSupply() can vary from INITIAL_SUPPLY
+totalSupply() = INITIAL_SUPPLY (always)
 ```
 
-Total supply starts at INITIAL_SUPPLY at creation. Buy/sell only move tokens between users and pool. Vaporize() decreases total supply by burning tokens. Condense() increases total supply by minting new tokens.
+Total supply is fixed at INITIAL_SUPPLY. Buy/sell operations only transfer tokens between users and pool without changing total supply.
 
 ### 3. Balance Integrity
 
@@ -241,7 +189,7 @@ Total supply starts at INITIAL_SUPPLY at creation. Buy/sell only move tokens bet
 balanceOf(pool) + balanceOf(maker) + sum(other balances) = totalSupply()
 ```
 
-All balances must sum to total supply at all times (which may be less than SUPPLY if vaporize has been used).
+All balances must sum to total supply at all times.
 
 ## Factory Pattern
 
@@ -289,12 +237,11 @@ This allows any Solid to create new Solids, but always delegates to NOTHING.
 ```solidity
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     uint256 constant AVOGADRO = 6.02214076e23;
-    uint256 constant MOLS = 10;
+    uint256 constant MOLS = 10000;
     uint256 constant INITIAL_SUPPLY = AVOGADRO * MOLS;
 
     ISolid public immutable NOTHING = this;
     uint256 public immutable STAKE = 0.001 ether;
-    uint256 public immutable CONDENSE_PERCENT = 90;
 }
 ```
 
@@ -318,8 +265,6 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 **Trading:**
 - `buy()` - Buy Solid with ETH
 - `sell(sol)` - Sell Solid for ETH
-- `vaporize(sol)` - Burn Solid for proportional ETH
-- `condense()` - Mint Solid with ETH
 
 **Internal:**
 - `zzz_(name, symbol, maker)` - Initialization function (called once during creation)
@@ -367,7 +312,7 @@ if (!ok) {
 
 **IMPORTANT:** These invariants MUST hold at all times:
 
-1. **Total supply is dynamic**: `totalSupply()` can increase via condense() or decrease via vaporize()
+1. **Total supply is fixed**: `totalSupply() == INITIAL_SUPPLY` (never changes)
 2. **Pool balance consistency**: `balanceOf(address(this)) + sum(user balances) == totalSupply()`
 3. **ETH balance consistency**: `address(this).balance` accurately reflects pool liquidity
 
@@ -474,7 +419,7 @@ FOUNDRY_PROFILE=deep forge test --match-contract SolidInvariant
 ```solidity
 contract SolidTest is BaseTest {
     uint256 constant AVOGADRO = 6.02214076e23;
-    uint256 constant MOLS = 10;
+    uint256 constant MOLS = 10000;
     uint256 constant INITIAL_SUPPLY = AVOGADRO * MOLS;
     uint256 constant ETH = 1e9;
     Solid public N;
@@ -637,10 +582,9 @@ uint256 eth = H.sell(500);
 
 ```solidity
 AVOGADRO = 6.02214076e23        // Avogadro's number
-MOLS = 10                        // Number of mols
-INITIAL_SUPPLY = AVOGADRO * MOLS // Initial total supply (6.02214076e24)
+MOLS = 10000                     // Number of mols
+INITIAL_SUPPLY = AVOGADRO * MOLS // Fixed total supply (6.02214076e27)
 STAKE = 0.001 ether              // Minimum stake to create Solid
-CONDENSE_PERCENT = 90            // Discount percentage for condense minting
 ```
 
 ## Events
@@ -649,8 +593,6 @@ CONDENSE_PERCENT = 90            // Discount percentage for condense minting
 event Make(ISolid indexed solid, string indexed name, string indexed symbol);
 event Buy(ISolid indexed solid, uint256 eth, uint256 sol);
 event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
-event Vaporize(ISolid indexed solid, address indexed burner, uint256 sol, uint256 eth);
-event Condense(ISolid indexed solid, address indexed minter, uint256 eth, uint256 sol);
 ```
 
 ## Errors
@@ -669,7 +611,7 @@ error MadeAlready();    // Solid already exists
 ```solidity
 (uint256 solPool, uint256 ethPool) = solid.pool();
 uint256 balance = solid.balanceOf(address(user));
-uint256 supply = solid.totalSupply();  // Starts at INITIAL_SUPPLY, can vary
+uint256 supply = solid.totalSupply();  // Always equals INITIAL_SUPPLY
 ```
 
 ### Trading Formulas
@@ -681,12 +623,6 @@ sol = solPool - solPool * (ethPool - eth) / ethPool
 
 // Sell: Solid → ETH (transfer to pool)
 eth = ethPool - ethPool * solPool / (solPool + sol)
-
-// Vaporize: Burn Solid → ETH (burn tokens)
-eth = sol * ethPool / solPool
-
-// Condense: ETH → Mint Solid (mint tokens at 90% rate)
-sol = eth * solPool * CONDENSE_PERCENT / 100 / (ethPool - eth)
 ```
 
 ### Metadata
@@ -700,13 +636,12 @@ ISolid nothing = solid.NOTHING();     // Factory instance
 
 ## Key Differences from Traditional AMMs
 
-1. **Dynamic Supply**: Total supply can increase (condense) or decrease (vaporize)
+1. **Fixed Supply**: Total supply is fixed at INITIAL_SUPPLY (never changes)
 2. **Native ETH**: Uses ETH directly (not WETH)
 3. **Deterministic Addresses**: CREATE2 based on name+symbol
 4. **Factory Pattern**: NOTHING instance creates all Solids
 5. **Maker Share**: Creator receives 50% of initial supply
 6. **No Liquidity Tokens**: Solid tokens ARE the liquidity
-7. **Burn/Mint Operations**: Vaporize burns for proportional ETH, condense mints at discounted rate
 
 ---
 

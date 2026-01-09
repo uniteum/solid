@@ -18,13 +18,6 @@ interface ISolid is IERC20Metadata {
     function STAKE() external view returns (uint256);
 
     /**
-     * @return The percentage of ETH condensed into Solid
-     * @notice Equal to 90% to discourage but not prevent expanding the token supply
-     * All of the ETH goes into the pool, increasing the Solid price.
-     */
-    function CONDENSE_PERCENT() external view returns (uint256);
-
-    /**
      * @notice Returns the current pool balances of Solid and ETH
      * @return solPool The amount of Solid in the pool
      * @return ethPool The amount of ETH in the pool
@@ -48,22 +41,6 @@ interface ISolid is IERC20Metadata {
      * @return sol The amount of Solid received
      */
     function buy() external payable returns (uint256 sol);
-
-    /**
-     * @notice Burns Solid and returns ETH according to the price indicated by the pool
-     * @param sol The amount of Solid to vaporize
-     * @return eth The amount of ETH received
-     */
-    function vaporize(uint256 sol) external returns (uint256 eth);
-
-    /**
-     * @notice Mints Solid to the caller according to the price indicated by the pool
-     * Not all of the sent ETH is condensed, to discourage but not prevent expanding the token supply.
-     * See CONDENSE_PERCENT.
-     * All of the ETH goes into the pool, increasing the Solid price, and benefitting Solid holders.
-     * @return sol The amount of condensed Solid
-     */
-    function condense() external payable returns (uint256 sol);
 
     /**
      * @notice Checks if a Solid exists and computes its deterministic address
@@ -113,24 +90,6 @@ interface ISolid is IERC20Metadata {
      * @param eth The amount of ETH received
      */
     event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
-
-    /**
-     * @notice Emitted when Solid are condensed (minted)
-     * @param solid The condensed Solid
-     * @param sender The address that condensed their eth
-     * @param eth The amount of ETH condensed
-     * @param sol The amount of Solid condensed
-     */
-    event Condense(ISolid indexed solid, address indexed sender, uint256 eth, uint256 sol);
-
-    /**
-     * @notice Emitted when Solid are vaporized (burned)
-     * @param solid The vaporized Solid
-     * @param sender The address that vaporized their tokens
-     * @param sol The amount of Solid vaporized
-     * @param eth The amount of ETH returned
-     */
-    event Vaporize(ISolid indexed solid, address indexed sender, uint256 sol, uint256 eth);
 
     /**
      * @notice Thrown when name or symbol is empty in made() or make()

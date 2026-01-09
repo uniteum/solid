@@ -15,8 +15,6 @@ contract SolidHandler is Test {
     // Track cumulative actions for debugging
     uint256 public buyCount;
     uint256 public sellCount;
-    uint256 public vaporizeCount;
-    uint256 public condenseCount;
     uint256 public totalBought;
     uint256 public totalSold;
 
@@ -29,10 +27,6 @@ contract SolidHandler is Test {
     uint256 public ghostTotalEthSold;
     uint256 public ghostTotalSolidsReceived;
     uint256 public ghostTotalSolidsSold;
-    uint256 public ghostTotalEthVaporized;
-    uint256 public ghostTotalSolidsVaporized;
-    uint256 public ghostTotalEthCondensed;
-    uint256 public ghostTotalSolidsCondensed;
     uint256 public ghostInitialSupply;
 
     constructor(Solid _solid) {
@@ -117,84 +111,6 @@ contract SolidHandler is Test {
     }
 
     /**
-     * Vaporize solids for ETH
-     */
-    function vaporize(uint256 actorSeed) public {
-        // Skip if no actors
-        if (actors.length == 0) return;
-
-        // Select an actor
-        address actor = actors[actorSeed % actors.length];
-        uint256 solidsBalance = solid.balanceOf(actor);
-
-        // Skip if actor has no solids
-        if (solidsBalance == 0) return;
-
-        // Vaporize between 1% and 50% of balance
-        uint256 vaporizeAmount = bound(actorSeed, solidsBalance / 100, solidsBalance / 2);
-        if (vaporizeAmount == 0) return;
-
-        uint256 ethBefore = actor.balance;
-        uint256 poolEthBefore = address(solid).balance;
-        uint256 supplyBefore = solid.totalSupply();
-
-        vm.prank(actor);
-        uint256 ethReceived = solid.vaporize(vaporizeAmount);
-
-        uint256 ethAfter = actor.balance;
-        uint256 poolEthAfter = address(solid).balance;
-        uint256 supplyAfter = solid.totalSupply();
-
-        // Update tracking
-        vaporizeCount++;
-        ghostTotalEthVaporized += ethReceived;
-        ghostTotalSolidsVaporized += vaporizeAmount;
-
-        // Sanity checks
-        assertEq(ethAfter - ethBefore, ethReceived, "ETH received mismatch");
-        assertEq(poolEthBefore - poolEthAfter, ethReceived, "ETH pool mismatch");
-        assertEq(supplyBefore - supplyAfter, vaporizeAmount, "Supply decrease mismatch");
-    }
-
-    /**
-     * Condense ETH into solids
-     */
-    function condense(uint256 amount) public {
-        // Bound to reasonable values (0.001 ETH to 1 ETH)
-        amount = bound(amount, 1e15, 1 ether);
-
-        // Track actor
-        if (!isActor[msg.sender]) {
-            actors.push(msg.sender);
-            isActor[msg.sender] = true;
-        }
-
-        // Ensure actor has enough ETH
-        vm.deal(msg.sender, amount);
-
-        uint256 solidsBefore = solid.balanceOf(msg.sender);
-        uint256 poolEthBefore = address(solid).balance;
-        uint256 supplyBefore = solid.totalSupply();
-
-        vm.prank(msg.sender);
-        uint256 solidsReceived = solid.condense{value: amount}();
-
-        uint256 solidsAfter = solid.balanceOf(msg.sender);
-        uint256 poolEthAfter = address(solid).balance;
-        uint256 supplyAfter = solid.totalSupply();
-
-        // Update tracking
-        condenseCount++;
-        ghostTotalEthCondensed += amount;
-        ghostTotalSolidsCondensed += solidsReceived;
-
-        // Sanity checks
-        assertEq(solidsAfter - solidsBefore, solidsReceived, "Solids mismatch");
-        assertEq(poolEthAfter - poolEthBefore, amount, "ETH pool mismatch");
-        assertEq(supplyAfter - supplyBefore, solidsReceived, "Supply increase mismatch");
-    }
-
-    /**
      * Get total value locked in the pool
      */
     function tvl() public view returns (uint256) {
@@ -239,25 +155,22 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
         targetContract(address(handler));
 
         // Target specific functions
-        bytes4[] memory selectors = new bytes4[](4);
+        bytes4[] memory selectors = new bytes4[](2);
         selectors[0] = SolidHandler.buy.selector;
         selectors[1] = SolidHandler.sell.selector;
-        selectors[2] = SolidHandler.vaporize.selector;
-        selectors[3] = SolidHandler.condense.selector;
 
         targetSelector(FuzzSelector({addr: address(handler), selectors: selectors}));
     }
 
     /**
-     * INVARIANT: Pool ETH balance should equal bought + condensed - sold - vaporized
+     * INVARIANT: Pool ETH balance should equal bought - sold
      * (ghostTotalEthBought is initialized with the STAKE creation stake)
      */
     function invariant_ethBalance() public view {
         uint256 poolEth = address(solid).balance;
-        uint256 expectedEth = handler.ghostTotalEthBought() + handler.ghostTotalEthCondensed()
-            - handler.ghostTotalEthSold() - handler.ghostTotalEthVaporized();
+        uint256 expectedEth = handler.ghostTotalEthBought() - handler.ghostTotalEthSold();
 
-        assertEq(poolEth, expectedEth, "Pool ETH != (bought + condensed - sold - vaporized)");
+        assertEq(poolEth, expectedEth, "Pool ETH != (bought - sold)");
     }
 
     /**
@@ -281,13 +194,11 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
     }
 
     /**
-     * INVARIANT: Total supply should equal initial supply + condensed - vaporized
-     * Buy/sell only transfer tokens, but condense mints and vaporize burns
+     * INVARIANT: Total supply should remain constant at initial supply
+     * Buy/sell only transfer tokens, they don't mint or burn
      */
     function invariant_totalSupply() public view {
-        uint256 expectedSupply =
-            handler.ghostInitialSupply() + handler.ghostTotalSolidsCondensed() - handler.ghostTotalSolidsVaporized();
-        assertEq(solid.totalSupply(), expectedSupply, "Total supply != initial + condensed - vaporized");
+        assertEq(solid.totalSupply(), handler.ghostInitialSupply(), "Total supply != initial supply");
     }
 
     /**
@@ -333,14 +244,14 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
     }
 
     /**
-     * INVARIANT: Pool should never have more ETH than bought + condensed
+     * INVARIANT: Pool should never have more ETH than bought
      * (ghostTotalEthBought includes the initial STAKE stake)
      */
     function invariant_ethSolvency() public view {
         uint256 poolEth = address(solid).balance;
-        uint256 totalReceived = handler.ghostTotalEthBought() + handler.ghostTotalEthCondensed();
+        uint256 totalReceived = handler.ghostTotalEthBought();
 
-        assertLe(poolEth, totalReceived, "Pool ETH > bought + condensed");
+        assertLe(poolEth, totalReceived, "Pool ETH > bought");
     }
 
     /**
@@ -352,8 +263,6 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
         console.log("=== Final Invariant Test State ===");
         console.log("Buys:", handler.buyCount());
         console.log("Sells:", handler.sellCount());
-        console.log("Vaporizes:", handler.vaporizeCount());
-        console.log("Condenses:", handler.condenseCount());
         console.log("Pool Solids:", poolSolids);
         console.log("Pool ETH:", poolEth);
         console.log("Total Supply:", solid.totalSupply());
