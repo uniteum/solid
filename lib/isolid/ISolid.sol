@@ -56,7 +56,7 @@ interface ISolid is IERC20Metadata {
 
     /**
      * @notice Makes a new Solid instance with the given name and symbol
-     * @dev No stake required. If a Solid with the given name and symbol already exists, returns the existing instance.
+     * @dev If a Solid with the given name and symbol already exists, returns the existing instance.
      * Mints exactly AVOGADRO (6.02214076e23) tokens, 100% to pool.
      * Pool uses virtual 1 ETH for initial pricing, resulting in elegant starting price:
      * 1 ETH = ~602,214.076 solids (AVOGADRO / 10^18).
@@ -72,8 +72,8 @@ interface ISolid is IERC20Metadata {
     /**
      * @notice Emitted when a new Solid is made
      * @param solid The address of the newly made Solid
-     * @param name The name of the Solid (indexed)
-     * @param symbol The symbol of the Solid (indexed)
+     * @param name The name of the Solid
+     * @param symbol The symbol of the Solid
      */
     event Make(ISolid indexed solid, string name, string symbol);
 
