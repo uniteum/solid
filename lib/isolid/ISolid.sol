@@ -42,6 +42,17 @@ interface ISolid is IERC20Metadata {
     function sell(uint256 sol) external returns (uint256 eth);
 
     /**
+     * @notice Sells this Solid for another Solid in a single transaction
+     * @dev Sells this Solid for ETH, then buys that Solid with the ETH.
+     * No approval needed - uses internal _update.
+     * Protected by reentrancy guard.
+     * @param that The Solid to buy
+     * @param sol The amount of this Solid to sell
+     * @return thats The amount of that Solid received
+     */
+    function sellFor(ISolid that, uint256 sol) external returns (uint256 thats);
+
+    /**
      * @notice Returns the amount of Solid received for buying with ETH from the pool
      * @dev Uses constant-product formula: sol = solPool - solPool * (ethPool - eth) / ethPool
      * @param eth The amount of ETH sent

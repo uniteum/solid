@@ -35,6 +35,37 @@ contract SolidTest is BaseTest {
         assertEq(N.symbol(), "NOTHING");
     }
 
+    function test_SellFor_NoApproval() public {
+        // Create two Solids
+        ISolid H = N.make("Hydrogen", "H");
+        ISolid O = N.make("Oxygen", "O");
+
+        // Add liquidity to both
+        vm.deal(address(H), 10 ether);
+        vm.deal(address(O), 10 ether);
+
+        // Give owen more ETH for buying
+        vm.deal(address(owen), 100 ether);
+
+        // Owen buys some H
+        uint256 hBought = owen.buy(H, 1 ether);
+        assertGt(hBought, 0, "should have bought H");
+
+        uint256 hBefore = H.balanceOf(address(owen));
+        uint256 oBefore = O.balanceOf(address(owen));
+
+        // Owen sells H for O in ONE transaction WITHOUT approval!
+        vm.prank(address(owen));
+        uint256 oReceived = H.sellFor(O, hBought);
+
+        uint256 hAfter = H.balanceOf(address(owen));
+        uint256 oAfter = O.balanceOf(address(owen));
+
+        assertEq(hAfter, hBefore - hBought, "should have sold all H");
+        assertEq(oAfter, oBefore + oReceived, "should have received O");
+        assertGt(oReceived, 0, "should receive some O");
+    }
+
     function test_CannotReinitializeNOTHING() public {
         // This test would have caught the bug where NOTHING had an empty symbol
         // If symbol is empty, zzz_() could be called to mint tokens on NOTHING

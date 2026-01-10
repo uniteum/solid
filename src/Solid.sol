@@ -55,6 +55,14 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         }
     }
 
+    function sellFor(ISolid that, uint256 sol) external nonReentrant returns (uint256 thats) {
+        _update(msg.sender, address(this), sol);
+        uint256 eth = sells(sol);
+        emit Sell(this, sol, eth);
+        thats = that.buy{value: eth}();
+        that.transfer(msg.sender, thats);
+    }
+
     receive() external payable {
         if (this == NOTHING) revert Nothing();
     }
