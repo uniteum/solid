@@ -20,11 +20,6 @@ contract SolidTest is BaseTest {
         N = new Solid(SOL);
     }
 
-    // Helper to get supply from a Solid instance
-    function getSupply(ISolid solid) internal view returns (uint256) {
-        return solid.totalSupply();
-    }
-
     function newUser(string memory name) internal returns (SolidUser user) {
         user = new SolidUser(name, N);
         vm.deal(address(user), ETH);
@@ -106,7 +101,7 @@ contract SolidTest is BaseTest {
 
     function test_MakeHydrogen() public returns (ISolid H) {
         H = N.make("Hydrogen", "H");
-        uint256 supply = getSupply(H);
+        uint256 supply = H.totalSupply();
         assertEq(H.totalSupply(), supply);
         assertEq(H.name(), "Hydrogen");
         assertEq(H.symbol(), "H");
@@ -117,7 +112,7 @@ contract SolidTest is BaseTest {
 
     function test_MakeWithExtraStake() public {
         ISolid H = N.make("Helium", "He");
-        uint256 supply = getSupply(H);
+        uint256 supply = H.totalSupply();
         assertEq(H.totalSupply(), supply);
         assertEq(H.balanceOf(address(this)), 0, "creator should have 0% of supply");
         assertEq(H.balanceOf(address(H)), supply, "pool should have 100% of supply");
@@ -126,7 +121,7 @@ contract SolidTest is BaseTest {
 
     function test_MakeWithNoStakeCreatesPoolOnly() public {
         ISolid Li = N.make("Lithium", "Li");
-        uint256 supply = getSupply(Li);
+        uint256 supply = Li.totalSupply();
         assertEq(Li.totalSupply(), supply);
         assertEq(Li.balanceOf(address(this)), 0, "creator should have 0% of supply");
         assertEq(Li.balanceOf(address(Li)), supply, "pool should have 100% of supply");
@@ -135,7 +130,7 @@ contract SolidTest is BaseTest {
 
     function test_BuyDoesNotCreateTokens() public {
         ISolid H = N.make("TestToken", "TT");
-        uint256 supply = getSupply(H);
+        uint256 supply = H.totalSupply();
 
         uint256 supplyBefore = H.totalSupply();
         uint256 poolBefore = H.balanceOf(address(H));
@@ -163,7 +158,7 @@ contract SolidTest is BaseTest {
 
     function test_BuySellBalanceIntegrity() public {
         ISolid H = N.make("Integrity", "INT");
-        uint256 supply = getSupply(H);
+        uint256 supply = H.totalSupply();
 
         // Have owen buy
         uint256 buyAmt = 78227239616666287245;
@@ -190,7 +185,7 @@ contract SolidTest is BaseTest {
 
     function test_StartingPrice(uint256 seed) public returns (ISolid H, uint256 h, uint256 e) {
         (H, h, e) = makeHydrogen(seed);
-        uint256 supply = getSupply(H);
+        uint256 supply = H.totalSupply();
         assertEq(h, supply, "h should be 100% of SUPPLY");
         assertEq(e, (seed % ETH) + 1 ether, "e should be seed + 1 ether (virtual)");
     }
@@ -325,7 +320,7 @@ contract SolidTest is BaseTest {
         // Now call make from H (non-NOTHING) to create Helium
         // This should delegate to NOTHING and create He with full supply in pool
         ISolid he = Solid(payable(address(H))).make("Helium", "He");
-        uint256 supplyHe = getSupply(he);
+        uint256 supplyHe = he.totalSupply();
 
         // Verify full supply goes to pool (no maker shares)
         assertEq(he.balanceOf(address(this)), 0, "creator should have 0% of He");
