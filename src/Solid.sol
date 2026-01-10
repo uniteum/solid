@@ -5,39 +5,58 @@ import {ISolid} from "isolid/ISolid.sol";
 import {ERC20} from "erc20/ERC20.sol";
 import {Clones} from "clones/Clones.sol";
 import {ReentrancyGuardTransient} from "reentrancy/ReentrancyGuardTransient.sol";
+import {ExponentialCurve} from "./ExponentialCurve.sol";
 
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
-    // Scale factor: work in whole tokens (divide by 1e18) to avoid tiny K values
+    // Scale factor: work in whole tokens (divide by 1e18) to avoid precision loss
     uint256 constant SCALE = 1e18;
-    uint256 constant K = 2e7; // Pricing parameter for scaled tokens (~$0.01/token at ETH=$3k)
+
+    // Exponential curve parameters: p(s) = P0 * r^s
+    uint256 constant P0 = 1e15; // Initial price: 1e15 wei per token (~$0.003 at ETH=$3k)
+    uint256 constant NUM = 100001; // Growth rate numerator
+    uint256 constant DEN = 100000; // Growth rate denominator (r = 1.00001 = 0.001% per token)
 
     ISolid public immutable NOTHING = this;
 
     constructor() ERC20("", "NOTHING") {}
 
     /**
-     * @notice Core bonding curve: calculate tokens for given ETH at supply s (scaled)
-     * @dev Formula: sol = (sqrt(K*s² + 2*eth) - s*sqrt(K)) / sqrt(K)
+     * @notice Core bonding curve: calculate cost in ETH to buy dx tokens at supply s (scaled)
      * @param eth ETH amount in wei
      * @param s Current supply in scaled units (whole tokens)
-     * @return solScaled Tokens in scaled units (whole tokens)
+     * @return dx Number of tokens that can be bought (scaled)
      */
-    function _ethToSol(uint256 eth, uint256 s) internal pure returns (uint256 solScaled) {
-        uint256 sqrtK = sqrt(K);
-        uint256 discriminant = K * s * s + 2 * eth;
-        uint256 sqrtDisc = sqrt(discriminant);
-        solScaled = (sqrtDisc - s * sqrtK) / sqrtK;
+    function _ethToSol(uint256 eth, uint256 s) internal pure returns (uint256 dx) {
+        // Convert r = NUM/DEN to WAD
+        uint256 rWad = ExponentialCurve.toWad(NUM, DEN);
+
+        // Binary search to find dx such that cost(s, dx) ≈ eth
+        uint256 low = 0;
+        uint256 high = eth / P0 + 1000; // Upper bound estimate
+
+        while (low < high) {
+            uint256 mid = (low + high + 1) / 2;
+            uint256 c = ExponentialCurve.cost(P0, rWad, s, mid);
+
+            if (c <= eth) {
+                low = mid;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        return low;
     }
 
     /**
-     * @notice Core bonding curve: calculate ETH cost for given tokens at supply s (scaled)
-     * @dev Formula: eth = K * sol * (2*s - sol) / 2
-     * @param solScaled Tokens in scaled units (whole tokens)
+     * @notice Core bonding curve: calculate ETH refund for selling dx tokens from supply s (scaled)
+     * @param dx Tokens to sell in scaled units (whole tokens)
      * @param s Current supply in scaled units (whole tokens)
-     * @return eth ETH amount in wei
+     * @return eth ETH refund in wei
      */
-    function _solToEth(uint256 solScaled, uint256 s) internal pure returns (uint256 eth) {
-        eth = (K * solScaled * (2 * s - solScaled)) / 2;
+    function _solToEth(uint256 dx, uint256 s) internal pure returns (uint256 eth) {
+        uint256 rWad = ExponentialCurve.toWad(NUM, DEN);
+        return ExponentialCurve.refund(P0, rWad, s, dx);
     }
 
     /**
@@ -124,19 +143,6 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         emit Sell(this, sol, eth);
         thats = that.buy{value: eth}();
         that.transfer(msg.sender, thats);
-    }
-
-    /**
-     * @notice Integer square root using Babylonian method
-     */
-    function sqrt(uint256 x) internal pure returns (uint256 y) {
-        if (x == 0) return 0;
-        uint256 z = (x + 1) / 2;
-        y = x;
-        while (z < y) {
-            y = z;
-            z = (x / z + z) / 2;
-        }
     }
 
     receive() external payable {

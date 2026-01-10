@@ -186,11 +186,11 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
 
     /**
      * INVARIANT: Total supply should never exceed a reasonable bound
-     * With K=1e9, buying all 1 billion ETH would give ~sqrt(2e27) ≈ 1.4e13 tokens
+     * With exponential curve P0=1e15, r=1.00001, supply can grow exponentially
      */
     function invariant_supplyBound() public view {
         uint256 totalSupply = solid.totalSupply();
-        assertLe(totalSupply, 1e20, "Total supply exceeded reasonable bound");
+        assertLe(totalSupply, 1e25, "Total supply exceeded reasonable bound");
     }
 
     /**
