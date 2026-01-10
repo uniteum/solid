@@ -13,15 +13,19 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     constructor() ERC20("", "NOTHING") {}
 
-    function pool() public view returns (uint256 solPool, uint256 ethPool) {
+    function pool() public view returns (uint256 S, uint256 E) {
         if (this == NOTHING) revert Nothing();
-        solPool = balanceOf(address(this));
-        ethPool = address(this).balance + 1 ether;
+        S = balanceOf(address(this));
+        E = address(this).balance + 1 ether;
+    }
+
+    function curve(uint256 x, uint256 X, uint256 Y) public pure returns (uint256 y) {
+        y = Y - Y * X / (X + x);
     }
 
     function buys(uint256 eth) public view returns (uint256 sol) {
-        (uint256 solPool, uint256 ethPool) = pool();
-        sol = solPool - solPool * (ethPool - eth) / ethPool;
+        (uint256 S, uint256 E) = pool();
+        sol = S - S * (E - eth) / E;
     }
 
     function buy() public payable returns (uint256 sol) {
@@ -32,10 +36,10 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     }
 
     function sells(uint256 sol) public view returns (uint256 eth) {
-        (uint256 solPool, uint256 ethPool) = pool();
-        eth = ethPool - ethPool * solPool / (solPool + sol);
-        if (eth > ethPool - 1 ether) {
-            eth = ethPool - 1 ether;
+        (uint256 S, uint256 E) = pool();
+        eth = E - E * S / (S + sol);
+        if (eth > E - 1 ether) {
+            eth = E - 1 ether;
         }
     }
 
