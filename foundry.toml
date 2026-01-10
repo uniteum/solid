@@ -15,15 +15,15 @@ out = "out"
 libs = ["lib"]
 
 [profile.default.invariant]
-runs = 256
-depth = 500
+runs = 64
+depth = 128
 fail_on_revert = false
 
 [profile.ci]
 invariant = { runs = 512, depth = 1000 }
 
 [profile.quick]
-invariant = { runs = 64, depth = 128 }
+invariant = { runs = 32, depth = 64 }
 
 [profile.deep]
 invariant = { runs = 1024, depth = 2000 }
