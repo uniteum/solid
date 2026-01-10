@@ -20,33 +20,33 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         E = address(this).balance + 1 ether;
     }
 
-    function buys(uint256 eth) public view returns (uint256 sol) {
+    function buys(uint256 e) public view returns (uint256 s) {
         (uint256 S, uint256 E) = pool();
-        sol = S - S * E / (E + eth);
+        s = S - S * E / (E + e);
     }
 
-    function buy() public payable returns (uint256 sol) {
-        uint256 eth = msg.value;
+    function buy() public payable returns (uint256 s) {
+        uint256 e = msg.value;
         (uint256 S, uint256 E) = pool();
-        E -= eth;
-        sol = S - S * E / (E + eth);
-        _update(address(this), msg.sender, sol);
-        emit Buy(this, eth, sol);
+        E -= e;
+        s = S - S * E / (E + e);
+        _update(address(this), msg.sender, s);
+        emit Buy(this, e, s);
     }
 
-    function sells(uint256 sol) public view returns (uint256 eth) {
+    function sells(uint256 s) public view returns (uint256 e) {
         (uint256 S, uint256 E) = pool();
-        eth = E - E * S / (S + sol);
-        if (eth > E - 1 ether) {
-            eth--;
+        e = E - E * S / (S + s);
+        if (e > E - 1 ether) {
+            e--;
         }
     }
 
-    function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
-        eth = sells(sol);
-        _update(msg.sender, address(this), sol);
-        emit Sell(this, sol, eth);
-        (bool ok, bytes memory returned) = msg.sender.call{value: eth}("");
+    function sell(uint256 s) external nonReentrant returns (uint256 e) {
+        e = sells(s);
+        _update(msg.sender, address(this), s);
+        emit Sell(this, s, e);
+        (bool ok, bytes memory returned) = msg.sender.call{value: e}("");
         if (!ok) {
             if (returned.length > 0) {
                 assembly {
@@ -58,16 +58,16 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         }
     }
 
-    function sellsFor(ISolid that, uint256 sol) public view returns (uint256 thats) {
-        uint256 eth = sells(sol);
-        thats = that.buys(eth);
+    function sellsFor(ISolid that, uint256 s) public view returns (uint256 thats) {
+        uint256 e = sells(s);
+        thats = that.buys(e);
     }
 
-    function sellFor(ISolid that, uint256 sol) external nonReentrant returns (uint256 thats) {
-        uint256 eth = sells(sol);
-        _update(msg.sender, address(this), sol);
-        emit Sell(this, sol, eth);
-        thats = that.buy{value: eth}();
+    function sellFor(ISolid that, uint256 s) external nonReentrant returns (uint256 thats) {
+        uint256 e = sells(s);
+        _update(msg.sender, address(this), s);
+        emit Sell(this, s, e);
+        thats = that.buy{value: e}();
         that.transfer(msg.sender, thats);
     }
 
@@ -88,16 +88,16 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         yes = home.code.length > 0;
     }
 
-    function make(string calldata name, string calldata symbol) external returns (ISolid sol) {
+    function make(string calldata name, string calldata symbol) external returns (ISolid solid) {
         if (this != NOTHING) {
-            sol = NOTHING.make(name, symbol);
+            solid = NOTHING.make(name, symbol);
         } else {
             (bool yes, address home, bytes32 salt) = made(name, symbol);
-            sol = ISolid(payable(home));
+            solid = ISolid(payable(home));
             if (!yes) {
                 home = Clones.cloneDeterministic(address(NOTHING), salt, 0);
                 Solid(payable(home)).zzz_(name, symbol);
-                emit Make(sol, name, symbol);
+                emit Make(solid, name, symbol);
             }
         }
     }
