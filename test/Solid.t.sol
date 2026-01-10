@@ -31,6 +31,20 @@ contract SolidTest is BaseTest {
         assertEq(N.symbol(), "NOTHING");
     }
 
+    function test_Buys(uint256 s) public {
+        s = s % 1e40 + 1;
+        ISolid NL = new Solid(s);
+        ISolid H = NL.make("Hydrogen", "H");
+        for (uint256 i = 1; i < 20; ++i) {
+            uint256 e = i * 1 ether;
+            uint256 b = H.buys(e);
+            emit log_named_uint("e", e);
+            emit log_named_uint("b", b);
+            emit log_named_uint("s", s);
+            assertLe(b, s);
+        }
+    }
+
     function test_Sells_MatchesSell() public {
         // Create Hydrogen
         ISolid H = N.make("Hydrogen", "H");
