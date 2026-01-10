@@ -27,11 +27,11 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     function buy() public payable returns (uint256 s) {
         uint256 e = msg.value;
+        emit Buy(this, e, s);
         (uint256 S, uint256 E) = pool();
         E -= e;
         s = S - S * E / (E + e);
         _update(address(this), msg.sender, s);
-        emit Buy(this, e, s);
     }
 
     function sells(uint256 s) public view returns (uint256 e) {
@@ -44,8 +44,8 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     function sell(uint256 s) external nonReentrant returns (uint256 e) {
         e = sells(s);
-        _update(msg.sender, address(this), s);
         emit Sell(this, s, e);
+        _update(msg.sender, address(this), s);
         (bool ok, bytes memory returned) = msg.sender.call{value: e}("");
         if (!ok) {
             if (returned.length > 0) {
@@ -65,8 +65,8 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     function sellFor(ISolid that, uint256 s) external nonReentrant returns (uint256 thats) {
         uint256 e = sells(s);
-        _update(msg.sender, address(this), s);
         emit Sell(this, s, e);
+        _update(msg.sender, address(this), s);
         thats = that.buy{value: e}();
         that.transfer(msg.sender, thats);
     }
@@ -95,9 +95,9 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
             (bool yes, address home, bytes32 salt) = made(name, symbol);
             solid = ISolid(payable(home));
             if (!yes) {
+                emit Make(solid, name, symbol);
                 home = Clones.cloneDeterministic(address(NOTHING), salt, 0);
                 Solid(payable(home)).zzz_(name, symbol);
-                emit Make(solid, name, symbol);
             }
         }
     }
