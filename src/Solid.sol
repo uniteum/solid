@@ -37,7 +37,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         (uint256 S, uint256 E) = pool();
         eth = E - E * S / (S + sol);
         if (eth > E - 1 ether) {
-            eth = E - 1 ether;
+            eth--;
         }
     }
 
