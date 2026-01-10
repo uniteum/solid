@@ -12,19 +12,10 @@ interface ISolid is IERC20Metadata {
      */
     function NOTHING() external view returns (ISolid);
 
-    /**
-     * @notice Returns the current pool balances of Solid and ETH
-     * @dev ethPool includes a virtual 1 ETH for initial pricing (actual balance + 1 ether)
-     * The virtual 1 ETH creates a price floor - sell prices can never fall below starting price.
-     * @return solPool The amount of Solid in the pool
-     * @return ethPool The virtual amount of ETH in the pool (actual + 1 ether)
-     */
-    function pool() external view returns (uint256 solPool, uint256 ethPool);
 
     /**
-     * @notice Returns the amount of ETH received for selling Solid from the pool
-     * @dev Uses constant-product formula: eth = ethPool - ethPool * solPool / (solPool + sol)
-     * ETH payout is capped at actual balance (virtual pricing may calculate higher).
+     * @notice Returns the amount of ETH received for selling Solid
+     * @dev Uses bonding curve: eth = K * sol * (2*supply - sol) / 2
      * @param sol The amount of Solid to sell
      * @return eth The amount of ETH received
      */
@@ -40,10 +31,9 @@ interface ISolid is IERC20Metadata {
     function sellsFor(ISolid that, uint256 sol) external view returns (uint256 thats);
 
     /**
-     * @notice Sells Solid for ETH from the pool
-     * @dev Uses constant-product formula: eth = ethPool - ethPool * solPool / (solPool + sol)
-     * Transfers Solid from caller to pool, sends ETH to caller.
-     * ETH payout is capped at actual balance (virtual pricing may calculate infinitesimally higher).
+     * @notice Sells Solid for ETH, burning the tokens
+     * @dev Uses bonding curve: eth = K * sol * (2*supply - sol) / 2
+     * Burns Solid from caller, sends ETH to caller.
      * Protected by reentrancy guard.
      * @param sol The amount of Solid to sell
      * @return eth The amount of ETH received
@@ -62,17 +52,16 @@ interface ISolid is IERC20Metadata {
     function sellFor(ISolid that, uint256 sol) external returns (uint256 thats);
 
     /**
-     * @notice Returns the amount of Solid received for buying with ETH from the pool
-     * @dev Uses constant-product formula: sol = solPool - solPool * (ethPool - eth) / ethPool
+     * @notice Returns the amount of Solid received for buying with ETH
+     * @dev Uses bonding curve: eth = K * sol * (2*supply + sol) / 2, solved for sol
      * @param eth The amount of ETH sent
      * @return sol The amount of Solid received
      */
     function buys(uint256 eth) external view returns (uint256 sol);
 
     /**
-     * @notice Buys Solid with ETH from the pool
-     * @dev Uses constant-product formula: sol = solPool - solPool * (ethPool - eth) / ethPool
-     * Transfers Solid from pool to caller. Does not mint new tokens.
+     * @notice Buys Solid with ETH, minting new tokens
+     * @dev Uses bonding curve to calculate amount. Mints new tokens to buyer.
      * @return sol The amount of Solid received
      */
     function buy() external payable returns (uint256 sol);
@@ -94,11 +83,7 @@ interface ISolid is IERC20Metadata {
     /**
      * @notice Makes a new Solid instance with the given name and symbol
      * @dev If a Solid with the given name and symbol already exists, returns the existing instance.
-     * Mints exactly AVOGADRO (6.02214076e23) tokens, 100% to pool.
-     * Pool uses virtual 1 ETH for initial pricing, resulting in elegant starting price:
-     * 1 ETH = ~602,214.076 solids (AVOGADRO / 10^18).
-     * At $3,000/ETH, each solid starts at ~$0.005 USD (half a penny).
-     * The virtual 1 ETH is permanent, creating a price floor - sell prices never fall below this.
+     * Starts with zero supply - tokens are minted dynamically via exponential bonding curve.
      * Uses CREATE2 for deterministic deployment based on name and symbol.
      * @param name The name of the Solid
      * @param symbol The symbol of the Solid

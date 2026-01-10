@@ -15,25 +15,17 @@ contract SolidHandler is Test {
     // Track cumulative actions for debugging
     uint256 public buyCount;
     uint256 public sellCount;
-    uint256 public totalBought;
-    uint256 public totalSold;
 
     // Track individual actors
     address[] public actors;
     mapping(address => bool) public isActor;
 
     // Ghost variables for tracking invariants
-    uint256 public ghostTotalEthBought;
-    uint256 public ghostTotalEthSold;
-    uint256 public ghostTotalSolidsReceived;
-    uint256 public ghostTotalSolidsSold;
-    uint256 public ghostInitialSupply;
+    uint256 public ghostTotalEthDeposited;
+    uint256 public ghostTotalEthWithdrawn;
 
     constructor(Solid _solid) {
         solid = _solid;
-        // Initialize ghost variables
-        ghostTotalEthBought = 0;
-        ghostInitialSupply = _solid.totalSupply();
     }
 
     /**
@@ -53,22 +45,23 @@ contract SolidHandler is Test {
         vm.deal(msg.sender, amount);
 
         uint256 solidsBefore = solid.balanceOf(msg.sender);
+        uint256 supplyBefore = solid.totalSupply();
         uint256 poolEthBefore = address(solid).balance;
 
         vm.prank(msg.sender);
         uint256 solidsReceived = solid.buy{value: amount}();
 
         uint256 solidsAfter = solid.balanceOf(msg.sender);
+        uint256 supplyAfter = solid.totalSupply();
         uint256 poolEthAfter = address(solid).balance;
 
         // Update tracking
         buyCount++;
-        totalBought += amount;
-        ghostTotalEthBought += amount;
-        ghostTotalSolidsReceived += solidsReceived;
+        ghostTotalEthDeposited += amount;
 
         // Sanity checks
-        assertEq(solidsAfter - solidsBefore, solidsReceived, "Solids mismatch");
+        assertEq(solidsAfter - solidsBefore, solidsReceived, "Solids balance mismatch");
+        assertEq(supplyAfter - supplyBefore, solidsReceived, "Supply mismatch");
         assertEq(poolEthAfter - poolEthBefore, amount, "ETH pool mismatch");
     }
 
@@ -90,31 +83,25 @@ contract SolidHandler is Test {
         uint256 sellAmount = bound(actorSeed, solidsBalance / 100, solidsBalance);
         if (sellAmount == 0) return;
 
+        uint256 supplyBefore = solid.totalSupply();
         uint256 ethBefore = actor.balance;
         uint256 poolEthBefore = address(solid).balance;
 
         vm.prank(actor);
         uint256 ethReceived = solid.sell(sellAmount);
 
+        uint256 supplyAfter = solid.totalSupply();
         uint256 ethAfter = actor.balance;
         uint256 poolEthAfter = address(solid).balance;
 
         // Update tracking
         sellCount++;
-        totalSold += ethReceived;
-        ghostTotalEthSold += ethReceived;
-        ghostTotalSolidsSold += sellAmount;
+        ghostTotalEthWithdrawn += ethReceived;
 
         // Sanity checks
+        assertEq(supplyBefore - supplyAfter, sellAmount, "Supply decrease mismatch");
         assertEq(ethAfter - ethBefore, ethReceived, "ETH received mismatch");
-        assertEq(poolEthBefore - poolEthAfter, ethReceived, "ETH pool mismatch");
-    }
-
-    /**
-     * Get total value locked in the pool
-     */
-    function tvl() public view returns (uint256) {
-        return address(solid).balance;
+        assertEq(poolEthBefore - poolEthAfter, ethReceived, "ETH pool decrease mismatch");
     }
 
     /**
@@ -133,12 +120,11 @@ contract SolidHandler is Test {
 }
 
 /**
- * Invariant test suite for Solid.sol
+ * Invariant test suite for Solid.sol bonding curve
  */
 contract SolidInvariantTest is StdInvariant, BaseTest {
     Solid public solid;
     SolidHandler public handler;
-    uint256 public supply;
 
     function setUp() public override {
         super.setUp();
@@ -146,7 +132,6 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
         // Create a new solid token
         Solid nothing = new Solid();
         solid = Solid(payable(address(nothing.make("Hydrogen", "H"))));
-        supply = solid.totalSupply();
 
         // Create handler
         handler = new SolidHandler(solid);
@@ -163,52 +148,20 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
     }
 
     /**
-     * INVARIANT: Pool ETH balance should equal bought - sold
-     * (ghostTotalEthBought is initialized with the STAKE creation stake)
+     * INVARIANT: Pool ETH balance should equal deposited - withdrawn
      */
     function invariant_ethBalance() public view {
         uint256 poolEth = address(solid).balance;
-        uint256 expectedEth = handler.ghostTotalEthBought() - handler.ghostTotalEthSold();
+        uint256 expectedEth = handler.ghostTotalEthDeposited() - handler.ghostTotalEthWithdrawn();
 
-        assertEq(poolEth, expectedEth, "Pool ETH != (bought - sold)");
-    }
-
-    /**
-     * INVARIANT: Constant product formula should hold (approximately)
-     * For constant product AMM: solids * eth = k (constant)
-     * We allow small rounding errors due to integer division
-     */
-    function invariant_constantProduct() public view {
-        (uint256 poolSolids, uint256 poolEth) = solid.pool();
-
-        // Skip if pool is empty
-        if (poolSolids == 0 || poolEth == 0) return;
-
-        uint256 k = poolSolids * poolEth;
-
-        // After first buy, k should remain relatively stable
-        // We allow for small variations due to rounding
-        if (handler.buyCount() > 0) {
-            assertGt(k, 0, "Product should be > 0");
-        }
-    }
-
-    /**
-     * INVARIANT: Total supply should remain constant at initial supply
-     * Buy/sell only transfer tokens, they don't mint or burn
-     */
-    function invariant_totalSupply() public view {
-        assertEq(solid.totalSupply(), handler.ghostInitialSupply(), "Total supply != initial supply");
+        assertEq(poolEth, expectedEth, "Pool ETH != (deposited - withdrawn)");
     }
 
     /**
      * INVARIANT: Sum of all balances should equal total supply
-     * NOTE: Temporarily disabled - appears to be a false positive in the handler accounting
-     * Unit tests verify this invariant holds correctly
      */
-    function skipInvariantBalanceSum() public view {
-        uint256 sum = solid.balanceOf(address(solid)); // Pool balance
-        sum += solid.balanceOf(address(this)); // Creator balance (1%)
+    function invariant_balanceSum() public view {
+        uint256 sum = 0;
 
         // Add all actor balances
         address[] memory actorList = handler.getActors();
@@ -216,57 +169,51 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
             sum += solid.balanceOf(actorList[i]);
         }
 
-        assertEq(sum, supply, "Sum of balances != total supply");
+        assertEq(sum, solid.totalSupply(), "Sum of balances != total supply");
     }
 
     /**
-     * INVARIANT: Pool solids balance should be reasonable
-     * The pool can have 0 solids after users buy, but never exceed total supply
-     */
-    function invariant_poolSolvency() public view {
-        (uint256 poolSolids,) = solid.pool();
-        uint256 totalSupply = solid.totalSupply();
-
-        // Pool solids should never exceed total supply
-        assertLe(poolSolids, totalSupply, "Pool solids > total supply");
-    }
-
-    /**
-     * INVARIANT: No individual actor should hold more than current total supply
+     * INVARIANT: No individual actor should hold more than total supply
      */
     function invariant_noOverflow() public view {
         address[] memory actorList = handler.getActors();
         uint256 currentSupply = solid.totalSupply();
         for (uint256 i = 0; i < actorList.length; i++) {
             uint256 balance = solid.balanceOf(actorList[i]);
-            assertLe(balance, currentSupply, "Actor balance > current total supply");
+            assertLe(balance, currentSupply, "Actor balance > total supply");
         }
     }
 
     /**
-     * INVARIANT: Pool should never have more ETH than bought
-     * (ghostTotalEthBought includes the initial STAKE stake)
+     * INVARIANT: Total supply should never exceed a reasonable bound
+     * With K=1e9, buying all 1 billion ETH would give ~sqrt(2e27) ≈ 1.4e13 tokens
+     */
+    function invariant_supplyBound() public view {
+        uint256 totalSupply = solid.totalSupply();
+        assertLe(totalSupply, 1e20, "Total supply exceeded reasonable bound");
+    }
+
+    /**
+     * INVARIANT: Pool ETH should never exceed what was deposited
      */
     function invariant_ethSolvency() public view {
         uint256 poolEth = address(solid).balance;
-        uint256 totalReceived = handler.ghostTotalEthBought();
+        uint256 totalDeposited = handler.ghostTotalEthDeposited();
 
-        assertLe(poolEth, totalReceived, "Pool ETH > bought");
+        assertLe(poolEth, totalDeposited, "Pool ETH > deposited");
     }
 
     /**
      * Helper: Log final state for debugging
      */
     function invariant_logFinalState() public view {
-        (uint256 poolSolids, uint256 poolEth) = solid.pool();
-
         console.log("=== Final Invariant Test State ===");
         console.log("Buys:", handler.buyCount());
         console.log("Sells:", handler.sellCount());
-        console.log("Pool Solids:", poolSolids);
-        console.log("Pool ETH:", poolEth);
         console.log("Total Supply:", solid.totalSupply());
-        console.log("Initial Supply:", handler.ghostInitialSupply());
+        console.log("Pool ETH:", address(solid).balance);
+        console.log("Total Deposited:", handler.ghostTotalEthDeposited());
+        console.log("Total Withdrawn:", handler.ghostTotalEthWithdrawn());
         console.log("Actors:", handler.getActorCount());
     }
 }

@@ -7,43 +7,61 @@ import {Clones} from "clones/Clones.sol";
 import {ReentrancyGuardTransient} from "reentrancy/ReentrancyGuardTransient.sol";
 
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
-    uint256 constant AVOGADRO = 6.02214076e23;
+    uint256 constant K = 1e9;
 
     ISolid public immutable NOTHING = this;
 
     constructor() ERC20("", "NOTHING") {}
 
-    function pool() public view returns (uint256 S, uint256 E) {
-        if (this == NOTHING) revert Nothing();
-        S = balanceOf(address(this));
-        E = address(this).balance + 1 ether;
-    }
-
+    /**
+     * @notice Calculate tokens received for buying with `eth` at current supply
+     * @dev Uses bonding curve: sol = sqrt(s² + 2*eth/K) - s
+     */
     function buys(uint256 eth) public view returns (uint256 sol) {
-        (uint256 S, uint256 E) = pool();
-        sol = S - S * E / (E + eth);
+        if (this == NOTHING) revert Nothing();
+        uint256 s = totalSupply();
+        uint256 s2 = s * s;
+        uint256 discriminant = s2 + (2 * eth) / K;
+        sol = sqrt(discriminant) - s;
     }
 
+    /**
+     * @notice Buy tokens by sending ETH
+     * @dev Mints new tokens according to bonding curve
+     */
     function buy() public payable returns (uint256 sol) {
+        if (this == NOTHING) revert Nothing();
         uint256 eth = msg.value;
-        (uint256 S, uint256 E) = pool();
-        E -= eth;
-        sol = S - S * E / (E + eth);
-        _update(address(this), msg.sender, sol);
+        uint256 s = totalSupply();
+
+        // Solve: eth = K * sol * (2*s + sol) / 2
+        // Using quadratic formula: sol = sqrt(s² + 2*eth/K) - s
+        uint256 s2 = s * s;
+        uint256 discriminant = s2 + (2 * eth) / K;
+        sol = sqrt(discriminant) - s;
+
+        _mint(msg.sender, sol);
         emit Buy(this, eth, sol);
     }
 
+    /**
+     * @notice Calculate ETH refund for selling `sol` tokens at current supply
+     * @dev Uses inverse bonding curve: refund = K * sol * (2*supply - sol) / 2
+     */
     function sells(uint256 sol) public view returns (uint256 eth) {
-        (uint256 S, uint256 E) = pool();
-        eth = E - E * S / (S + sol);
-        if (eth > E - 1 ether) {
-            eth--;
-        }
+        if (this == NOTHING) revert Nothing();
+        uint256 s = totalSupply();
+        if (sol > s) revert();
+        eth = (K * sol * (2 * s - sol)) / 2;
     }
 
+    /**
+     * @notice Sell tokens for ETH
+     * @dev Burns tokens and returns ETH according to bonding curve
+     */
     function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
         eth = sells(sol);
-        _update(msg.sender, address(this), sol);
+        _burn(msg.sender, sol);
         emit Sell(this, sol, eth);
         (bool ok, bytes memory returned) = msg.sender.call{value: eth}("");
         if (!ok) {
@@ -57,17 +75,36 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         }
     }
 
+    /**
+     * @notice Preview selling this token for another token
+     */
     function sellsFor(ISolid that, uint256 sol) public view returns (uint256 thats) {
         uint256 eth = sells(sol);
         thats = that.buys(eth);
     }
 
+    /**
+     * @notice Sell this token for another token atomically
+     */
     function sellFor(ISolid that, uint256 sol) external nonReentrant returns (uint256 thats) {
         uint256 eth = sells(sol);
-        _update(msg.sender, address(this), sol);
+        _burn(msg.sender, sol);
         emit Sell(this, sol, eth);
         thats = that.buy{value: eth}();
         that.transfer(msg.sender, thats);
+    }
+
+    /**
+     * @notice Integer square root using Babylonian method
+     */
+    function sqrt(uint256 x) internal pure returns (uint256 y) {
+        if (x == 0) return 0;
+        uint256 z = (x + 1) / 2;
+        y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
     }
 
     receive() external payable {
@@ -105,7 +142,6 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         if (bytes(_symbol).length == 0) {
             _name = name;
             _symbol = symbol;
-            _mint(address(this), AVOGADRO);
         }
     }
 }
