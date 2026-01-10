@@ -26,7 +26,9 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     function buy() public payable returns (uint256 sol) {
         uint256 eth = msg.value;
-        sol = buys(eth);
+        (uint256 S, uint256 E) = pool();
+        E -= eth;
+        sol = S - S * E / (E + eth);
         _update(address(this), msg.sender, sol);
         emit Buy(this, eth, sol);
     }

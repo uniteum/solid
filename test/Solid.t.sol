@@ -238,6 +238,10 @@ contract SolidTest is BaseTest {
         (H, h, e, s) = test_StartingBuy(2e6, 2e6);
     }
 
+    function test_SellFailed1() public {
+        test_BuySell(1e9, 4594638);
+    }
+
     function test_BuySell(uint256 seed, uint256 d) public returns (ISolid H, uint256 bought, uint256 sold) {
         (H,,) = makeHydrogen(seed);
         d = d % address(owen).balance;
@@ -264,10 +268,6 @@ contract SolidTest is BaseTest {
             emit log_named_uint("bought", bought);
             emit log_named_uint("sold", sold);
         }
-    }
-
-    function test_SellFailed1() public {
-        test_BuySell(1e9, 4594638);
     }
 
     function test_BuySellPoolReturnsToStartSpecific() public {
