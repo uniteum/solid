@@ -31,15 +31,6 @@ interface ISolid is IERC20Metadata {
     function sells(uint256 s) external view returns (uint256 e);
 
     /**
-     * @notice Returns the amount of that Solid received for selling this Solid
-     * @dev Calculates: sells(s) -> e, then that.buys(e) -> thats
-     * @param that The Solid to receive
-     * @param s The amount of this Solid to sell
-     * @return thats The amount of that Solid that would be received
-     */
-    function sellsFor(ISolid that, uint256 s) external view returns (uint256 thats);
-
-    /**
      * @notice Sells Solid for ETH from the pool
      * @dev Uses constant-product formula: e = E - E * S / (S + s)
      * Transfers Solid from caller to pool, sends ETH to caller.
@@ -49,6 +40,15 @@ interface ISolid is IERC20Metadata {
      * @return e The amount of ETH received
      */
     function sell(uint256 s) external returns (uint256 e);
+
+    /**
+     * @notice Returns the amount of that Solid received for selling this Solid
+     * @dev Calculates: sells(s) -> e, then that.buys(e) -> thats
+     * @param that The Solid to receive
+     * @param s The amount of this Solid to sell
+     * @return thats The amount of that Solid that would be received
+     */
+    function sellsFor(ISolid that, uint256 s) external view returns (uint256 thats);
 
     /**
      * @notice Sells this Solid for another Solid in a single transaction
