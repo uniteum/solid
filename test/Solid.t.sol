@@ -7,6 +7,7 @@ import {BaseTest} from "./Base.t.sol";
 import {SolidUser} from "./SolidUser.sol";
 
 contract SolidTest is BaseTest {
+    uint256 constant SOL = 1e23;
     uint256 constant ETH = 1e9;
     Solid public N;
     SolidUser public owen;
@@ -16,7 +17,7 @@ contract SolidTest is BaseTest {
     function setUp() public virtual override {
         super.setUp();
         owen = newUser("owen");
-        N = new Solid();
+        N = new Solid(SOL);
     }
 
     // Helper to get supply from a Solid instance

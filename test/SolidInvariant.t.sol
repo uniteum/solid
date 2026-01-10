@@ -136,6 +136,7 @@ contract SolidHandler is Test {
  * Invariant test suite for Solid.sol
  */
 contract SolidInvariantTest is StdInvariant, BaseTest {
+    uint256 constant SOL = 1e23;
     Solid public solid;
     SolidHandler public handler;
     uint256 public supply;
@@ -144,7 +145,7 @@ contract SolidInvariantTest is StdInvariant, BaseTest {
         super.setUp();
 
         // Create a new solid token
-        Solid nothing = new Solid();
+        Solid nothing = new Solid(SOL);
         solid = Solid(payable(address(nothing.make("Hydrogen", "H"))));
         supply = solid.totalSupply();
 

@@ -7,11 +7,12 @@ import {Clones} from "clones/Clones.sol";
 import {ReentrancyGuardTransient} from "reentrancy/ReentrancyGuardTransient.sol";
 
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
-    uint256 constant AVOGADRO = 6.02214076e23;
-
     ISolid public immutable NOTHING = this;
+    uint256 public immutable SUPPLY;
 
-    constructor() ERC20("", "NOTHING") {}
+    constructor(uint256 supply) ERC20("", "NOTHING") {
+        SUPPLY = supply;
+    }
 
     function pool() public view returns (uint256 S, uint256 E) {
         if (this == NOTHING) revert Nothing();
@@ -105,7 +106,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         if (bytes(_symbol).length == 0) {
             _name = name;
             _symbol = symbol;
-            _mint(address(this), AVOGADRO);
+            _mint(address(this), SUPPLY);
         }
     }
 }

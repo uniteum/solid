@@ -9,11 +9,13 @@ import {Solid} from "../src/Solid.sol";
  * @dev Usage: forge script script/Solid.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
  */
 contract SolidDeploy is Script {
+    uint256 constant AVOGADRO = 6.02214076e23;
+
     function run() external {
         vm.startBroadcast();
 
         // Deploy Solid base contract using CREATE2 with salt 0x0
-        Solid solid = new Solid{salt: 0x0}();
+        Solid solid = new Solid{salt: 0x0}(AVOGADRO);
         console2.log("Solid protofactory deployed at:", address(solid));
 
         vm.stopBroadcast();

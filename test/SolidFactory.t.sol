@@ -7,13 +7,14 @@ import {SolidFactory} from "../src/SolidFactory.sol";
 import {BaseTest} from "./Base.t.sol";
 
 contract SolidFactoryTest is BaseTest {
+    uint256 constant SOL = 1e23;
     uint256 constant ETH = 100 ether;
     Solid public N;
     SolidFactory public factory;
 
     function setUp() public virtual override {
         super.setUp();
-        N = new Solid();
+        N = new Solid(SOL);
         factory = new SolidFactory(N);
         vm.deal(address(this), ETH);
     }
