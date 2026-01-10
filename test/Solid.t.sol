@@ -91,12 +91,12 @@ contract SolidTest is BaseTest {
         uint256 sol = H.buy{value: 1 ether}();
 
         // Sell all tokens back
-        uint256 ethReceived = H.sell(sol);
+        H.sell(sol);
 
         uint256 ethAfter = address(this).balance;
 
-        // Should have spent net ETH (due to bonding curve math)
-        assertLt(ethAfter, ethBefore, "should have net loss on roundtrip");
+        // Quadratic curve: selling all tokens back should return ~all ETH (with tiny rounding)
+        assertApproxEqRel(ethAfter, ethBefore, 0.01e18, "should get ~all ETH back (within 1%)");
         assertEq(H.totalSupply(), 0, "supply should return to 0");
         assertEq(H.balanceOf(address(this)), 0, "should have 0 balance");
     }

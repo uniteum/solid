@@ -7,7 +7,9 @@ import {Clones} from "clones/Clones.sol";
 import {ReentrancyGuardTransient} from "reentrancy/ReentrancyGuardTransient.sol";
 
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
-    uint256 constant K = 1e9;
+    // Scale factor: work in whole tokens (divide by 1e18) to avoid tiny K values
+    uint256 constant SCALE = 1e18;
+    uint256 constant K = 2e7; // Pricing parameter for scaled tokens (~$0.01/token at ETH=$3k)
 
     ISolid public immutable NOTHING = this;
 
@@ -15,14 +17,19 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     /**
      * @notice Calculate tokens received for buying with `eth` at current supply
-     * @dev Uses bonding curve: sol = sqrt(s² + 2*eth/K) - s
+     * @dev Uses bonding curve with scaling: cost = K * (sol_scaled) * (2*supply_scaled + sol_scaled) / 2
+     * Where sol_scaled = sol / 1e18 (whole tokens)
      */
     function buys(uint256 eth) public view returns (uint256 sol) {
         if (this == NOTHING) revert Nothing();
-        uint256 s = totalSupply();
-        uint256 s2 = s * s;
-        uint256 discriminant = s2 + (2 * eth) / K;
-        sol = sqrt(discriminant) - s;
+        // Work in scaled tokens (divide by SCALE)
+        uint256 s = totalSupply() / SCALE;
+        uint256 sqrtK = sqrt(K);
+        uint256 discriminant = K * s * s + 2 * eth;
+        uint256 sqrtDisc = sqrt(discriminant);
+        uint256 solScaled = (sqrtDisc - s * sqrtK) / sqrtK;
+        // Convert back to raw units
+        sol = solScaled * SCALE;
     }
 
     /**
@@ -32,13 +39,16 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     function buy() public payable returns (uint256 sol) {
         if (this == NOTHING) revert Nothing();
         uint256 eth = msg.value;
-        uint256 s = totalSupply();
+        // Work in scaled tokens (divide by SCALE)
+        uint256 s = totalSupply() / SCALE;
 
-        // Solve: eth = K * sol * (2*s + sol) / 2
-        // Using quadratic formula: sol = sqrt(s² + 2*eth/K) - s
-        uint256 s2 = s * s;
-        uint256 discriminant = s2 + (2 * eth) / K;
-        sol = sqrt(discriminant) - s;
+        // Solve: eth = K * sol_scaled * (2*s + sol_scaled) / 2
+        uint256 sqrtK = sqrt(K);
+        uint256 discriminant = K * s * s + 2 * eth;
+        uint256 sqrtDisc = sqrt(discriminant);
+        uint256 solScaled = (sqrtDisc - s * sqrtK) / sqrtK;
+        // Convert back to raw units
+        sol = solScaled * SCALE;
 
         _mint(msg.sender, sol);
         emit Buy(this, eth, sol);
@@ -46,13 +56,18 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     /**
      * @notice Calculate ETH refund for selling `sol` tokens at current supply
-     * @dev Uses inverse bonding curve: refund = K * sol * (2*supply - sol) / 2
+     * @dev Uses inverse bonding curve with scaling: refund = K * sol_scaled * (2*supply_scaled - sol_scaled) / 2
+     * Capped to contract balance to handle rounding
      */
     function sells(uint256 sol) public view returns (uint256 eth) {
         if (this == NOTHING) revert Nothing();
-        uint256 s = totalSupply();
-        if (sol > s) revert();
-        eth = (K * sol * (2 * s - sol)) / 2;
+        uint256 s = totalSupply() / SCALE;
+        uint256 solScaled = sol / SCALE;
+        if (solScaled > s) revert();
+        eth = (K * solScaled * (2 * s - solScaled)) / 2;
+        // Cap to actual balance (rounding protection)
+        uint256 balance = address(this).balance;
+        if (eth > balance) eth = balance;
     }
 
     /**
@@ -61,6 +76,10 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
      */
     function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
         eth = sells(sol);
+        // Cap to actual balance (rounding protection)
+        uint256 balance = address(this).balance;
+        if (eth > balance) eth = balance;
+
         _burn(msg.sender, sol);
         emit Sell(this, sol, eth);
         (bool ok, bytes memory returned) = msg.sender.call{value: eth}("");
