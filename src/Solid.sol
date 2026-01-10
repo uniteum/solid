@@ -39,11 +39,6 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         }
     }
 
-    function sellsFor(ISolid that, uint256 sol) public view returns (uint256 thats) {
-        uint256 eth = sells(sol);
-        thats = that.buys(eth);
-    }
-
     function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
         eth = sells(sol);
         _update(msg.sender, address(this), sol);
@@ -58,6 +53,11 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
                 revert SellFailed();
             }
         }
+    }
+
+    function sellsFor(ISolid that, uint256 sol) public view returns (uint256 thats) {
+        uint256 eth = sells(sol);
+        thats = that.buys(eth);
     }
 
     function sellFor(ISolid that, uint256 sol) external nonReentrant returns (uint256 thats) {
