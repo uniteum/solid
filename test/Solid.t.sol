@@ -266,6 +266,10 @@ contract SolidTest is BaseTest {
         }
     }
 
+    function test_SellFailed1() public {
+        test_BuySell(1e9, 4594638);
+    }
+
     function test_BuySellPoolReturnsToStartSpecific() public {
         test_BuySellPoolReturnsToStart(12345, 5 ether);
     }
