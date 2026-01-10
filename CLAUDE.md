@@ -361,6 +361,34 @@ forge test -vvv      # Verbose output with logs
 forge fmt            # Format code
 ```
 
+### Testing Strategy
+
+**IMPORTANT: Always do smoke tests first, not full tests, unless changes are extensive.**
+
+**Smoke Testing (Default approach):**
+- After making changes, run a targeted test that exercises the changed code
+- This provides fast feedback (milliseconds to seconds)
+- Only run full test suite when changes are extensive or affect multiple areas
+- **Always prompt the user before running the full test suite**
+
+**Examples:**
+```bash
+# After adding sellFor function - test just that function
+forge test --match-test test_SellFor_NoApproval -vv
+
+# After modifying buy logic - test buy operations
+forge test --match-test test_Buy -vv
+
+# Quick compilation check
+forge test --match-test test_Setup -vv
+```
+
+**When to run full tests:**
+- Core protocol changes (buy/sell formulas, pool logic)
+- Changes affecting multiple contracts
+- Before commits/PRs
+- After user explicitly requests it
+
 ### Running Specific Tests
 
 ```bash
@@ -369,13 +397,6 @@ forge test --match-test test_BuySell          # Run specific test
 forge test --match-test test_Setup -vv        # Quick test with verbose output
 forge test --match-contract SolidInvariant    # Run invariant tests
 ```
-
-**Quick Test Tip:**
-For fast feedback during development, run a simple test like `test_Setup`:
-```bash
-forge test --match-test test_Setup -vv
-```
-This completes in milliseconds and verifies basic compilation and setup.
 
 ### Invariant Test Profiles
 
