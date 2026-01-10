@@ -19,13 +19,9 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         E = address(this).balance + 1 ether;
     }
 
-    function curve(uint256 x, uint256 X, uint256 Y) public pure returns (uint256 y) {
-        y = Y - Y * X / (X + x);
-    }
-
     function buys(uint256 eth) public view returns (uint256 sol) {
         (uint256 S, uint256 E) = pool();
-        sol = S - S * (E - eth) / E;
+        sol = S - S * E / (E + eth);
     }
 
     function buy() public payable returns (uint256 sol) {
