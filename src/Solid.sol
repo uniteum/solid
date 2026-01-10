@@ -36,10 +36,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 
     function sells(uint256 s) public view returns (uint256 e) {
         (uint256 S, uint256 E) = pool();
-        e = E - E * S / (S + s);
-        if (e > E - 1 ether) {
-            e--;
-        }
+        e = E - (E * S + E - 1) / (S + s);
     }
 
     function sell(uint256 s) external nonReentrant returns (uint256 e) {
