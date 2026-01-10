@@ -76,8 +76,7 @@ contract SolidTest is BaseTest {
         uint256 oBefore = O.balanceOf(address(owen));
 
         // Owen sells H for O in ONE transaction WITHOUT approval!
-        vm.prank(address(owen));
-        uint256 oReceived = H.sellFor(O, hBought);
+        uint256 oReceived = owen.sellFor(H, O, hBought);
 
         uint256 hAfter = H.balanceOf(address(owen));
         uint256 oAfter = O.balanceOf(address(owen));
@@ -169,8 +168,7 @@ contract SolidTest is BaseTest {
         // Have owen buy
         uint256 buyAmt = 78227239616666287245;
         vm.deal(address(owen), buyAmt);
-        vm.prank(address(owen));
-        H.buy{value: buyAmt}();
+        owen.buy(H, buyAmt);
 
         // Check total balances
         uint256 poolBal = H.balanceOf(address(H));

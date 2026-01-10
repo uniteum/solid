@@ -40,6 +40,11 @@ contract SolidUser is User {
         console.log("e:", e);
     }
 
+    function sellFor(ISolid S, ISolid that, uint256 s) public logging("sell", S, s) returns (uint256 t) {
+        t = S.sellFor(that, s);
+        console.log("t:", t);
+    }
+
     function liquidate(ISolid S) public returns (uint256 e, uint256 s) {
         s = S.balanceOf(address(this));
         e = sell(S, s);
