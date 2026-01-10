@@ -138,5 +138,5 @@ interface ISolid is IERC20Metadata {
     /**
      * @notice Thrown when ETH transfer to seller fails
      */
-    error SellFailed();
+    error SellFailed(ISolid solid, uint256 s, uint256 e, uint256 E);
 }

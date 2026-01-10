@@ -53,7 +53,7 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
                     revert(add(returned, 32), mload(returned))
                 }
             } else {
-                revert SellFailed();
+                revert SellFailed(this, s, e, address(this).balance);
             }
         }
     }
