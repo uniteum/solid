@@ -46,6 +46,9 @@ contract MyContract {
 }
 ```
 
+**Deployed NOTHING (Ethereum Mainnet):**
+- Address: [`0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE`](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE)
+
 ## Core Functions
 
 ### Factory Functions
@@ -288,8 +291,9 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Links
 
-- [Solid Protocol Documentation](https://github.com/uniteum/liquid)
-- [Reference Implementation](https://github.com/uniteum/liquid/blob/solid/src/Solid.sol)
+- [Solid Protocol Documentation](https://github.com/uniteum/solid)
+- [Reference Implementation](https://github.com/uniteum/solid/blob/main/src/Solid.sol)
+- [NOTHING on Etherscan](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE) - Deployed mainnet contract
 
 ## Version
 

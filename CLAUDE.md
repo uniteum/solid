@@ -545,7 +545,7 @@ This creates a Hydrogen Solid with random ETH in the pool for fuzz testing.
 ### Deployed Addresses
 
 **Mainnet (Ethereum):**
-- NOTHING: `0x16cF8EeB96DE6666254F498E3A3C8523454EFf54`
+- NOTHING: [`0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE`](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE)
 
 ### Environment Variables
 
