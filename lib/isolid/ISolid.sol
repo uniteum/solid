@@ -14,41 +14,41 @@ interface ISolid is IERC20Metadata {
 
     /**
      * @notice Returns the current pool balances of Solid and ETH
-     * @dev ethPool includes a virtual 1 ETH for initial pricing (actual balance + 1 ether)
+     * @dev E includes a virtual 1 ETH for initial pricing (actual balance + 1 ether)
      * The virtual 1 ETH creates a price floor - sell prices can never fall below starting price.
-     * @return solPool The amount of Solid in the pool
-     * @return ethPool The virtual amount of ETH in the pool (actual + 1 ether)
+     * @return S The amount of Solid in the pool
+     * @return E The virtual amount of ETH in the pool (actual + 1 ether)
      */
-    function pool() external view returns (uint256 solPool, uint256 ethPool);
+    function pool() external view returns (uint256 S, uint256 E);
 
     /**
      * @notice Returns the amount of ETH received for selling Solid from the pool
-     * @dev Uses constant-product formula: eth = ethPool - ethPool * solPool / (solPool + sol)
+     * @dev Uses constant-product formula: e = E - E * S / (S + s)
      * ETH payout is capped at actual balance (virtual pricing may calculate higher).
-     * @param sol The amount of Solid to sell
-     * @return eth The amount of ETH received
+     * @param s The amount of Solid to sell
+     * @return e The amount of ETH received
      */
-    function sells(uint256 sol) external view returns (uint256 eth);
+    function sells(uint256 s) external view returns (uint256 e);
 
     /**
      * @notice Returns the amount of that Solid received for selling this Solid
-     * @dev Calculates: sells(sol) -> eth, then that.buys(eth) -> thats
+     * @dev Calculates: sells(s) -> e, then that.buys(e) -> thats
      * @param that The Solid to receive
-     * @param sol The amount of this Solid to sell
+     * @param s The amount of this Solid to sell
      * @return thats The amount of that Solid that would be received
      */
-    function sellsFor(ISolid that, uint256 sol) external view returns (uint256 thats);
+    function sellsFor(ISolid that, uint256 s) external view returns (uint256 thats);
 
     /**
      * @notice Sells Solid for ETH from the pool
-     * @dev Uses constant-product formula: eth = ethPool - ethPool * solPool / (solPool + sol)
+     * @dev Uses constant-product formula: e = E - E * S / (S + s)
      * Transfers Solid from caller to pool, sends ETH to caller.
      * ETH payout is capped at actual balance (virtual pricing may calculate infinitesimally higher).
      * Protected by reentrancy guard.
-     * @param sol The amount of Solid to sell
-     * @return eth The amount of ETH received
+     * @param s The amount of Solid to sell
+     * @return e The amount of ETH received
      */
-    function sell(uint256 sol) external returns (uint256 eth);
+    function sell(uint256 s) external returns (uint256 e);
 
     /**
      * @notice Sells this Solid for another Solid in a single transaction
@@ -56,26 +56,26 @@ interface ISolid is IERC20Metadata {
      * No approval needed - uses internal _update.
      * Protected by reentrancy guard.
      * @param that The Solid to buy
-     * @param sol The amount of this Solid to sell
+     * @param s The amount of this Solid to sell
      * @return thats The amount of that Solid received
      */
-    function sellFor(ISolid that, uint256 sol) external returns (uint256 thats);
+    function sellFor(ISolid that, uint256 s) external returns (uint256 thats);
 
     /**
      * @notice Returns the amount of Solid received for buying with ETH from the pool
-     * @dev Uses constant-product formula: sol = solPool - solPool * (ethPool - eth) / ethPool
-     * @param eth The amount of ETH sent
-     * @return sol The amount of Solid received
+     * @dev Uses constant-product formula: s = S - S * (E - e) / E
+     * @param e The amount of ETH sent
+     * @return s The amount of Solid received
      */
-    function buys(uint256 eth) external view returns (uint256 sol);
+    function buys(uint256 e) external view returns (uint256 s);
 
     /**
      * @notice Buys Solid with ETH from the pool
-     * @dev Uses constant-product formula: sol = solPool - solPool * (ethPool - eth) / ethPool
+     * @dev Uses constant-product formula: s = S - S * (E - e) / E
      * Transfers Solid from pool to caller. Does not mint new tokens.
-     * @return sol The amount of Solid received
+     * @return s The amount of Solid received
      */
-    function buy() external payable returns (uint256 sol);
+    function buy() external payable returns (uint256 s);
 
     /**
      * @notice Checks if a Solid exists and computes its deterministic address
@@ -102,9 +102,9 @@ interface ISolid is IERC20Metadata {
      * Uses CREATE2 for deterministic deployment based on name and symbol.
      * @param name The name of the Solid
      * @param symbol The symbol of the Solid
-     * @return sol The Solid instance (newly created or existing)
+     * @return solid The Solid instance (newly created or existing)
      */
-    function make(string calldata name, string calldata symbol) external returns (ISolid sol);
+    function make(string calldata name, string calldata symbol) external returns (ISolid solid);
 
     /**
      * @notice Emitted when a new Solid is made
@@ -117,18 +117,18 @@ interface ISolid is IERC20Metadata {
     /**
      * @notice Emitted when Solid are bought with ETH
      * @param solid The Solid instance where buy occurred
-     * @param eth The amount of ETH spent
-     * @param sol The amount of Solid received
+     * @param e The amount of ETH spent
+     * @param s The amount of Solid received
      */
-    event Buy(ISolid indexed solid, uint256 eth, uint256 sol);
+    event Buy(ISolid indexed solid, uint256 e, uint256 s);
 
     /**
      * @notice Emitted when Solid are sold for ETH
      * @param solid The Solid instance where sell occurred
-     * @param sol The amount of Solid sold
-     * @param eth The amount of ETH received
+     * @param s The amount of Solid sold
+     * @param e The amount of ETH received
      */
-    event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
+    event Sell(ISolid indexed solid, uint256 s, uint256 e);
 
     /**
      * @notice Thrown when name or symbol is empty in made() or make()
