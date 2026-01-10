@@ -25,8 +25,11 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     }
 
     function buy() public payable returns (uint256 sol) {
+        if (this == NOTHING) revert Nothing();
         uint256 eth = msg.value;
-        sol = buys(eth);
+        uint256 solPool = balanceOf(address(this));
+        uint256 ethPool = address(this).balance + 1 ether;
+        sol = solPool - solPool * (ethPool - eth) / ethPool;
         _update(address(this), msg.sender, sol);
         emit Buy(this, eth, sol);
     }
@@ -37,6 +40,11 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         if (eth > ethPool - 1 ether) {
             eth = ethPool - 1 ether;
         }
+    }
+
+    function sellsFor(ISolid that, uint256 sol) public view returns (uint256 thats) {
+        uint256 eth = sells(sol);
+        thats = that.buys(eth);
     }
 
     function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
@@ -56,8 +64,8 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
     }
 
     function sellFor(ISolid that, uint256 sol) external nonReentrant returns (uint256 thats) {
-        _update(msg.sender, address(this), sol);
         uint256 eth = sells(sol);
+        _update(msg.sender, address(this), sol);
         emit Sell(this, sol, eth);
         thats = that.buy{value: eth}();
         that.transfer(msg.sender, thats);

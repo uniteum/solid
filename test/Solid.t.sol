@@ -35,6 +35,26 @@ contract SolidTest is BaseTest {
         assertEq(N.symbol(), "NOTHING");
     }
 
+    function test_Sells_MatchesSell() public {
+        // Create Hydrogen
+        ISolid H = N.make("Hydrogen", "H");
+
+        // Add liquidity
+        vm.deal(address(H), 10 ether);
+
+        // Buy some H
+        uint256 hBought = H.buy{value: 1 ether}();
+
+        // Get the preview from sells()
+        uint256 ethPreview = H.sells(hBought);
+
+        // Execute actual sell
+        uint256 ethActual = H.sell(hBought);
+
+        // They should match exactly
+        assertEq(ethActual, ethPreview, "sell should return same ETH as sells preview");
+    }
+
     function test_SellFor_NoApproval() public {
         // Create two Solids
         ISolid H = N.make("Hydrogen", "H");
