@@ -239,15 +239,23 @@ Price = 1 ETH buys ~49,090 tokens (price increased)
 
 **Note:** No LP tokens - the Solid tokens ARE your liquidity position
 
-### Scenario B: Arbitrage Between Solids
+### Scenario B: Arbitrage with External Exchanges
 
-**Goal:** Profit from price differences
+**Goal:** Profit from price differences between Solid protocol and external exchanges (like Uniswap)
 
-1. Check prices using **`buys()`** and **`sells()`**
-2. Buy undervalued Solid with ETH
-3. Use **`sellFor()`** to swap for overvalued Solid
-4. Sell that Solid for ETH
-5. Profit = final ETH - starting ETH
+**Note:** There is NO internal arbitrage within Solid - each Solid has only one pool with deterministic pricing. Arbitrage only exists between the Solid protocol and external DEXes.
+
+**Example:** If Hydrogen (H) trades on both Solid and Uniswap:
+
+1. Check price on Solid: **`H.buys(1 ether)`** → X tokens
+2. Check price on Uniswap for same H/ETH pair
+3. If Solid price < Uniswap price:
+   - Buy H on Solid: **`H.buy{value: 1 ether}()`**
+   - Sell H on Uniswap for more ETH
+4. If Uniswap price < Solid price:
+   - Buy H on Uniswap with ETH
+   - Sell H on Solid: **`H.sell(amount)`**
+5. Profit = final ETH - starting ETH - gas costs
 
 ### Scenario C: Multi-Hop Trading
 
