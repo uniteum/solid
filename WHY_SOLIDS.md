@@ -34,21 +34,16 @@ Making a new Solid is **completely free** - you only pay gas. Thanks to EIP-1167
 - **25 gwei** (moderate): ~$1.50 in gas
 - **50 gwei** (busy): ~$3.00 in gas
 
-**But here's the twist:** You can optionally send ETH when creating to bootstrap initial liquidity. This ETH immediately boosts the token's tradeable value.
-
 ```solidity
 // Make a new Solid token - free creation!
 solid.make("MyToken", "MTK");  // Just pay gas
-
-// Or bootstrap with initial liquidity
-solid.make{value: 1 ether}("MyToken", "MTK");  // Better initial price
 ```
 
 **How the distribution works:**
 
 When you make a Solid, the economics are radically different from traditional tokens:
 
-- **0% to maker** - You get absolutely nothing
+- **0% to maker** - You get nothing except first mover advantage
 - **100% to the pool** - All tokens go to everyone else
 - The total supply is exactly **Avogadro's number**: **6.02214076 × 10²³** tokens
 - A **deterministic address** (same name+symbol always produces same address)
@@ -81,15 +76,9 @@ solid.buy{value: 1 ether}();
 solid.sell(1000000000);
 ```
 
-**Boost the value for everyone:**
-
-Anyone can send ETH directly to the token contract address (like sending to any wallet). This permanently increases the pool's intrinsic value and raises the price floor for all holders.
-
-The AMM uses the **constant-product formula** (x × y = k) just like Uniswap, but it's built into the token itself.
-
 ## Why Solids Are Better
 
-### 1. Zero Setup Friction
+### 1. Extremly Low Setup Friction
 
 **Traditional approach:**
 - Deploy token contract: ~2,000,000 gas (~$50+ at 25 gwei)
@@ -108,7 +97,7 @@ You save **99%** on costs plus all the complexity. Creating a tradeable token co
 
 With traditional DEX pools, liquidity providers can rug at any time, killing your token's tradability.
 
-**With Solids, 100% of token liquidity is permanently locked in the contract.** The pool can never be drained. Your token is always tradeable.
+**With Solids, 100% of token liquidity is locked in the contract.** The pool can never be drained. Your token is always tradeable.
 
 **Even better:** The virtual 1 ETH creates a **permanent price floor**, and anyone can boost the pool by sending ETH directly to the contract. The intrinsic value can only increase, never decrease.
 
@@ -127,7 +116,7 @@ This is a genuinely fair launch. The creator gets the same opportunity as anyone
 The same name and symbol always produce the same contract address. This means:
 - **No frontrunning** - if someone tries to steal your token name, they make the same address you would have
 - **Predictable deployments** - you can calculate addresses off-chain
-- **No name squatting** - first person to make("Bitcoin", "BTC") owns it forever
+- **No name squatting** - everyone has access to all Solid tokens
 
 ### 5. Chemistry-Inspired Economics with Price Floor Guarantee
 
