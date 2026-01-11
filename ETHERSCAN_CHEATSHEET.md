@@ -74,7 +74,7 @@ e (uint256): 100000000000000000  (0.1 ETH in wei)
 
 ### 5. Sell Tokens for ETH
 
-**On Solid Contract → [Write Contract → `3. sell`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F3)**
+**On Solid Contract → [Write Contract → `4. sell`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F4)**
 
 ```
 s (uint256): 1000000000000000000000  (1000 tokens)
@@ -108,7 +108,7 @@ account (address): 0xYourAddressHere
 
 ### 9. Swap One Solid for Another
 
-**On Source Solid → [Write Contract → `4. sellFor`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F4)**
+**On Source Solid → [Write Contract → `5. sellFor`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F5)**
 
 ```
 that (address): 0xTargetSolidAddress
