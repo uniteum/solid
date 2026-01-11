@@ -326,8 +326,8 @@ Then make another one for fun.
 
 ---
 
-**Still skeptical?** Read the [smart contract code](https://etherscan.io/address/TBD#code) - it's less than 100 lines. No hidden surprises.
+**Still skeptical?** Read the [smart contract code](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE#code) - it's only 109 lines. No hidden surprises.
 
 **Built by crypto hobbyists, for crypto hobbyists.**
 
-*Make something. Make it Solid.*
+*Make something out of NOTHING. Make it Solid.*
