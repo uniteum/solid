@@ -95,7 +95,7 @@ function make(string calldata name, string calldata symbol) external returns (IS
 **What it does:**
 - Creates new Solid with name `name` and symbol `symbol`
 - If Solid already exists, returns the existing instance (does not revert)
-- No stake required (anyone can create for free)
+- **NOT payable** - creation is free but creator must buy tokens separately
 - Mints exactly AVOGADRO tokens (100% to pool, 0% to maker)
 - Pool starts with 0 actual ETH but uses virtual 1 ETH for pricing
 - Uses CREATE2 for deterministic addresses
@@ -103,6 +103,7 @@ function make(string calldata name, string calldata symbol) external returns (IS
   - Elegant Avogadro relationship: AVOGADRO / 10^18
   - At ETH = $3,000: ~$0.005 USD per solid (half a penny)
 - **Price floor**: Virtual 1 ETH ensures sell price never falls below this starting price
+- **Creator advantage**: Can be first to buy at the initial price (fair first-mover benefit)
 
 **Formula:**
 ```solidity
@@ -124,6 +125,10 @@ ISolid H = N.make("Hydrogen", "H");
 // pool() returns (AVOGADRO, 1 ether)  // Virtual 1 ETH for pricing
 // For 1 ETH, you can buy: AVOGADRO / 1e18 = ~602,214.076 solids
 // At $3,000/ETH: each solid costs ~$0.005 USD (half a penny)
+
+// Creator can buy first (separate transaction or batched call)
+uint256 solids = H.buy{value: 1 ether}();
+// Creator gets ~602,214.076 solids at initial price
 ```
 
 ### 2. Buy (ETH → Solid)
@@ -605,7 +610,7 @@ always_use_create_2_factory = true
 ### Creating a New Solid
 
 ```solidity
-// Create "Hydrogen" "H" (no stake required)
+// Create "Hydrogen" "H" (no stake required, NOT payable)
 // If already exists, returns the existing instance (does not revert)
 ISolid H = N.make("Hydrogen", "H");
 // H.totalSupply() = AVOGADRO (6.02214076e23)
@@ -613,6 +618,9 @@ ISolid H = N.make("Hydrogen", "H");
 // H.balanceOf(address(H)) = AVOGADRO  // Pool gets 100%
 // address(H).balance = 0  // No actual ETH
 // Starting price: 1 ETH = ~602,214.076 solids (~$0.005/solid @ $3k ETH)
+
+// Creator can buy first in a separate call (fair first-mover advantage)
+uint256 solids = H.buy{value: 1 ether}();
 ```
 
 ### Buying Solid with ETH
@@ -709,12 +717,12 @@ ISolid nothing = solid.NOTHING();     // Factory instance
 2. **Native ETH**: Uses ETH directly (not WETH)
 3. **Deterministic Addresses**: CREATE2 based on name+symbol
 4. **Factory Pattern**: NOTHING instance creates all Solids
-5. **Zero Maker Share**: Creator receives 0% (100% goes to pool)
+5. **Zero Maker Share**: Creator receives 0% (100% goes to pool), must buy separately
 6. **Virtual Pricing**: Pool adds 1 ETH virtually for initial price discovery
 7. **Elegant Initial Price**: 1 ETH = ~602,214.076 solids (Avogadro / 10^18)
 8. **Price Floor Guarantee**: Virtual 1 ETH ensures sell price never falls below starting price
 9. **No Liquidity Tokens**: Solid tokens ARE the liquidity
-10. **Permissionless Creation**: Anyone can create Solids for free
+10. **Permissionless Creation**: Anyone can create Solids for free (make() not payable)
 
 ---
 
