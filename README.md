@@ -1,10 +1,21 @@
-# Liquid
+# Solid
 
-Liquid is a liquidity protocol on Ethereum where liquids are ERC-20 tokens with built-in liquidity.
+Solid is a constant-product AMM protocol on Ethereum where Solid tokens are traded against ETH with deterministic deployment.
+
+## Deployed Contracts
+
+### Mainnet
+- **NOTHING (Proto-factory)**: `0x16cF8EeB96DE6666254F498E3A3C8523454EFf54`
 
 ## Overview
 
-- **Built-in Liquidity**
+Solid is a constant-product AMM where:
+- Each Solid token is a unique ERC-20 with built-in ETH liquidity pool
+- Tokens are created via a factory pattern with deterministic addresses (CREATE2)
+- Initial supply is 10 mols (6.02214076e24 tokens)
+- Supply is dynamic: condense mints new tokens, vaporize burns tokens for ETH
+- Makers receive 50% of supply, 50% goes to the liquidity pool
+- Buy/sell operations use constant-product formula (x * y = k)
 
 For comprehensive documentation, see [CLAUDE.md](CLAUDE.md).
 
@@ -12,8 +23,8 @@ For comprehensive documentation, see [CLAUDE.md](CLAUDE.md).
 
 ```bash
 # Clone and install
-git clone git@github.com:uniteum/liquid.git
-cd liquid
+git clone git@github.com:uniteum/solid.git
+cd solid
 
 # Build
 forge build
@@ -84,7 +95,7 @@ forge snapshot
 
 ```bash
 chain=11155111
-forge script script/Liquid.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
+forge script script/Solid.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
 ```
 
 ## Documentation

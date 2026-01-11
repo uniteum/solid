@@ -6,18 +6,19 @@ import {SolidFactory} from "../src/SolidFactory.sol";
 
 /**
  * @notice Invoke SolidFactory to create Solids from a JSON file
- * @dev Usage: FACTORY_ADDRESS=0x... SOLIDS_PATH=path/to/solids.json forge script script/MakeSolids.sol -f $chain --private-key $tx_key --broadcast
- * @dev The script automatically calculates required ETH based on MAKER_FEE from the Solid contract
+ * @dev Usage: forge script script/MakeSolids.sol -f $chain --private-key $tx_key --broadcast
+ * @dev The script automatically calculates required ETH based on STAKE from the Solid contract
  */
 contract MakeSolids is Script {
     function run() external {
         // Get SolidFactory address from environment
-        address factoryAddress = vm.envAddress("FACTORY_ADDRESS");
+        address factoryAddress = vm.envAddress("SOLID_FACTORY");
         console2.log("Using SolidFactory at:", factoryAddress);
 
         // Read and parse solids directly into factory format
         string memory path = vm.envString("SOLIDS_PATH");
         string memory fullPath = string.concat(vm.projectRoot(), "/", path);
+        // forge-lint: disable-next-line(unsafe-cheatcode)
         string memory json = vm.readFile(fullPath);
 
         SolidFactory.SolidSpec[] memory solids = abi.decode(vm.parseJson(json, "$"), (SolidFactory.SolidSpec[]));
@@ -27,19 +28,12 @@ contract MakeSolids is Script {
         // Create factory instance
         SolidFactory factory = SolidFactory(factoryAddress);
 
-        // Check which solids already exist and calculate exact fee BEFORE broadcast
-        (
-            SolidFactory.SolidSpec[] memory existing,
-            SolidFactory.SolidSpec[] memory toCreate,
-            uint256 feePer,
-            uint256 fee
-        ) = factory.made(solids);
+        // Check which solids already exist BEFORE broadcast
+        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory toCreate) = factory.made(solids);
 
         console2.log("\nPre-flight check:");
-        console2.log("  MAKER_FEE per token:", feePer);
         console2.log("  Already exist:", existing.length);
         console2.log("  To create:", toCreate.length);
-        console2.log("  Required ETH:", fee);
 
         // Show existing tokens
         if (existing.length > 0) {
@@ -65,8 +59,7 @@ contract MakeSolids is Script {
 
         console2.log("\nStarting broadcast...");
         vm.startBroadcast();
-        (SolidFactory.SolidSpec[] memory existingFinal, SolidFactory.SolidSpec[] memory created,,) =
-            factory.make{value: fee}(solids);
+        (SolidFactory.SolidSpec[] memory existingFinal, SolidFactory.SolidSpec[] memory created) = factory.make(solids);
 
         console2.log("\nSummary:");
         console2.log("  Created:", created.length);

@@ -24,4 +24,4 @@
 	url = https://github.com/uniteum/panic.git
 [submodule "lib/isolid"]
 	path = lib/isolid
-	url = https://github.com/uniteum/isolid
+	url = https://github.com/uniteum/isolid.git

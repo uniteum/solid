@@ -7,7 +7,7 @@ import {Solid, ISolid} from "./Solid.sol";
  * @notice Factory for batch creation of Solid tokens
  */
 contract SolidFactory {
-    Solid public immutable SOLID;
+    Solid public immutable NOTHING;
 
     struct SolidSpec {
         string name;
@@ -17,84 +17,61 @@ contract SolidFactory {
     event MadeBatch(uint256 created, uint256 skipped, uint256 total);
 
     constructor(Solid solid) {
-        SOLID = solid;
+        NOTHING = solid;
     }
 
     /**
      * @notice Check which solids exist and which don't
      * @param solids Array of solids to check
-     * @return existing Array of SolidSpecs that already exist
-     * @return notExisting Array of SolidSpecs that don't exist yet
+     * @return done Array of SolidSpecs that already exist
+     * @return tbd Array of SolidSpecs that don't exist yet
      */
-    function made(SolidSpec[] calldata solids)
-        public
-        view
-        returns (SolidSpec[] memory existing, SolidSpec[] memory notExisting, uint256 feePer, uint256 fee)
-    {
-        uint256 existingCount = 0;
-        uint256 notExistingCount = 0;
+    function made(SolidSpec[] calldata solids) public view returns (SolidSpec[] memory done, SolidSpec[] memory tbd) {
+        uint256 doneCount = 0;
+        uint256 tbdCount = 0;
 
         // First pass: count
         for (uint256 i = 0; i < solids.length; i++) {
-            (bool yes,,) = SOLID.made(solids[i].name, solids[i].symbol);
+            (bool yes,,) = NOTHING.made(solids[i].name, solids[i].symbol);
             if (yes) {
-                existingCount++;
+                doneCount++;
             } else {
-                notExistingCount++;
+                tbdCount++;
             }
         }
 
-        feePer = SOLID.MAKER_FEE();
-        fee = notExistingCount * feePer;
-
         // Allocate arrays
-        existing = new SolidSpec[](existingCount);
-        notExisting = new SolidSpec[](notExistingCount);
+        done = new SolidSpec[](doneCount);
+        tbd = new SolidSpec[](tbdCount);
 
         // Second pass: populate
-        uint256 existingIndex = 0;
-        uint256 notExistingIndex = 0;
+        uint256 doneIndex = 0;
+        uint256 tbdIndex = 0;
         for (uint256 i = 0; i < solids.length; i++) {
-            (bool yes,,) = SOLID.made(solids[i].name, solids[i].symbol);
+            (bool yes,,) = NOTHING.made(solids[i].name, solids[i].symbol);
             if (yes) {
-                existing[existingIndex++] = solids[i];
+                done[doneIndex++] = solids[i];
             } else {
-                notExisting[notExistingIndex++] = solids[i];
+                tbd[tbdIndex++] = solids[i];
             }
         }
     }
 
     /**
      * @notice Create multiple Solids in a single transaction
-     * @dev Refunds excess ETH to msg.sender
      * @param solids Array of solids to create
-     * @return existing Array of SolidSpecs that already existed
+     * @return done Array of SolidSpecs that already existed
      * @return created Array of SolidSpecs that were created
      */
-    function make(SolidSpec[] calldata solids)
-        external
-        payable
-        returns (SolidSpec[] memory existing, SolidSpec[] memory created, uint256 feePer, uint256 fee)
-    {
-        // Get arrays of existing and non-existing solids
-        (existing, created, feePer, fee) = made(solids);
+    function make(SolidSpec[] calldata solids) external returns (SolidSpec[] memory done, SolidSpec[] memory created) {
+        // Get arrays of done and TBD solids
+        (done, created) = made(solids);
 
-        if (msg.value < fee) {
-            revert ISolid.PaymentLow(msg.value, fee);
-        }
-
-        // Create the non-existing ones
+        // Create the TBD ones
         for (uint256 i = 0; i < created.length; i++) {
-            SOLID.make{value: feePer}(created[i].name, created[i].symbol);
+            NOTHING.make(created[i].name, created[i].symbol);
         }
 
-        emit MadeBatch(created.length, existing.length, solids.length);
-
-        // Refund excess ETH
-        uint256 excess = msg.value - fee;
-        if (excess > 0) {
-            (bool ok,) = msg.sender.call{value: excess}("");
-            require(ok, "Refund failed");
-        }
+        emit MadeBatch(created.length, done.length, solids.length);
     }
 }

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.30;
 
 import {ISolid} from "isolid/ISolid.sol";
@@ -7,46 +7,70 @@ import {Clones} from "clones/Clones.sol";
 import {ReentrancyGuardTransient} from "reentrancy/ReentrancyGuardTransient.sol";
 
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
-    uint256 constant MOL = 6.02214076e23;
-    uint256 constant MOLS = 10000;
-    uint256 constant SUPPLY = MOLS * MOL;
-
     ISolid public immutable NOTHING = this;
-    uint256 public immutable MAKER_FEE = 0.001 ether;
+    uint256 public immutable SUPPLY;
 
-    constructor() ERC20("", "") {}
-
-    function pool() public view returns (uint256 solPool, uint256 ethPool) {
-        solPool = balanceOf(address(this));
-        ethPool = address(this).balance;
+    constructor(uint256 supply) ERC20("", "NOTHING") {
+        SUPPLY = supply;
     }
 
-    function withdraw(uint256 sol) external nonReentrant returns (uint256 eth) {
-        (uint256 solPool, uint256 ethPool) = pool();
-        eth = ethPool - ethPool * solPool / (solPool + sol);
-        _update(msg.sender, address(this), sol);
-        emit Withdraw(this, sol, eth);
-        (bool ok, bytes memory returnData) = msg.sender.call{value: eth}("");
+    function pool() public view returns (uint256 S, uint256 E) {
+        if (this == NOTHING) revert Nothing();
+        S = balanceOf(address(this));
+        E = address(this).balance + 1 ether;
+    }
+
+    function buys(uint256 e) public view returns (uint256 s) {
+        (uint256 S, uint256 E) = pool();
+        s = S - S * E / (E + e);
+    }
+
+    function buy() public payable returns (uint256 s) {
+        uint256 e = msg.value;
+        (uint256 S, uint256 E) = pool();
+        E -= e;
+        s = S - S * E / (E + e);
+        emit Buy(this, e, s);
+        _update(address(this), msg.sender, s);
+    }
+
+    function sells(uint256 s) public view returns (uint256 e) {
+        (uint256 S, uint256 E) = pool();
+        e = E - (E * S + E - 1) / (S + s);
+    }
+
+    function sell(uint256 s) external nonReentrant returns (uint256 e) {
+        e = sells(s);
+        emit Sell(this, s, e);
+        _update(msg.sender, address(this), s);
+        (bool ok, bytes memory returned) = msg.sender.call{value: e}("");
         if (!ok) {
-            if (returnData.length > 0) {
+            if (returned.length > 0) {
                 assembly {
-                    revert(add(returnData, 32), mload(returnData))
+                    revert(add(returned, 32), mload(returned))
                 }
             } else {
-                revert WithdrawFailed();
+                revert SellFailed(this, s, e, address(this).balance);
             }
         }
     }
 
-    function deposit() public payable returns (uint256 sol) {
-        (uint256 solPool, uint256 ethPool) = pool();
-        uint256 eth = msg.value;
-        sol = solPool - solPool * (ethPool - eth) / ethPool;
-        _update(address(this), msg.sender, sol);
-        emit Deposit(this, eth, sol);
+    function sellsFor(ISolid that, uint256 s) public view returns (uint256 thats) {
+        uint256 e = sells(s);
+        thats = that.buys(e);
     }
 
-    receive() external payable {}
+    function sellFor(ISolid that, uint256 s) external nonReentrant returns (uint256 thats) {
+        uint256 e = sells(s);
+        emit Sell(this, s, e);
+        _update(msg.sender, address(this), s);
+        thats = that.buy{value: e}();
+        that.transfer(msg.sender, thats);
+    }
+
+    receive() external payable {
+        if (this == NOTHING) revert Nothing();
+    }
 
     function made(string calldata name, string calldata symbol)
         public
@@ -61,27 +85,25 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
         yes = home.code.length > 0;
     }
 
-    function make(string calldata name, string calldata symbol) external payable returns (ISolid sol) {
+    function make(string calldata name, string calldata symbol) external returns (ISolid solid) {
         if (this != NOTHING) {
-            sol = NOTHING.make{value: msg.value}(name, symbol);
-            require(sol.transfer(msg.sender, SUPPLY / 2), "Transfer failed");
+            solid = NOTHING.make(name, symbol);
         } else {
-            if (msg.value < MAKER_FEE) revert PaymentLow(msg.value, MAKER_FEE);
             (bool yes, address home, bytes32 salt) = made(name, symbol);
-            if (yes) revert MadeAlready(name, symbol);
-            home = Clones.cloneDeterministic(address(NOTHING), salt, 0);
-            Solid(payable(home)).zzz_{value: msg.value}(name, symbol, msg.sender);
-            sol = ISolid(payable(home));
-            emit Make(sol, name, symbol);
+            solid = ISolid(payable(home));
+            if (!yes) {
+                emit Make(solid, name, symbol);
+                home = Clones.cloneDeterministic(address(NOTHING), salt, 0);
+                Solid(payable(home)).zzz_(name, symbol);
+            }
         }
     }
 
-    function zzz_(string calldata name, string calldata symbol, address maker) external payable {
+    function zzz_(string calldata name, string calldata symbol) external {
         if (bytes(_symbol).length == 0) {
             _name = name;
             _symbol = symbol;
-            _mint(address(this), SUPPLY / 2);
-            _mint(maker, SUPPLY / 2);
+            _mint(address(this), SUPPLY);
         }
     }
 }

@@ -20,29 +20,34 @@ contract SolidUser is User {
         NOTHING = nothing;
     }
 
-    modifier logging(string memory method, ISolid U, uint256 amount) {
-        _logging(method, U, amount);
+    modifier logging(string memory method, ISolid S, uint256 s) {
+        _logging(method, S, s);
         _;
         logBalances();
     }
 
-    function _logging(string memory method, ISolid U, uint256 amount) private view {
-        console.log(string.concat(name, " ", method, " ", amount.toString(), " ", U.name()));
+    function _logging(string memory method, ISolid S, uint256 s) private view {
+        console.log(string.concat(name, " ", method, " ", s.toString(), " ", S.name()));
     }
 
-    function deposit(ISolid U, uint256 eth) public logging("deposit", U, eth) returns (uint256 solid) {
-        solid = U.deposit{value: eth}();
-        console.log("solid:", solid);
+    function buy(ISolid S, uint256 e) public logging("buy", S, e) returns (uint256 s) {
+        s = S.buy{value: e}();
+        console.log("s:", s);
     }
 
-    function withdraw(ISolid U, uint256 solid) public logging("back", U, solid) returns (uint256 eth) {
-        eth = U.withdraw(solid);
-        console.log("eth:", eth);
+    function sell(ISolid S, uint256 s) public logging("sell", S, s) returns (uint256 e) {
+        e = S.sell(s);
+        console.log("e:", e);
     }
 
-    function liquidate(ISolid U) public returns (uint256 eth, uint256 solid) {
-        solid = U.balanceOf(address(this));
-        eth = withdraw(U, solid);
-        assertHasNo(U);
+    function sellFor(ISolid S, ISolid that, uint256 s) public logging("sell", S, s) returns (uint256 t) {
+        t = S.sellFor(that, s);
+        console.log("t:", t);
+    }
+
+    function liquidate(ISolid S) public returns (uint256 e, uint256 s) {
+        s = S.balanceOf(address(this));
+        e = sell(S, s);
+        assertHasNo(S);
     }
 }
