@@ -6,9 +6,9 @@
 
 Solids are ERC-20 tokens with **built-in ETH liquidity**. Every Solid token you make comes with an automated market maker (AMM) baked directly into the token contract itself.
 
-No external DEXs. No liquidity fragmentation. No complicated pool deployments.
+No external DEXs. No liquidity fragmentation. No complicated pool deployments. No tokens for the creator.
 
-**Just make a token, and it's instantly tradeable.**
+**Just make a token, and it's instantly tradeable for everyone.**
 
 ## The Problem with Normal Tokens
 
@@ -28,37 +28,43 @@ You've probably been through this before:
 
 ### Creating a Solid (Making)
 
-Making a new Solid requires a **minimum of 0.001 ETH** plus gas. Thanks to EIP-1167 minimal proxy cloning, the gas cost is incredibly low - only **~198,000 gas**. At typical gas prices, that's:
+Making a new Solid is **completely free** - you only pay gas. Thanks to EIP-1167 minimal proxy cloning, the gas cost is incredibly low - only **~198,000 gas**. At typical gas prices, that's:
 
-- **10 gwei** (quiet times): ~$0.60 in gas → **~$3.60 total minimum**
-- **25 gwei** (moderate): ~$1.50 in gas → **~$4.50 total minimum**
-- **50 gwei** (busy): ~$3.00 in gas → **~$6.00 total minimum**
+- **10 gwei** (quiet times): ~$0.60 in gas
+- **25 gwei** (moderate): ~$1.50 in gas
+- **50 gwei** (busy): ~$3.00 in gas
 
-**But here's the key:** You should consider sending **more ETH** than the minimum. The ETH you send establishes the initial pool value and your token's starting price. More ETH = better initial liquidity and higher intrinsic value.
+**But here's the twist:** You can optionally send ETH when creating to bootstrap initial liquidity. This ETH immediately boosts the token's tradeable value.
 
 ```solidity
-// Make a new Solid token - consider sending more than the minimum!
-solid.make{value: 1 ether}("MyToken", "MTK");  // Better starting price
+// Make a new Solid token - free creation!
+solid.make("MyToken", "MTK");  // Just pay gas
+
+// Or bootstrap with initial liquidity
+solid.make{value: 1 ether}("MyToken", "MTK");  // Better initial price
 ```
 
-**How the AMM works:**
+**How the distribution works:**
 
-The AMM assumes both sides of the pool have **equal value**. When you make a Solid:
+When you make a Solid, the economics are radically different from traditional tokens:
 
-- **50% of total supply** goes to you (the maker) - exactly **5,000 mol** worth
-- **50% goes to the pool** - also **5,000 mol**
-- Your ETH goes entirely into the pool, paired with those 5,000 mol tokens
+- **0% to maker** - You get absolutely nothing
+- **100% to the pool** - All tokens go to everyone else
+- The total supply is exactly **Avogadro's number**: **6.02214076 × 10²³** tokens
 - A **deterministic address** (same name+symbol always produces same address)
 - An **instantly tradeable token** with built-in liquidity
 
-Total supply: **6.02214076 billion** tokens (10,000 mol × Avogadro's number, with 18 decimals)
+**This is honest creation.** You don't get free tokens, but you do get first access to buy at the initial price - a fair advantage for taking the initiative to create.
 
-**Starting price scales linearly with your ETH:**
-- Send 0.001 ETH → 5,000 mol tokens worth 0.001 ETH → 1 mol = 0.0000002 ETH
-- Send 1 ETH → 5,000 mol tokens worth 1 ETH → 1 mol = 0.0002 ETH
-- Send 10 ETH → 5,000 mol tokens worth 10 ETH → 1 mol = 0.002 ETH
+**Virtual pricing magic:**
 
-The clever bit: the decimal point lands right after the 6, mirroring how Avogadro's number is written: **6.02214076** × 10²³. And as the maker, you get exactly 5,000 mol - half the supply, representing half the value.
+Even with 0 actual ETH, the pool assumes a **virtual 1 ETH** for pricing. This creates an elegant starting price:
+
+- **1 ETH = ~602,214.076 solids** (Avogadro's number / 10¹⁸)
+- At $3,000/ETH: **~$0.005 per solid** (half a penny)
+- This virtual ETH creates a **permanent price floor** - sell prices can never fall below this
+
+When you send ETH during creation, it adds to the virtual 1 ETH, immediately increasing the starting price.
 
 ### Trading Solids
 
@@ -75,9 +81,9 @@ solid.buy{value: 1 ether}();
 solid.sell(1000000000);
 ```
 
-**Increase the ETH pool and hence the price:**
+**Boost the value for everyone:**
 
-Simply send ETH directly to the token contract address like you would send to any wallet, which increases the price of tokens.
+Anyone can send ETH directly to the token contract address (like sending to any wallet). This permanently increases the pool's intrinsic value and raises the price floor for all holders.
 
 The AMM uses the **constant-product formula** (x × y = k) just like Uniswap, but it's built into the token itself.
 
@@ -93,28 +99,28 @@ The AMM uses the **constant-product formula** (x × y = k) just like Uniswap, bu
 - **Total: $155+ and 4 transactions** (at 25 gwei)
 
 **Solids approach (using EIP-1167 cloning):**
-- Make token: ~198,000 gas (~$1.50 at 25 gwei) + 0.001 ETH stake (~$3)
-- **Total: ~$4.50 and 1 transaction**
+- Make token: ~198,000 gas (~$1.50 at 25 gwei)
+- **Total: ~$1.50 and 1 transaction**
 
-You save **97%** on total costs plus all the complexity. The gas portion is negligible - most of your cost is the 0.001 ETH initial stake.
+You save **99%** on costs plus all the complexity. Creating a tradeable token costs less than a coffee.
 
 ### 2. Liquidity Can't Leave - Only Grow
 
-With traditional DEX pools, liquidity providers can sell at any time, killing your token's tradability.
+With traditional DEX pools, liquidity providers can rug at any time, killing your token's tradability.
 
-**With Solids, the initial 50% token liquidity is permanently locked in the contract.** The constant product in the pool can never decrease. Your token is always tradeable.
+**With Solids, 100% of token liquidity is permanently locked in the contract.** The pool can never be drained. Your token is always tradeable.
 
-**Even better:** The ETH pool represents **intrinsic value** that can only increase. Anyone can send ETH directly to the contract to boost the price.
+**Even better:** The virtual 1 ETH creates a **permanent price floor**, and anyone can boost the pool by sending ETH directly to the contract. The intrinsic value can only increase, never decrease.
 
-### 3. Fair Launch by Default
+### 3. Genuinely Fair Launch
 
-- **50% to maker** (you) - 5,000 mol
-- **50% to pool** (everyone else) - 5,000 mol
+- **0% to maker** - You receive zero tokens automatically
+- **100% to the pool** - All tokens available for public trading from block one
 - No presales, no VC allocation, no team vesting
 - The economics are transparent and hardcoded
-- **Equal value principle:** The AMM assumes your 5,000 mol and the pool's 5,000 mol have equal value, determined by the ETH you send
+- **First-mover advantage only:** As creator, you can buy first at the initial price
 
-This is what fair launches should look like. You get half the supply, but the market gets the other half at a price you set with your initial ETH.
+This is a genuinely fair launch. The creator gets the same opportunity as anyone else - they can buy tokens at the starting price. No pre-allocation, no insider discount, just the natural advantage of being first.
 
 ### 4. Deterministic Addresses
 
@@ -123,13 +129,17 @@ The same name and symbol always produce the same contract address. This means:
 - **Predictable deployments** - you can calculate addresses off-chain
 - **No name squatting** - first person to make("Bitcoin", "BTC") owns it forever
 
-### 5. Chemistry-Inspired Token Economics with Intrinsic Value
+### 5. Chemistry-Inspired Economics with Price Floor Guarantee
 
-The total supply is **6.02214076 billion** tokens (10,000 mol × Avogadro's number, scaled by 18 decimals).
+The total supply is exactly **Avogadro's number**: **6.02214076 × 10²³** tokens.
 
-Why? Because if you're going to make internet money, you might as well make it represent actual physical quantities. The decimal point lands exactly where it appears in Avogadro's number: **6.02214076**. This isn't accidental - it's 10,000 mol worth of tokens.
+Why? Because if you're going to make internet money, you might as well base it on fundamental physical constants. With the virtual 1 ETH pricing:
 
-It's nerdy. It's fun. It's memorable. And unlike most tokens, Solids have actual backing value.
+- **Starting price**: 1 ETH = ~602,214.076 solids (Avogadro / 10¹⁸)
+- **Price floor**: The virtual 1 ETH ensures sell prices can never fall below this
+- **Elegant relationship**: "One ETH buys Avogadro's number divided by 10¹⁸"
+
+It's nerdy. It's fun. It's memorable. And unlike most tokens, Solids have a guaranteed minimum value.
 
 ## Real Use Cases for Hobbyists
 
@@ -151,23 +161,23 @@ Already have an NFT project? Launch a Solid as your ecosystem token. The fair la
 
 ### Personal Currency
 
-Make a token representing you. Trade it with friends. Use it as social money. With a ~$4 entry price (total), why not?
+Make a token representing you. Trade it with friends. Use it as social money. With a ~$1.50 creation cost (just gas), why not?
 
 ## Technical Details (For the Curious)
 
 ### Constant-Product AMM
 
-When you buy ETH (buy tokens):
+When you buy with ETH:
 ```
-tokens_out = pool_tokens - (pool_tokens × pool_eth) / (pool_eth + eth_in)
+tokens_out = pool_tokens × eth_in / pool_eth
 ```
 
-When you sell tokens (sell for ETH):
+When you sell tokens for ETH:
 ```
 eth_out = pool_eth - (pool_eth × pool_tokens) / (pool_tokens + tokens_in)
 ```
 
-**Key insight:** The pool assumes **equal value** on both sides. If the pool has 5,000 mol tokens and 1 ETH, it values 5,000 mol = 1 ETH. Your starting price is determined by the ETH you send when making the Solid.
+**Key insight:** The pool always includes a **virtual 1 ETH** for pricing, even when actual ETH balance is 0. This creates the permanent price floor and elegant starting price of ~602,214 solids per ETH.
 
 Same formula as Uniswap v2, but gas-optimized and built into the token.
 
@@ -186,14 +196,14 @@ Thanks to EIP-1167 minimal proxy cloning, Solids are extremely gas-efficient:
   - At 10 gwei: **$0.60**
   - At 25 gwei: **$1.50**
   - At 50 gwei: **$3.00**
-- **Deposit ETH**: ~50,000 gas ($0.30-$1.50)
+- **Buy with ETH**: ~50,000 gas ($0.30-$1.50)
 - **Sell tokens**: ~60,000 gas ($0.40-$1.80)
 
-**Why so cheap?** EIP-1167 clones don't redeploy the full contract bytecode. They deploy a tiny proxy that delegates to the NOTHING template. This makes the gas portion **10-50x cheaper** than deploying a traditional token contract.
+**Why so cheap?** EIP-1167 clones don't redeploy the full contract bytecode. They deploy a tiny proxy that delegates to the NOTHING template. This makes creation **50-100x cheaper** than deploying a traditional token contract.
 
 Compare:
-- Traditional ERC-20 + Uniswap setup: ~$155 total (mostly gas)
-- Solids: ~$4.50 total (mostly the 0.001 ETH stake, gas is only ~$1.50)
+- Traditional ERC-20 + Uniswap setup: ~$155 total
+- Solids: ~$1.50 total (just gas, no stake required)
 
 ## Getting Started
 
@@ -212,12 +222,12 @@ The "NOTHING" contract is the factory for all Solids. Go to its address on Ether
 3. Click **Connect to Web3** and connect your wallet (MetaMask, WalletConnect, etc.)
 4. Find the **make** function
 5. Enter the following:
-   - **payableAmount (ether)**: Enter at least `0.001` (or more for better initial liquidity!)
+   - **payableAmount (ether)**: Optional - leave as `0` for free creation, or send ETH to bootstrap liquidity
    - **name (string)**: Your token name (e.g., `"MyToken"`)
    - **symbol (string)**: Your token symbol (e.g., `"MTK"`)
 6. Click **Write** and confirm the transaction
 
-That's it! Your Solid is now created with instant liquidity.
+That's it! Your Solid is now created with instant liquidity. Remember: you get 0 free tokens, but you can buy first at the initial price alongside everyone else.
 
 #### 3. Find Your New Solid's Address
 
@@ -229,7 +239,7 @@ After the transaction confirms:
 
 #### 4. Trade Your Solid via Etherscan
 
-To **buy tokens** (buy ETH):
+To **buy tokens** (spend ETH, receive solids):
 1. Go to your Solid's contract on Etherscan
 2. Click **Contract** → **Write Contract**
 3. Connect your wallet
@@ -237,16 +247,16 @@ To **buy tokens** (buy ETH):
 5. Enter ETH amount in **payableAmount**
 6. Click **Write** and confirm
 
-To **sell tokens** (sell ETH):
+To **sell tokens** (spend solids, receive ETH):
 1. Same contract, **Write Contract** tab
 2. Find the **sell** function
 3. Enter the amount of tokens to sell (in wei, with 18 decimals)
-   - Example: `1000000000000000000` = 1 token
+   - Example: `1000000000000000000` = 1 solid token
 4. Click **Write** and confirm
 
-To **boost intrinsic value** (add ETH to the pool):
+To **boost the pool** (permanently increase value for all holders):
 - Simply send ETH directly to the Solid's contract address from your wallet
-- This permanently increases the price floor for everyone!
+- This raises the price floor for everyone - pure altruism!
 
 #### 5. Check Pool Status
 
@@ -259,25 +269,28 @@ To see the current pool state:
 
 You can also check:
 - **balanceOf**: Your token balance (enter your address)
-- **totalSupply**: Always 6.02214076e27 (10,000 mol)
+- **totalSupply**: Always exactly Avogadro's number (6.02214076 × 10²³)
 - **name** and **symbol**: Token metadata
 
 ## FAQ
 
+**Q: Wait, I get ZERO tokens as the creator?**
+A: Correct - you receive zero tokens automatically. However, you can buy at the initial price just like anyone else. Your advantage is being first, not getting free tokens or a special discount. It's a fair first-mover advantage.
+
 **Q: Can I remove liquidity?**
-A: No. The 50% token pool liquidity is permanent. The ETH pool can only grow, never shrink (except through token sales). This is a feature, not a bug - it creates a rising price floor.
+A: No. 100% of tokens are permanently locked in the pool. The virtual 1 ETH creates an unremovable price floor. This is a feature - it prevents rugs.
 
 **Q: What if someone else makes my token name?**
-A: They can't "steal" it - the same name+symbol always produces the same address. Whoever makes it first owns the maker share.
+A: They can't "steal" it - the same name+symbol always produces the same address. Being first to create gives you the chance to buy at the initial price, which is the natural reward for taking initiative.
 
 **Q: Can I make multiple Solids?**
-A: Yes! Send at least 0.001 ETH per token (but consider sending more for better initial liquidity). Make as many as you want.
+A: Yes! It's completely free (just gas). Make as many as you want.
 
-**Q: Should I send more than 0.001 ETH when making a Solid?**
-A: Absolutely! The ETH you send determines your token's starting price. More ETH = higher initial value and better liquidity. The price scales linearly with your ETH contribution.
+**Q: Should I send ETH when making a Solid?**
+A: Only if you want to bootstrap initial liquidity for the community. The token works fine with 0 ETH (thanks to virtual pricing), but adding ETH immediately boosts the price.
 
 **Q: Can I increase the ETH pool after making a token?**
-A: Yes! Anyone can send ETH directly to the contract address (just like sending to a regular wallet). This permanently increases the intrinsic value and price floor of all tokens.
+A: Yes! Anyone can send ETH directly to the contract address. This permanently increases the price floor for all holders - pure altruism.
 
 **Q: What blockchain is this on?**
 A: Ethereum mainnet and major L2s (Base, Arbitrum, Optimism, Polygon).
@@ -286,7 +299,7 @@ A: Ethereum mainnet and major L2s (Base, Arbitrum, Optimism, Polygon).
 A: The code uses battle-tested OpenZeppelin primitives and standard AMM math. Review the code yourself - it's less than 100 lines.
 
 **Q: What's the catch?**
-A: No catch. It's an experiment in minimal viable liquidity. The 0.001 ETH stake prevents spam.
+A: No catch. It's an experiment in pure public goods and permanent liquidity. The only "cost" is gas (~$1.50).
 
 **Q: Can I use this for serious projects?**
 A: The contracts are simple and secure, but do your own research. Start small, test thoroughly.
@@ -295,12 +308,12 @@ A: The contracts are simple and secure, but do your own research. Start small, t
 
 Solids are built on four principles:
 
-1. **Simplicity** - One transaction to launch a tradeable token
-2. **Permanence** - Liquidity that can't be rugged, only strengthened
-3. **Fairness** - 50/50 split, no presales, no special allocations
-4. **Intrinsic Value** - ETH backing that can only increase, creating a rising price floor
+1. **Simplicity** - One transaction, ~$1.50 in gas, instant tradeable token
+2. **Permanence** - Virtual 1 ETH price floor that can never be removed
+3. **Fairness** - 0% free allocation, everyone buys at market price
+4. **Honest Incentives** - Creator's only advantage is buying first at initial price
 
-We believe tokens should have actual backing value, not just speculation. The ETH pool represents real value that can never be extracted except through the AMM.
+We believe the best tokens reward initiative fairly. You don't get free tokens, but you do get first access - a reasonable advantage for creating something valuable.
 
 ## Try It Today
 
