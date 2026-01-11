@@ -41,3 +41,7 @@ A: No catch. It's an experiment in pure public goods and permanent liquidity. Th
 **Q: Can I use this for serious projects?**
 
 A: The contracts are simple and secure, but do your own research. Start small, test thoroughly.
+
+**Q: Is Solid open source?**
+
+A: No. The code is publicly viewable for transparency and security review, but it is not open source. This prevents liquidity fragmentation - you can't deploy competing versions of Solid. However, anyone can use the ISolid interface to build contracts that interact with Solids, and anyone can use the deployed NOTHING contract to create tokens, ensuring all Solids share the same ecosystem and liquidity standards.
