@@ -257,13 +257,23 @@ Price = 1 ETH buys ~49,090 tokens (price increased)
    - Sell H on Solid: **`H.sell(amount)`**
 5. Profit = final ETH - starting ETH - gas costs
 
-### Scenario C: Multi-Hop Trading
+### Scenario C: Direct Solid-to-Solid Swaps
 
-**Goal:** Trade H → O → C (Hydrogen → Oxygen → Carbon)
+**Goal:** Trade H → O (Hydrogen → Oxygen) in one atomic transaction
 
-1. On Hydrogen contract, use **`sellFor(O_address, amount)`**
-2. On Oxygen contract, use **`sellFor(C_address, received_amount)`**
-3. Each hop is a separate transaction but atomic
+**Example:** Swap 1000 H for O:
+
+1. Check expected output: **`H.sellsFor(O_address, 1000)`** → Y tokens
+2. Execute swap: **`H.sellFor(O_address, 1000)`**
+   - Sells 1000 H for ETH internally
+   - Buys O with that ETH internally
+   - Returns O tokens to you atomically
+
+**Why use it?**
+- **Same pricing** as doing H→ETH then ETH→O separately
+- **Lower gas costs** - one transaction instead of two
+- **Atomic execution** - no risk of price changes between steps
+- **More convenient** - simpler to execute
 
 ---
 
