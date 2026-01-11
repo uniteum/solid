@@ -48,6 +48,7 @@ contract MyContract {
 
 **Deployed NOTHING (Ethereum Mainnet):**
 - Address: [`0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE`](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE)
+- [Create Solids via Etherscan](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE#writeContract#F3) - Call `make()` directly from your browser
 
 ## Core Functions
 
@@ -412,10 +413,6 @@ function provideLiquidity(ISolid H) public payable {
     // You can sell back anytime: H.sell(sol)
 }
 ```
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
 
 ## Links
 
