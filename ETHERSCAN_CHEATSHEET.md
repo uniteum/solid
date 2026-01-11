@@ -24,7 +24,7 @@
 
 ### 1. Create a New Solid
 
-**On NOTHING Contract → Write Contract → `3. make`**
+**On NOTHING Contract → [Write Contract → `3. make`](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE#writeContract#F3)**
 
 ```
 name: "My Token"
@@ -39,7 +39,7 @@ symbol: "MTKN"
 
 ### 2. Check If Solid Exists
 
-**On NOTHING Contract → Read Contract → `5. made`**
+**On NOTHING Contract → [Read Contract → `7. made`](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE#readContract#F7)**
 
 ```
 name: "My Token"
@@ -53,7 +53,7 @@ symbol: "MTKN"
 
 ### 3. Buy Tokens with ETH
 
-**On Solid Contract → Write Contract → `2. buy`**
+**On Solid Contract → [Write Contract → `2. buy`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F2)**
 
 ```
 payableAmount (ether): 0.1
@@ -64,7 +64,7 @@ Visit [Buy Function](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3
 
 ### 4. Preview Buy Amount
 
-**On Solid Contract → Read Contract → `2. buys`**
+**On Solid Contract → [Read Contract → `5. buys`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F5)**
 
 ```
 e (uint256): 100000000000000000  (0.1 ETH in wei)
@@ -74,7 +74,7 @@ e (uint256): 100000000000000000  (0.1 ETH in wei)
 
 ### 5. Sell Tokens for ETH
 
-**On Solid Contract → Write Contract → `6. sell`**
+**On Solid Contract → [Write Contract → `3. sell`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F3)**
 
 ```
 s (uint256): 1000000000000000000000  (1000 tokens)
@@ -82,7 +82,7 @@ s (uint256): 1000000000000000000000  (1000 tokens)
 
 ### 6. Preview Sell Amount
 
-**On Solid Contract → Read Contract → `7. sells`**
+**On Solid Contract → [Read Contract → `10. sells`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F10)**
 
 ```
 s (uint256): 1000000000000000000000  (1000 tokens)
@@ -92,7 +92,7 @@ s (uint256): 1000000000000000000000  (1000 tokens)
 
 ### 7. Check Pool State
 
-**On Solid Contract → Read Contract → `6. pool`**
+**On Solid Contract → [Read Contract → `9. pool`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F9)**
 
 **Returns:**
 - `S` = Solid tokens in pool
@@ -100,7 +100,7 @@ s (uint256): 1000000000000000000000  (1000 tokens)
 
 ### 8. Check Token Balance
 
-**On Solid Contract → Read Contract → `4. balanceOf`**
+**On Solid Contract → [Read Contract → `4. balanceOf`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F4)**
 
 ```
 account (address): 0xYourAddressHere
@@ -108,7 +108,7 @@ account (address): 0xYourAddressHere
 
 ### 9. Swap One Solid for Another
 
-**On Source Solid → Write Contract → `7. sellFor`**
+**On Source Solid → [Write Contract → `4. sellFor`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F4)**
 
 ```
 that (address): 0xTargetSolidAddress
@@ -119,7 +119,7 @@ s (uint256): 100000000000000000000  (100 tokens)
 
 ### 10. Preview Solid-to-Solid Swap
 
-**On Source Solid → Read Contract → `8. sellsFor`**
+**On Source Solid → [Read Contract → `11. sellsFor`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F11)**
 
 ```
 that (address): 0xTargetSolidAddress
@@ -153,16 +153,16 @@ Use these for entering amounts:
 
 | Function | Location | Purpose | Payable |
 |----------|----------|---------|---------|
-| `make(name, symbol)` | NOTHING Write | Create new Solid | No |
-| `made(name, symbol)` | NOTHING Read | Check if exists | No |
-| `buy()` | Solid Write | Buy tokens with ETH | **Yes** |
-| `buys(e)` | Solid Read | Preview buy amount | No |
-| `sell(s)` | Solid Write | Sell tokens for ETH | No |
-| `sells(s)` | Solid Read | Preview sell amount | No |
-| `sellFor(that, s)` | Solid Write | Swap to another Solid | No |
-| `sellsFor(that, s)` | Solid Read | Preview swap amount | No |
-| `balanceOf(account)` | Solid Read | Check token balance | No |
-| `pool()` | Solid Read | Check pool reserves | No |
+| [`make(name, symbol)`](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE#writeContract#F3) | NOTHING Write #3 | Create new Solid | No |
+| [`made(name, symbol)`](https://etherscan.io/address/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE#readContract#F7) | NOTHING Read #7 | Check if exists | No |
+| [`buy()`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F2) | Solid Write #2 | Buy tokens with ETH | **Yes** |
+| [`buys(e)`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F5) | Solid Read #5 | Preview buy amount | No |
+| [`sell(s)`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F3) | Solid Write #3 | Sell tokens for ETH | No |
+| [`sells(s)`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F10) | Solid Read #10 | Preview sell amount | No |
+| [`sellFor(that, s)`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F4) | Solid Write #4 | Swap to another Solid | No |
+| [`sellsFor(that, s)`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F11) | Solid Read #11 | Preview swap amount | No |
+| [`balanceOf(account)`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F4) | Solid Read #4 | Check token balance | No |
+| [`pool()`](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#readContract#F9) | Solid Read #9 | Check pool reserves | No |
 
 ---
 
@@ -186,17 +186,17 @@ Use these for entering amounts:
 
 ### Workflow C: Sell Tokens Back for ETH
 
-1. Go to your Solid's Write Contract tab
+1. Go to your Solid's Write Contract tab (e.g., [Hello World #3. sell](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F3))
 2. Connect wallet
-3. Find `6. sell`
+3. Find `3. sell`
 4. Enter amount in wei (e.g., `1000000000000000000000` = 1000 tokens)
 5. Click "Write"
 6. Confirm in wallet
 
 ### Workflow D: Trade One Solid for Another
 
-1. On Source Solid's Write Contract tab
-2. Find `7. sellFor`
+1. On Source Solid's Write Contract tab (e.g., [Hello World #4. sellFor](https://etherscan.io/address/0x9336b87315eBCF49ebC889865cC3D9bf58160564#writeContract#F4))
+2. Find `4. sellFor`
 3. Enter:
    - `that`: Target Solid address
    - `s`: Amount to swap (in wei)
