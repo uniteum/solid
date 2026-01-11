@@ -158,17 +158,29 @@ Make a token representing you. Trade it with friends. Use it as social money. Wi
 
 When you buy with ETH:
 ```
-tokens_out = pool_tokens × eth_in / pool_eth
+s = S - S × E / (E + e)
 ```
+
+Where:
+- `S` = tokens in the pool (before trade)
+- `E` = ETH in the pool (before trade), includes the virtual 1 ETH
+- `e` = ETH you're sending to buy
+- `s` = tokens you receive
 
 When you sell tokens for ETH:
 ```
-eth_out = pool_eth - (pool_eth × pool_tokens) / (pool_tokens + tokens_in)
+e = E - (E × S + E - 1) / (S + s)
 ```
+
+Where:
+- `E` = ETH in the pool (before trade), includes the virtual 1 ETH
+- `S` = tokens in the pool (before trade)
+- `s` = tokens you're selling
+- `e` = ETH you receive
 
 **Key insight:** The pool always includes a **virtual 1 ETH** for pricing, even when actual ETH balance is 0. This creates the permanent price floor and elegant starting price of ~602,214 solids per ETH.
 
-Same formula as Uniswap v2, but gas-optimized and built into the token.
+Same constant-product formula as Uniswap v2, but gas-optimized and built into the token.
 
 ### Security Features
 
