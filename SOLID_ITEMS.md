@@ -1,7 +1,7 @@
-Solid is a universally compatible Ethereum token with a uniquely powerful set of properties:
+Solids are Ethereum tokens that literally sell themselves and have uniquely powerful properties:
 * Trivial to create
 * Immediately tradeable
-* Bought, sold, and backed by native value
+* Bought, sold, and backed with native value
 * Growing demand and shrinking supply naturally push the price higher
 * The price cannot fall below its starting price
 * The first buyer, typically the creator, cannot lose
