@@ -18,9 +18,7 @@ Solid is a universally compatible Ethereum token with a uniquely powerful set of
 
 ### Mainnet
 
-| Contract | Address |
-|:---------|:--------|
-| NOTHING (Factory) | [`{{ site.data.contracts.contracts.NOTHING }}`](https://etherscan.io/address/{{ site.data.contracts.contracts.NOTHING }}) |
+* {% include contract.html address=site.data.contracts.contracts.NOTHING text="NOTHING" %}
 
 ## Quick Start
 
