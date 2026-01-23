@@ -20,20 +20,6 @@ Solids are Ethereum tokens that literally sell themselves and have uniquely powe
 
 * {% include contract.html address=site.data.contracts.contracts.NOTHING text="NOTHING" %}
 
-## Quick Start
-
-```bash
-# Clone and install
-git clone git@github.com:uniteum/solid.git
-cd solid
-
-# Build
-forge build
-
-# Test
-forge test
-```
-
 ## How It Works
 
 Each Solid token is an ERC-20 with a built-in constant-product AMM:
