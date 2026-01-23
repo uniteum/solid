@@ -7,7 +7,7 @@ nav_order: 1
 # Solid Protocol
 
 Solids are Ethereum tokens that literally sell themselves and have uniquely powerful properties:
-- **Immediately Tradeable** - Each Solid contains its own ETH liquidity pool with automatic market making
+- **Instantly Tradeable** - Each Solid has its own ETH liquidity pool with buy and sell functions
 - **Fair Launch** - 100% of supply goes to the liquidity pool upon creation
 - **Price Floor** - Virtual 1 ETH ensures tokens always have minimum value
 - **Permissionless** - Anyone can make a new Solid: no exchange, operator, or custom UI is required
@@ -19,12 +19,11 @@ Solids are Ethereum tokens that literally sell themselves and have uniquely powe
 
 ### Mainnet
 
-* {% include contract.html address=site.data.contracts.contracts.NOTHING text="NOTHING" %}
+* {% include contract.html address=site.data.solids.NOTHING text="NOTHING" %}
 
 ## How It Works
 
 Each Solid token is an ERC-20 with a built-in constant-product AMM:
- on Go [here](https://etherscan.io/address/{{site.data.contracts.contracts.NOTHING}}#writeContract#F3){:target="_blank"}, connect to web3, specify the name and symbol, click 'Write', and approve the transaction
 
 1. **Make** - Call [make(name, symbol)](https://etherscan.io/token/{{site.data.contracts.contracts.NOTHING}}#writeContract#F3){:target="_blank"} on any Solid to create a new one
 2. **Buy** - Send ETH when calling [buy()](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F2){:target="_blank"} to receive Solid tokens from the pool
