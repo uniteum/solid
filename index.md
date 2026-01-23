@@ -27,9 +27,9 @@ Each Solid token is an ERC-20 with a built-in constant-product AMM:
 
 ### Write Operations
 
-1. **make** - Call [make(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING}}#writeContract#F3){:target="_blank"} on any Solid to create a new one
+1. **make** - Call [make(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#writeContract#F3){:target="_blank"} on any Solid to create a new one
 2. **buy** - Send ETH when calling [buy()](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F2){:target="_blank"} to receive Solid tokens from the pool
-3. **sell** - Call [sell(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F5){:target="_blank"} to exchange Solid tokens back for ETH
+3. **sell** - Call [sell(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F4){:target="_blank"} to exchange Solid tokens back for ETH
 4. **sellFor** - Call [sellFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F6){:target="_blank"} to swap one Solid for another in a single transaction (no approval needed)
 
 ### Read Operations
