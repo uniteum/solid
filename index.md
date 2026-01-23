@@ -11,7 +11,7 @@ Solids are Ethereum tokens that literally sell themselves and have uniquely powe
 - **Fair Launch** - 100% of supply goes to the liquidity pool upon creation
 - **Price Floor** - Virtual 1 ETH ensures tokens always have minimum value
 - **Permissionless and Inexpensive** - Anyone can make a new Solid for the cost of gas
-- **Easy to Make** - Go [here](https://etherscan.io/address/{{site.data.contracts.contracts.NOTHING}}#writeContract#F3), specify the name and symbol, and click 'make'
+- **Easy to Make** - Go [here](https://etherscan.io/address/{{site.data.contracts.contracts.NOTHING}}#writeContract#F3), connect your wallet, specify the name and symbol, click 'Write', and approve the transaction
 - **Deterministic** - Token addresses are predictable via CREATE2 based on name and symbol
 
 ## Deployed Contracts
