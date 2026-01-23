@@ -32,7 +32,7 @@ Each Solid token is an ERC-20 with a built-in constant-product AMM:
 2. **buys** - Call [buys(ethAmount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F5){:target="_blank"} to preview how many tokens you'd receive for a given ETH amount
 3. **sells** - Call [sells(solidAmount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F10){:target="_blank"} to preview how much ETH you'd receive for selling tokens
 4. **sellsFor** - Call [sellsFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F11){:target="_blank"} to preview a Solid-to-Solid swap
-5. **made** - Call [made(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING}}#readContract#F7){:target="_blank"} to check if a Solid exists and get its address
+5. **made** - Call [made(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#readContract#F7){:target="_blank"} to check if a Solid exists and get its address
 
 The protocol uses the constant product formula (`x * y = k`) for pricing, ensuring liquidity is always available.
 
