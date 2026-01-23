@@ -10,8 +10,9 @@ Solids are Ethereum tokens that literally sell themselves and have uniquely powe
 - **Immediately Tradeable** - Each Solid contains its own ETH liquidity pool with automatic market making
 - **Fair Launch** - 100% of supply goes to the liquidity pool upon creation
 - **Price Floor** - Virtual 1 ETH ensures tokens always have minimum value
-- **Permissionless and Inexpensive** - Anyone can make a new Solid for the cost of gas
-- **Easy to Make** - Go [here](https://etherscan.io/address/{{site.data.contracts.contracts.NOTHING}}#writeContract#F3){:target="_blank"}, connect to web3, specify the name and symbol, click 'Write', and approve the transaction
+- **Permissionless** - Anyone can make a new Solid: no exchange, operator, or custom UI is required
+- **Easy to Make** - Anyone can make their own token in a few simple steps using major block explorers
+- **Inexpensive** - Each token is deployed as a minimal proxy contract (clone), needing little gas
 - **Deterministic** - Token addresses are predictable via CREATE2 based on name and symbol
 
 ## Deployed Contracts
@@ -23,10 +24,11 @@ Solids are Ethereum tokens that literally sell themselves and have uniquely powe
 ## How It Works
 
 Each Solid token is an ERC-20 with a built-in constant-product AMM:
+ on Go [here](https://etherscan.io/address/{{site.data.contracts.contracts.NOTHING}}#writeContract#F3){:target="_blank"}, connect to web3, specify the name and symbol, click 'Write', and approve the transaction
 
-1. **Create** - Call `make(name, symbol)` on any Solid to create a new one
-2. **Buy** - Send ETH to `buy()` to receive Solid tokens from the pool
-3. **Sell** - Call `sell(amount)` to exchange Solid tokens back for ETH
+1. **Make** - Call [make(name, symbol)](https://etherscan.io/token/{{site.data.contracts.contracts.NOTHING}}#writeContract#F3){:target="_blank"} on any Solid to create a new one
+2. **Buy** - Send ETH when calling [buy()](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F2){:target="_blank"} to receive Solid tokens from the pool
+3. **Sell** - Call [sell(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F4){:target="_blank"} to exchange Solid tokens back for ETH
 
 The protocol uses the constant product formula (`x * y = k`) for pricing, ensuring liquidity is always available.
 
@@ -43,3 +45,4 @@ The protocol uses the constant product formula (`x * y = k`) for pricing, ensuri
 
 - [GitHub Repository](https://github.com/uniteum/solid)
 - [Foundry Book](https://book.getfoundry.sh/)
+- [EIP-1167 Clones](https://eips.ethereum.org/EIPS/eip-1167)
