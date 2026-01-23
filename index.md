@@ -15,12 +15,6 @@ Solids are Ethereum tokens that literally sell themselves and have uniquely powe
 - **Inexpensive** - Each token is deployed as a minimal proxy contract (clone), needing little gas
 - **Deterministic** - Token addresses are predictable via CREATE2 based on name and symbol
 
-## Deployed Contracts
-
-### Mainnet
-
-* {% include contract.html address=site.data.solids.NOTHING text="NOTHING" %}
-
 ## How It Works
 
 Each Solid token is an ERC-20 with a built-in constant-product AMM:
