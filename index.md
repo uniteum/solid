@@ -6,13 +6,13 @@ nav_order: 1
 
 # Solid Protocol
 
-Solid is a universally compatible Ethereum token with a uniquely powerful set of properties:
-
-- **Self-liquifying** - Each Solid contains its own ETH liquidity pool with automatic market making
-- **Deterministic** - Token addresses are predictable via CREATE2 based on name and symbol
-- **Fair Launch** - No pre-mine, no team allocation - 100% of supply goes to the liquidity pool
+Solids are Ethereum tokens that literally sell themselves and have uniquely powerful properties:
+- **Immediately Tradeable** - Each Solid contains its own ETH liquidity pool with automatic market making
+- **Fair Launch** - 100% of supply goes to the liquidity pool upon creation
 - **Price Floor** - Virtual 1 ETH ensures tokens always have minimum value
-- **Permissionless** - Anyone can create new Solids for free
+- **Permissionless and Inexpensive** - Anyone can make a new Solid for the cost of gas
+- **Easy to Make** - Go [here](https://etherscan.io/address/{{site.data.contracts.contracts.NOTHING}}#writeContract#F3), specify the name and symbol, and click 'make'
+- **Deterministic** - Token addresses are predictable via CREATE2 based on name and symbol
 
 ## Deployed Contracts
 
