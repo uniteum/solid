@@ -6,7 +6,7 @@ nav_order: 1
 
 # Solid Protocol
 
-Solids are Ethereum tokens that literally sell themselves and have uniquely powerful properties:
+Solids are Ethereum tokens that have uniquely powerful properties:
 - **Instantly Tradeable** - Each Solid has its own ETH liquidity pool with buy and sell functions
 - **Fair Launch** - 100% of supply goes to the liquidity pool upon creation
 - **Price Floor** - Virtual 1 ETH ensures tokens always have minimum value
