@@ -15,6 +15,15 @@ Solids are Ethereum tokens that have uniquely powerful properties:
 - **Inexpensive** - Each token is deployed as a minimal proxy contract (clone), needing little gas
 - **Deterministic** - Token addresses are predictable via CREATE2 based on name and symbol
 
+## Why Use Solids?
+
+Solids are useful when you need transparent, trustless value transfer without intermediaries. Examples so far include:
+
+- **Personal gift certificates** - Back tokens with ETH to create gifts that gently encourage spending through curve dynamics
+- **Game currencies** - Model energy, life, time, and reputation as explicit economic resources rather than hard-coded rules
+
+These are just the beginning. See [Use Cases]({{ site.baseurl }}/use-cases) for details and emerging applications.
+
 ## How It Works
 
 Each Solid token is an ERC-20 with a built-in constant-product AMM:
