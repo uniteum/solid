@@ -45,6 +45,8 @@ Each Solid token is an ERC-20 with a built-in constant-product AMM. All function
 
 The protocol uses the constant product formula (`x * y = k`) for pricing, ensuring liquidity is always available.
 
+The example links above point to [Uniteum 1 (1)](https://etherscan.io/token/{{site.data.solids.1.address}}){:target="_blank"}—to interact with a different Solid, navigate to that token's page on the block explorer. If you'd like to support continued development of this protocol, buying some 1 is a simple way to do so.
+
 ## Key Properties
 
 | Property | Value |
