@@ -5,7 +5,7 @@ Solid is a constant-product AMM protocol on Ethereum where Solid tokens are trad
 ## Deployed Contracts
 
 ### Mainnet
-- **NOTHING (Proto-factory)**: `0x16cF8EeB96DE6666254F498E3A3C8523454EFf54`
+- **NOTHING (Proto-factory)**: [0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE](https://etherscan.io/token/0xB1c5929334BF19877faBBFC1CFb3Af8175b131cE#code)
 
 ## Overview
 

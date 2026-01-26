@@ -59,7 +59,7 @@ This file provides context for AI assistants (primarily Claude) to understand th
 - [README.md](README.md) - User-facing introduction
 - [foundry.toml](foundry.toml) - Build configuration (authoritative source)
 - [src/Solid.sol](src/Solid.sol) - Source of truth for all mechanics
-- [src/ISolid.sol](src/ISolid.sol) - Interface definitions
+- [lib/isolid/ISolid.sol](lib/isolid/ISolid.sol) - Interface definitions
 
 **If user feedback conflicts with CLAUDE.md:** Update this file to reflect reality, then confirm the change with the user.
 
@@ -73,15 +73,15 @@ This file provides context for AI assistants (primarily Claude) to understand th
 - **ETH** = Native Ethereum currency used for liquidity
 - **NOTHING** = Base Solid instance used as factory for creating new Solids
 - **Pool** = Contract balances of Solid tokens and ETH
-- **Total Supply** = Fixed at exactly Avogadro's number (6.02214076e23)
-- **Starting Price** = 1 ETH buys ~602,214.076 solids (≈ $0.005 USD per solid when ETH = $3,000)
+- **SUPPLY** = Immutable total supply set at construction (configurable per deployment)
+- **Starting Price** = SUPPLY / 10^18 solids per ETH (e.g., 1e23 supply → 1e5 solids per ETH)
 - **Price Floor** = Virtual 1 ETH guarantees sell price never falls below starting price
 
 ### Key Files
 
-- **[src/Solid.sol](src/Solid.sol)** (~90 lines) - Main contract
-- **[lib/isolid/ISolid.sol](lib/isolid/ISolid.sol)** (~100 lines) - Interface with comprehensive NatSpec
-- **[test/Solid.t.sol](test/Solid.t.sol)** (~290 lines) - Core tests
+- **[src/Solid.sol](src/Solid.sol)** (~110 lines) - Main contract
+- **[lib/isolid/ISolid.sol](lib/isolid/ISolid.sol)** (~145 lines) - Interface with comprehensive NatSpec
+- **[test/Solid.t.sol](test/Solid.t.sol)** (~360 lines) - Core tests
 - **[test/SolidUser.sol](test/SolidUser.sol)** (~45 lines) - Test helper
 
 ## Core Operations
@@ -89,19 +89,17 @@ This file provides context for AI assistants (primarily Claude) to understand th
 ### 1. Make (Create New Solid)
 
 ```solidity
-function make(string calldata name, string calldata symbol) external returns (ISolid sol)
+function make(string calldata name, string calldata symbol) external returns (ISolid solid)
 ```
 
 **What it does:**
 - Creates new Solid with name `name` and symbol `symbol`
 - If Solid already exists, returns the existing instance (does not revert)
 - **NOT payable** - creation is free but creator must buy tokens separately
-- Mints exactly AVOGADRO tokens (100% to pool, 0% to maker)
+- Mints exactly SUPPLY tokens (100% to pool, 0% to maker)
 - Pool starts with 0 actual ETH but uses virtual 1 ETH for pricing
 - Uses CREATE2 for deterministic addresses
-- **Initial price**: 1 ETH = ~602,214.076 solids
-  - Elegant Avogadro relationship: AVOGADRO / 10^18
-  - At ETH = $3,000: ~$0.005 USD per solid (half a penny)
+- **Initial price**: 1 ETH = SUPPLY / 10^18 solids
 - **Price floor**: Virtual 1 ETH ensures sell price never falls below this starting price
 - **Creator advantage**: Can be first to buy at the initial price (fair first-mover benefit)
 
@@ -112,29 +110,26 @@ salt = keccak256(abi.encode(name, symbol))
 
 // Supply split
 maker_share = 0  // 0% to msg.sender (no tokens for maker)
-pool_share = AVOGADRO  // 100% to contract (6.02214076e23)
+pool_share = SUPPLY  // 100% to contract
 ```
 
 **Example:**
 ```solidity
 ISolid H = N.make("Hydrogen", "H");
-// H.totalSupply() = AVOGADRO (6.02214076e23)
+// H.totalSupply() = SUPPLY
 // H.balanceOf(msg.sender) = 0  // Maker gets nothing
-// H.balanceOf(address(H)) = AVOGADRO  // Pool gets 100%
+// H.balanceOf(address(H)) = SUPPLY  // Pool gets 100%
 // address(H).balance = 0  // No actual ETH
-// pool() returns (AVOGADRO, 1 ether)  // Virtual 1 ETH for pricing
-// For 1 ETH, you can buy: AVOGADRO / 1e18 = ~602,214.076 solids
-// At $3,000/ETH: each solid costs ~$0.005 USD (half a penny)
+// pool() returns (SUPPLY, 1 ether)  // Virtual 1 ETH for pricing
 
 // Creator can buy first (separate transaction or batched call)
-uint256 solids = H.buy{value: 1 ether}();
-// Creator gets ~602,214.076 solids at initial price
+uint256 s = H.buy{value: 1 ether}();
 ```
 
 ### 2. Buy (ETH → Solid)
 
 ```solidity
-function buy() public payable returns (uint256 sol)
+function buy() public payable returns (uint256 s)
 ```
 
 **What it does:**
@@ -142,43 +137,63 @@ function buy() public payable returns (uint256 sol)
 - Uses constant-product formula
 - Does NOT mint new tokens (transfers from pool)
 - Pool Solid decreases, pool ETH increases
+- Preview function: `buys(uint256 e)` returns expected output
 
 **Formula:**
 ```solidity
-sol = solPool - solPool * (ethPool - eth) / ethPool
-// Equivalent to: sol = solPool * eth / ethPool
-// This is the delta that makes the product constant
+// In buy(), E is decremented by msg.value first
+s = S - S * E / (E + e)
+// Equivalent to: s = S * e / E (before decrement)
 ```
 
 **Example:**
 ```solidity
-uint256 sol = H.buy{value: 1 ether}();
-// Transfers sol tokens from pool to msg.sender
+uint256 s = H.buy{value: 1 ether}();
+// Transfers s tokens from pool to msg.sender
 // Pool ETH increases by 1 ether
 ```
 
 ### 3. Sell (Solid → ETH)
 
 ```solidity
-function sell(uint256 sol) external nonReentrant returns (uint256 eth)
+function sell(uint256 s) external nonReentrant returns (uint256 e)
 ```
 
 **What it does:**
 - Sells Solid tokens for ETH from pool
-- Uses constant-product formula
+- Uses constant-product formula with ceiling division (favors protocol)
 - Does NOT burn tokens (transfers to pool)
 - Pool Solid increases, pool ETH decreases
+- Preview function: `sells(uint256 s)` returns expected output
 
 **Formula:**
 ```solidity
-eth = ethPool - ethPool * solPool / (solPool + sol)
+// Ceiling division ensures protocol never overpays
+e = E - (E * S + E - 1) / (S + s)
 ```
 
 **Example:**
 ```solidity
-uint256 eth = H.sell(100);
+uint256 e = H.sell(100);
 // Transfers 100 Solid from msg.sender to pool
-// Transfers calculated eth to msg.sender
+// Transfers calculated e to msg.sender
+```
+
+### 4. SellFor (Solid → Another Solid)
+
+```solidity
+function sellFor(ISolid that, uint256 s) external nonReentrant returns (uint256 thats)
+```
+
+**What it does:**
+- Sells this Solid for another Solid in a single transaction
+- No approval needed - uses internal `_update`
+- Preview function: `sellsFor(ISolid that, uint256 s)` returns expected output
+
+**Example:**
+```solidity
+// Swap H for O without approval
+uint256 oReceived = H.sellFor(O, hAmount);
 ```
 
 ## Mathematical Invariants
@@ -186,23 +201,23 @@ uint256 eth = H.sell(100);
 ### 1. Constant Product AMM
 
 ```
-solPool * ethPool = k  (approximately constant before and after trades)
+S * E = k  (approximately constant before and after trades)
 ```
 
-**Note:** Due to rounding in the formulas, the product may change infinitesimally after each trade.
+**Note:** Due to ceiling division in sell formula, the product may change infinitesimally after each trade.
 
 ### 2. Total Supply is Fixed
 
 ```
-totalSupply() = AVOGADRO (always, exactly 6.02214076e23)
+totalSupply() = SUPPLY (always, set at construction)
 ```
 
-Total supply is fixed at exactly Avogadro's number. Buy/sell operations only transfer tokens between users and pool without changing total supply.
+Total supply is fixed at SUPPLY. Buy/sell operations only transfer tokens between users and pool without changing total supply.
 
 ### 3. Balance Integrity
 
 ```
-balanceOf(pool) + balanceOf(maker) + sum(other balances) = totalSupply()
+balanceOf(pool) + sum(user balances) = totalSupply()
 ```
 
 All balances must sum to total supply at all times.
@@ -213,24 +228,24 @@ All balances must sum to total supply at all times.
 
 ```solidity
 function made(string calldata name, string calldata symbol)
-    public view returns (bool yes, address location, bytes32 salt)
+    public view returns (bool yes, address home, bytes32 salt)
 ```
 
 **How it works:**
 - Uses CREATE2 with `keccak256(abi.encode(name, symbol))` as salt
 - Same name+symbol always produces same address
 - Uses EIP-1167 minimal proxy (OpenZeppelin Clones)
-- Only callable from NOTHING instance
+- Callable from any Solid (delegates to NOTHING)
 
 **Example:**
 ```solidity
 // Check if "Hydrogen" "H" exists
-(bool exists, address addr, bytes32 salt) = N.made("Hydrogen", "H");
+(bool exists, address home, bytes32 salt) = N.made("Hydrogen", "H");
 
 // Create if doesn't exist
 if (!exists) {
     ISolid H = N.make("Hydrogen", "H");
-    assert(address(H) == addr);  // Deterministic!
+    assert(address(H) == home);  // Deterministic!
 }
 ```
 
@@ -239,8 +254,7 @@ if (!exists) {
 When `make()` is called on a non-NOTHING instance:
 ```solidity
 if (this != NOTHING) {
-    sol = NOTHING.make(name, symbol);
-    // No transfer needed - maker gets nothing
+    solid = NOTHING.make(name, symbol);
 }
 ```
 
@@ -252,23 +266,27 @@ This allows any Solid to create new Solids, but always delegates to NOTHING.
 
 ```solidity
 contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
-    uint256 constant AVOGADRO = 6.02214076e23;
-
     ISolid public immutable NOTHING = this;
+    uint256 public immutable SUPPLY;
+
+    constructor(uint256 supply) ERC20("", "NOTHING") {
+        SUPPLY = supply;
+    }
 }
 ```
 
 ### State Variables
 
 - `NOTHING` - Immutable self-reference (main instance for factory)
+- `SUPPLY` - Immutable total supply set at construction
 - `_name` - Token name (from ERC20)
-- `_symbol` - Token symbol (from ERC20)
+- `_symbol` - Token symbol (from ERC20, "NOTHING" for base instance)
 - `_balances` - Token balances mapping (from ERC20)
 
 ### Key Functions
 
 **Balance Queries:**
-- `pool()` - Returns (solPool, ethPool) tuple where ethPool = actualBalance + 1 ether
+- `pool()` - Returns `(S, E)` tuple where E = actualBalance + 1 ether
 - `balanceOf(address)` - Standard ERC20 balance query
 
 **Factory:**
@@ -276,10 +294,12 @@ contract Solid is ISolid, ERC20, ReentrancyGuardTransient {
 - `make(name, symbol)` - Create new Solid with deterministic address
 
 **Trading:**
-- `buy()` - Buy Solid with ETH
-- `sell(sol)` - Sell Solid for ETH
+- `buy()` / `buys(e)` - Buy Solid with ETH
+- `sell(s)` / `sells(s)` - Sell Solid for ETH
+- `sellFor(that, s)` / `sellsFor(that, s)` - Swap Solid for another Solid
 
-**Internal:**
+**Other:**
+- `receive()` - Accept ETH transfers (reverts on NOTHING)
 - `zzz_(name, symbol)` - Initialization function (called once during creation)
 
 ## Security
@@ -300,46 +320,36 @@ modifier nonReentrant() {
 ### Virtual ETH Pricing
 
 ```solidity
-function pool() public view returns (uint256 solPool, uint256 ethPool) {
+function pool() public view returns (uint256 S, uint256 E) {
     if (this == NOTHING) revert Nothing();
-    solPool = balanceOf(address(this));
-    ethPool = address(this).balance + 1 ether;  // Virtual pricing
+    S = balanceOf(address(this));
+    E = address(this).balance + 1 ether;  // Virtual pricing
 }
 ```
 
 - Pool adds 1 ether to actual balance for pricing calculations
 - Enables initial price discovery even with 0 actual ETH
 - **Price floor guarantee**: The virtual 1 ETH ensures the sell price can never fall below the starting price
-  - Even if all tokens are sold back to the pool, ethPool ≥ 1 ether
-  - This creates a natural price floor at ~602,214.076 solids per ETH
-- `sell()` caps payout to actual balance to prevent reversion
-
-```solidity
-function sell(uint256 sol) external nonReentrant returns (uint256 eth) {
-    eth = sells(sol);
-    uint256 actualBalance = address(this).balance;
-    if (eth > actualBalance) eth = actualBalance;  // Cap to actual
-    // ... transfer eth
-}
-```
+  - Even if all tokens are sold back to the pool, E ≥ 1 ether
+  - This creates a natural price floor at SUPPLY / 10^18 solids per ETH
 
 ### Safe ETH Transfers
 
 ```solidity
-(bool ok, bytes memory returnData) = msg.sender.call{value: eth}("");
+(bool ok, bytes memory returned) = msg.sender.call{value: e}("");
 if (!ok) {
-    if (returnData.length > 0) {
+    if (returned.length > 0) {
         assembly {
-            revert(add(returnData, 32), mload(returnData))
+            revert(add(returned, 32), mload(returned))
         }
     } else {
-        revert SellFailed();
+        revert SellFailed(this, s, e, address(this).balance);
     }
 }
 ```
 
 - Propagates revert reason from failed transfers
-- Custom error if no revert reason provided
+- Custom error with context if no revert reason provided
 
 ### Factory Access Control
 
@@ -351,8 +361,8 @@ if (!ok) {
 
 **IMPORTANT:** These invariants MUST hold at all times:
 
-1. **Total supply is fixed**: `totalSupply() == AVOGADRO` (never changes, exactly 6.02214076e23)
-2. **Pool balance consistency**: `balanceOf(address(this)) + sum(user balances) == AVOGADRO`
+1. **Total supply is fixed**: `totalSupply() == SUPPLY` (never changes after creation)
+2. **Pool balance consistency**: `balanceOf(address(this)) + sum(user balances) == SUPPLY`
 3. **ETH balance consistency**: `address(this).balance` accurately reflects pool liquidity
 
 ## Development Workflow
@@ -486,15 +496,15 @@ FOUNDRY_PROFILE=deep forge test --match-contract SolidInvariant
 
 ```solidity
 contract SolidTest is BaseTest {
-    uint256 constant AVOGADRO = 6.02214076e23;
-    uint256 constant ETH = 1e9;
+    uint256 constant SOL = 1e23;  // Default supply for tests
+    uint256 constant ETH = 1e9;   // Default ETH balance for users
     Solid public N;
     SolidUser public owen;
 
     function setUp() public virtual override {
         super.setUp();
         owen = newUser("owen");
-        N = new Solid();
+        N = new Solid(SOL);  // Constructor takes supply
     }
 
     function newUser(string memory name) internal returns (SolidUser user) {
@@ -508,9 +518,9 @@ contract SolidTest is BaseTest {
 
 ```solidity
 contract SolidUser is User {
-    function buy(ISolid U, uint256 eth) public returns (uint256 solid) { }
-    function sell(ISolid U, uint256 solid) public returns (uint256 eth) { }
-    function liquidate(ISolid U) public returns (uint256 eth, uint256 solid) { }
+    function buy(ISolid U, uint256 e) public returns (uint256 s) { }
+    function sell(ISolid U, uint256 s) public returns (uint256 e) { }
+    function sellFor(ISolid from, ISolid to, uint256 s) public returns (uint256 thats) { }
 }
 ```
 
@@ -613,70 +623,75 @@ always_use_create_2_factory = true
 // Create "Hydrogen" "H" (no stake required, NOT payable)
 // If already exists, returns the existing instance (does not revert)
 ISolid H = N.make("Hydrogen", "H");
-// H.totalSupply() = AVOGADRO (6.02214076e23)
+// H.totalSupply() = SUPPLY
 // H.balanceOf(msg.sender) = 0  // Maker gets nothing
-// H.balanceOf(address(H)) = AVOGADRO  // Pool gets 100%
+// H.balanceOf(address(H)) = SUPPLY  // Pool gets 100%
 // address(H).balance = 0  // No actual ETH
-// Starting price: 1 ETH = ~602,214.076 solids (~$0.005/solid @ $3k ETH)
 
 // Creator can buy first in a separate call (fair first-mover advantage)
-uint256 solids = H.buy{value: 1 ether}();
+uint256 s = H.buy{value: 1 ether}();
 ```
 
 ### Buying Solid with ETH
 
 ```solidity
-uint256 sol = H.buy{value: 1 ether}();
-// Receive sol tokens from pool
+uint256 s = H.buy{value: 1 ether}();
+// Receive s tokens from pool
 // Pool ETH increases by 1 ether
-// Pool Solid decreases by sol amount
+// Pool Solid decreases by s amount
 ```
 
 ### Selling Solid for ETH
 
 ```solidity
-uint256 eth = H.sell(500);
+uint256 e = H.sell(500);
 // Send 500 Solid to pool
-// Receive eth back
-// Pool ETH decreases by eth amount
+// Receive e back
+// Pool ETH decreases by e amount
 // Pool Solid increases by 500
+```
+
+### Swapping Solid for Another Solid
+
+```solidity
+uint256 oReceived = H.sellFor(O, 500);
+// Sells 500 H for ETH, then buys O with that ETH
+// No approval needed
 ```
 
 ### Checking Pool State
 
 ```solidity
-(uint256 solPool, uint256 ethPool) = H.pool();
-// solPool = Solid tokens in pool
-// ethPool = Virtual ETH in pool (actual balance + 1 ether)
+(uint256 S, uint256 E) = H.pool();
+// S = Solid tokens in pool
+// E = Virtual ETH in pool (actual balance + 1 ether)
 ```
 
 ## Constants Reference
 
 ```solidity
-AVOGADRO = 6.02214076e23        // Avogadro's number (total supply of each Solid)
+SUPPLY = constructor parameter    // Total supply (immutable after construction)
 ```
 
-**Key insight**: With virtual 1 ETH pricing and supply of exactly one Avogadro:
-- **Initial price**: 1 ETH = AVOGADRO / 10^18 = ~602,214.076 solids
-- **Elegant relationship**: "1 ETH buys Avogadro's number divided by 10^18"
-- **Practical price**: When ETH = $3,000, each solid starts at ~$0.005 USD (half a penny)
+**Key insight**: With virtual 1 ETH pricing:
+- **Initial price**: 1 ETH = SUPPLY / 10^18 solids
 - **Price floor**: The virtual 1 ETH is permanent, so sell prices can never fall below this initial price
-  - Even with zero actual ETH in pool, ethPool ≥ 1 ether guarantees minimum valuation
+  - Even with zero actual ETH in pool, E ≥ 1 ether guarantees minimum valuation
   - This protects against complete price collapse
 
 ## Events
 
 ```solidity
-event Make(ISolid indexed solid, string indexed name, string indexed symbol);
-event Buy(ISolid indexed solid, uint256 eth, uint256 sol);
-event Sell(ISolid indexed solid, uint256 sol, uint256 eth);
+event Make(ISolid indexed solid, string name, string symbol);
+event Buy(ISolid indexed solid, uint256 e, uint256 s);
+event Sell(ISolid indexed solid, uint256 s, uint256 e);
 ```
 
 ## Errors
 
 ```solidity
-error Nothing();        // Empty name or symbol, or called on NOTHING
-error SellFailed();     // ETH transfer failed during sell
+error Nothing();                                          // Empty name or symbol, or pool() called on NOTHING
+error SellFailed(ISolid solid, uint256 s, uint256 e, uint256 E);  // ETH transfer failed during sell
 ```
 
 ## Quick Reference
@@ -684,22 +699,24 @@ error SellFailed();     // ETH transfer failed during sell
 ### Pool State Queries
 
 ```solidity
-(uint256 solPool, uint256 ethPool) = solid.pool();
-// ethPool = address(solid).balance + 1 ether (virtual pricing)
+(uint256 S, uint256 E) = solid.pool();
+// E = address(solid).balance + 1 ether (virtual pricing)
 uint256 balance = solid.balanceOf(address(user));
-uint256 supply = solid.totalSupply();  // Always equals AVOGADRO (6.02214076e23)
+uint256 supply = solid.totalSupply();  // Always equals SUPPLY
 ```
 
 ### Trading Formulas
 
 ```solidity
 // Buy: ETH → Solid (transfer from pool)
-sol = solPool - solPool * (ethPool - eth) / ethPool
-// Simplified: sol = solPool * eth / ethPool
+s = S - S * E / (E + e)  // where E was decremented by e first
+// Simplified: s = S * e / E
 
-// Sell: Solid → ETH (transfer to pool)
-eth = ethPool - ethPool * solPool / (solPool + sol)
-// Note: Capped to min(eth, actualBalance) before transfer
+// Sell: Solid → ETH (transfer to pool, ceiling division)
+e = E - (E * S + E - 1) / (S + s)
+
+// SellFor: Solid → Another Solid
+thats = that.buys(this.sells(s))
 ```
 
 ### Metadata
@@ -709,20 +726,22 @@ string memory name = solid.name();
 string memory symbol = solid.symbol();
 uint8 decimals = solid.decimals();    // 18 (default)
 ISolid nothing = solid.NOTHING();     // Factory instance
+uint256 supply = solid.SUPPLY();      // Total supply
 ```
 
 ## Key Differences from Traditional AMMs
 
-1. **Fixed Supply**: Total supply is exactly Avogadro's number (6.02214076e23, never changes)
+1. **Fixed Supply**: Total supply is SUPPLY (set at construction, never changes)
 2. **Native ETH**: Uses ETH directly (not WETH)
 3. **Deterministic Addresses**: CREATE2 based on name+symbol
 4. **Factory Pattern**: NOTHING instance creates all Solids
 5. **Zero Maker Share**: Creator receives 0% (100% goes to pool), must buy separately
 6. **Virtual Pricing**: Pool adds 1 ETH virtually for initial price discovery
-7. **Elegant Initial Price**: 1 ETH = ~602,214.076 solids (Avogadro / 10^18)
+7. **Initial Price**: 1 ETH = SUPPLY / 10^18 solids
 8. **Price Floor Guarantee**: Virtual 1 ETH ensures sell price never falls below starting price
 9. **No Liquidity Tokens**: Solid tokens ARE the liquidity
 10. **Permissionless Creation**: Anyone can create Solids for free (make() not payable)
+11. **Direct Swaps**: sellFor() enables Solid→Solid swaps without approval
 
 ---
 

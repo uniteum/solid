@@ -2,7 +2,11 @@ name: CI
 
 on:
   push:
+    branches-ignore:
+      - jekyll
   pull_request:
+    branches-ignore:
+      - jekyll
   workflow_dispatch:
 
 env:
