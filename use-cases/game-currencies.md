@@ -4,7 +4,7 @@ title: Solids as Game-Native Currencies
 parent: "Use Cases"
 permalink: /use-cases/game-currencies
 nav_order: 2
--------------------------------------
+---
 
 Games already run on currencies. Not just gold or gems, but *life*, *energy*, *time*, *risk*, *reputation*, and *control*. These resources are scarce, spent, replenished, exchanged, and priced against one another. **Solids** provide a clean way to model these mechanics as explicit, composable currencies rather than hard‑coded rules.
 

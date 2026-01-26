@@ -27,17 +27,31 @@ The result is a gift that feels personal, honest, and surprisingly effective at 
 
 → [A personal gift certificate that encourages spending]({{ site.baseurl }}/use-cases/gift-certificates)
 
+## Game-native currencies
+
+Games already run on currencies—not just gold or gems, but *life*, *energy*, *time*, *risk*, *reputation*, and *control*. These resources are scarce, spent, replenished, and priced against one another.
+
+Solids provide a way to model these mechanics as explicit, composable currencies rather than hard-coded rules:
+
+- Energy limits throughput and naturally throttles grinding
+- Life becomes collateral for high-risk strategies
+- Time can be accelerated at rising cost
+- Reputation resists inflation through economic enforcement
+
+Instead of asking "Is this balanced?", designers ask "Is this priced correctly?"
+
+→ [Solids as game-native currencies]({{ site.baseurl }}/use-cases/game-currencies)
+
 ## More to come
 
 Additional use cases will be added here, including:
 
-- Community and event currencies  
-- Time-limited social experiments  
-- Family or group allowances  
-- Bounties and coordination incentives  
-- Value instruments with no operator or issuer control  
+- Time-limited social experiments
+- Family or group allowances
+- Bounties and coordination incentives
+- Value instruments with no operator or issuer control
 
-Each example focuses on *what emerges* from Solid’s rules, rather than hypothetical features layered on top.
+Each example focuses on *what emerges* from Solid's rules, rather than hypothetical features layered on top.
 
-Solid doesn’t prescribe behavior.  
+Solid doesn't prescribe behavior.
 It makes certain behaviors natural.
