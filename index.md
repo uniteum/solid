@@ -26,7 +26,7 @@ These are just the beginning. See [Use Cases]({{ site.baseurl }}/use-cases) for 
 
 ## How It Works
 
-Each Solid token is an ERC-20 with a built-in constant-product AMM. All functions can be called directly through block explorers like [Etherscan](https://etherscan.io){:target="_blank"} or [Blockscout](https://www.blockscout.com){:target="_blank"}—no custom interface required.
+Each Solid token is an ERC-20 with a built-in constant-product AMM. All functions can be called directly through block explorers like [Etherscan](https://etherscan.io){:target="_blank"} or [Blockscout](https://eth.blockscout.com){:target="_blank"}—no custom interface required.
 
 ### Write Operations
 
