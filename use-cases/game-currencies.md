@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Solids as Game-Native Currencies
+title: Game Currencies
 parent: "Use Cases"
 permalink: /use-cases/game-currencies
 nav_order: 2

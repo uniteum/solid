@@ -27,7 +27,7 @@ The result is a gift that feels personal, honest, and surprisingly effective at 
 
 → [A personal gift certificate that encourages spending]({{ site.baseurl }}/use-cases/gift-certificates)
 
-## Game-native currencies
+## Game currencies
 
 Games already run on currencies—not just gold or gems, but *life*, *energy*, *time*, *risk*, *reputation*, and *control*. These resources are scarce, spent, replenished, and priced against one another.
 
