@@ -29,41 +29,64 @@ contract MakeSolids is Script {
         SolidFactory factory = SolidFactory(factoryAddress);
 
         // Check which solids already exist BEFORE broadcast
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory toCreate) = factory.made(solids);
+        SolidFactory.SolidMade[] memory mades = factory.made(solids);
+
+        // Count existing and to-create
+        uint256 existingCount = 0;
+        uint256 toCreateCount = 0;
+        for (uint256 i = 0; i < mades.length; i++) {
+            if (mades[i].made) {
+                existingCount++;
+            } else {
+                toCreateCount++;
+            }
+        }
 
         console2.log("\nPre-flight check:");
-        console2.log("  Already exist:", existing.length);
-        console2.log("  To create:", toCreate.length);
+        console2.log("  Already exist:", existingCount);
+        console2.log("  To create:", toCreateCount);
 
         // Show existing tokens
-        if (existing.length > 0) {
+        if (existingCount > 0) {
             console2.log("\nAlready exist:");
-            for (uint256 i = 0; i < existing.length; i++) {
-                console2.log("  -", existing[i].symbol, existing[i].name);
+            for (uint256 i = 0; i < mades.length; i++) {
+                if (mades[i].made) {
+                    console2.log("  -", mades[i].symbol, mades[i].name);
+                }
             }
         }
 
         // Show tokens to be created
-        if (toCreate.length > 0) {
+        if (toCreateCount > 0) {
             console2.log("\nWill create:");
-            for (uint256 i = 0; i < toCreate.length; i++) {
-                console2.log("  -", toCreate[i].symbol, toCreate[i].name);
+            for (uint256 i = 0; i < mades.length; i++) {
+                if (!mades[i].made) {
+                    console2.log("  -", mades[i].symbol, mades[i].name);
+                }
             }
         }
 
         // Only broadcast if there are tokens to create
-        if (toCreate.length == 0) {
+        if (toCreateCount == 0) {
             console2.log("\nNo tokens to create. Exiting.");
             return;
         }
 
         console2.log("\nStarting broadcast...");
         vm.startBroadcast();
-        (SolidFactory.SolidSpec[] memory existingFinal, SolidFactory.SolidSpec[] memory created) = factory.make(solids);
+        SolidFactory.SolidMade[] memory results = factory.make(solids);
+
+        // Count created (those with made=false in the results, since it's checked before creation)
+        uint256 createdCount = 0;
+        for (uint256 i = 0; i < results.length; i++) {
+            if (!results[i].made) {
+                createdCount++;
+            }
+        }
 
         console2.log("\nSummary:");
-        console2.log("  Created:", created.length);
-        console2.log("  Skipped:", existingFinal.length);
+        console2.log("  Created:", createdCount);
+        console2.log("  Skipped:", results.length - createdCount);
 
         vm.stopBroadcast();
     }
