@@ -30,22 +30,22 @@ contract SolidFactoryTest is BaseTest {
 
     function test_MadeWithEmptyArray() public view {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](0);
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) = factory.made(solids);
+        SolidFactory.SolidMade[] memory mades = factory.made(solids);
 
-        assertEq(existing.length, 0, "should have no existing");
-        assertEq(notExisting.length, 0, "should have no notExisting");
+        assertEq(mades.length, 0, "should have no results");
     }
 
     function test_MadeWithOneNonExisting() public view {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) = factory.made(solids);
+        SolidFactory.SolidMade[] memory mades = factory.made(solids);
 
-        assertEq(existing.length, 0, "should have no existing");
-        assertEq(notExisting.length, 1, "should have one notExisting");
-        assertEq(notExisting[0].name, "Hydrogen", "name should match");
-        assertEq(notExisting[0].symbol, "H", "symbol should match");
+        assertEq(mades.length, 1, "should have one result");
+        assertFalse(mades[0].made, "should not exist yet");
+        assertEq(mades[0].name, "Hydrogen", "name should match");
+        assertEq(mades[0].symbol, "H", "symbol should match");
+        assertTrue(mades[0].home != address(0), "home should be predicted address");
     }
 
     function test_MadeWithOneExisting() public {
@@ -55,12 +55,12 @@ contract SolidFactoryTest is BaseTest {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) = factory.made(solids);
+        SolidFactory.SolidMade[] memory mades = factory.made(solids);
 
-        assertEq(existing.length, 1, "should have one existing");
-        assertEq(existing[0].name, "Hydrogen", "name should match");
-        assertEq(existing[0].symbol, "H", "symbol should match");
-        assertEq(notExisting.length, 0, "should have no notExisting");
+        assertEq(mades.length, 1, "should have one result");
+        assertTrue(mades[0].made, "should exist");
+        assertEq(mades[0].name, "Hydrogen", "name should match");
+        assertEq(mades[0].symbol, "H", "symbol should match");
     }
 
     function test_MadeWithMixedExistingAndNonExisting() public {
@@ -74,39 +74,45 @@ contract SolidFactoryTest is BaseTest {
         solids[2] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"}); // existing
         solids[3] = SolidFactory.SolidSpec({name: "Beryllium", symbol: "Be"}); // new
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory notExisting) = factory.made(solids);
+        SolidFactory.SolidMade[] memory mades = factory.made(solids);
 
-        assertEq(existing.length, 2, "should have two existing");
-        assertEq(existing[0].name, "Hydrogen", "first existing name should match");
-        assertEq(existing[0].symbol, "H", "first existing symbol should match");
-        assertEq(existing[1].name, "Helium", "second existing name should match");
-        assertEq(existing[1].symbol, "He", "second existing symbol should match");
+        assertEq(mades.length, 4, "should have four results");
 
-        assertEq(notExisting.length, 2, "should have two notExisting");
-        assertEq(notExisting[0].name, "Lithium", "first notExisting name should match");
-        assertEq(notExisting[0].symbol, "Li", "first notExisting symbol should match");
-        assertEq(notExisting[1].name, "Beryllium", "second notExisting name should match");
-        assertEq(notExisting[1].symbol, "Be", "second notExisting symbol should match");
+        // Check each result
+        assertTrue(mades[0].made, "Hydrogen should exist");
+        assertEq(mades[0].name, "Hydrogen", "first name should match");
+        assertEq(mades[0].symbol, "H", "first symbol should match");
+
+        assertFalse(mades[1].made, "Lithium should not exist");
+        assertEq(mades[1].name, "Lithium", "second name should match");
+        assertEq(mades[1].symbol, "Li", "second symbol should match");
+
+        assertTrue(mades[2].made, "Helium should exist");
+        assertEq(mades[2].name, "Helium", "third name should match");
+        assertEq(mades[2].symbol, "He", "third symbol should match");
+
+        assertFalse(mades[3].made, "Beryllium should not exist");
+        assertEq(mades[3].name, "Beryllium", "fourth name should match");
+        assertEq(mades[3].symbol, "Be", "fourth symbol should match");
     }
 
     function test_MakeWithEmptyArray() public {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](0);
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory created) = factory.make(solids);
+        SolidFactory.SolidMade[] memory mades = factory.make(solids);
 
-        assertEq(existing.length, 0, "should have no existing");
-        assertEq(created.length, 0, "should have no created");
+        assertEq(mades.length, 0, "should have no results");
     }
 
     function test_MakeWithOneNewSolid() public {
         SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory created) = factory.make(solids);
+        SolidFactory.SolidMade[] memory mades = factory.make(solids);
 
-        assertEq(existing.length, 0, "should have no existing");
-        assertEq(created.length, 1, "should have one created");
-        assertEq(created[0].name, "Hydrogen", "name should match");
-        assertEq(created[0].symbol, "H", "symbol should match");
+        assertEq(mades.length, 1, "should have one result");
+        // Note: mades[0].made is false because it was checked BEFORE creation
+        assertEq(mades[0].name, "Hydrogen", "name should match");
+        assertEq(mades[0].symbol, "H", "symbol should match");
 
         // Verify the Solid was actually created
         (bool yes, address home,) = N.made("Hydrogen", "H");
@@ -120,16 +126,15 @@ contract SolidFactoryTest is BaseTest {
         solids[1] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"});
         solids[2] = SolidFactory.SolidSpec({name: "Lithium", symbol: "Li"});
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory created) = factory.make(solids);
+        SolidFactory.SolidMade[] memory mades = factory.make(solids);
 
-        assertEq(existing.length, 0, "should have no existing");
-        assertEq(created.length, 3, "should have three created");
-        assertEq(created[0].name, "Hydrogen", "first name should match");
-        assertEq(created[0].symbol, "H", "first symbol should match");
-        assertEq(created[1].name, "Helium", "second name should match");
-        assertEq(created[1].symbol, "He", "second symbol should match");
-        assertEq(created[2].name, "Lithium", "third name should match");
-        assertEq(created[2].symbol, "Li", "third symbol should match");
+        assertEq(mades.length, 3, "should have three results");
+        assertEq(mades[0].name, "Hydrogen", "first name should match");
+        assertEq(mades[0].symbol, "H", "first symbol should match");
+        assertEq(mades[1].name, "Helium", "second name should match");
+        assertEq(mades[1].symbol, "He", "second symbol should match");
+        assertEq(mades[2].name, "Lithium", "third name should match");
+        assertEq(mades[2].symbol, "Li", "third symbol should match");
 
         // Verify all Solids were actually created
         (bool yes1,,) = N.made("Hydrogen", "H");
@@ -149,17 +154,23 @@ contract SolidFactoryTest is BaseTest {
         solids[1] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"}); // new
         solids[2] = SolidFactory.SolidSpec({name: "Lithium", symbol: "Li"}); // new
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory created) = factory.make(solids);
+        SolidFactory.SolidMade[] memory mades = factory.make(solids);
 
-        assertEq(existing.length, 1, "should have one existing");
-        assertEq(existing[0].name, "Hydrogen", "existing name should match");
-        assertEq(existing[0].symbol, "H", "existing symbol should match");
+        assertEq(mades.length, 3, "should have three results");
 
-        assertEq(created.length, 2, "should have two created");
-        assertEq(created[0].name, "Helium", "first created name should match");
-        assertEq(created[0].symbol, "He", "first created symbol should match");
-        assertEq(created[1].name, "Lithium", "second created name should match");
-        assertEq(created[1].symbol, "Li", "second created symbol should match");
+        // Check existing (made=true because it existed before)
+        assertTrue(mades[0].made, "Hydrogen should have been existing");
+        assertEq(mades[0].name, "Hydrogen", "first name should match");
+        assertEq(mades[0].symbol, "H", "first symbol should match");
+
+        // Check newly created (made=false because they were checked before creation)
+        assertFalse(mades[1].made, "Helium made flag should be false (checked before creation)");
+        assertEq(mades[1].name, "Helium", "second name should match");
+        assertEq(mades[1].symbol, "He", "second symbol should match");
+
+        assertFalse(mades[2].made, "Lithium made flag should be false (checked before creation)");
+        assertEq(mades[2].name, "Lithium", "third name should match");
+        assertEq(mades[2].symbol, "Li", "third symbol should match");
 
         // Verify new Solids were created
         (bool yes1,,) = N.made("Helium", "He");
@@ -177,10 +188,11 @@ contract SolidFactoryTest is BaseTest {
         solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
         solids[1] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"});
 
-        (SolidFactory.SolidSpec[] memory existing, SolidFactory.SolidSpec[] memory created) = factory.make(solids);
+        SolidFactory.SolidMade[] memory mades = factory.make(solids);
 
-        assertEq(existing.length, 2, "should have two existing");
-        assertEq(created.length, 0, "should have no created");
+        assertEq(mades.length, 2, "should have two results");
+        assertTrue(mades[0].made, "Hydrogen should exist");
+        assertTrue(mades[1].made, "Helium should exist");
     }
 
     function test_MakeEmitsMadeBatchEvent() public {
@@ -192,9 +204,9 @@ contract SolidFactoryTest is BaseTest {
         // Create Hydrogen first
         N.make("Hydrogen", "H");
 
-        // Expect MadeBatch event with: created=2, skipped=1, total=3
+        // Expect MadeBatch event with: created=2, total=3
         vm.expectEmit(true, true, true, true, address(factory));
-        emit SolidFactory.MadeBatch(2, 1, 3);
+        emit SolidFactory.MadeBatch(2, 3);
 
         factory.make(solids);
     }
