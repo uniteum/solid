@@ -33,8 +33,8 @@ contract SolidTest is BaseTest {
 
     function test_Buys(uint256 s) public {
         s = s % 1e40 + 1;
-        ISolid NL = new Solid(s);
-        ISolid H = NL.make("Hydrogen", "H");
+        ISolid nl = new Solid(s);
+        ISolid H = nl.make("Hydrogen", "H");
         for (uint256 i = 1; i < 20; ++i) {
             uint256 e = i * 1 ether;
             uint256 b = H.buys(e);
@@ -134,12 +134,12 @@ contract SolidTest is BaseTest {
     }
 
     function test_MakeWithNoStakeCreatesPoolOnly() public {
-        ISolid Li = N.make("Lithium", "Li");
-        uint256 supply = Li.totalSupply();
-        assertEq(Li.totalSupply(), supply);
-        assertEq(Li.balanceOf(address(this)), 0, "creator should have 0% of supply");
-        assertEq(Li.balanceOf(address(Li)), supply, "pool should have 100% of supply");
-        assertEq(address(Li).balance, 0, "pool should have 0 ETH");
+        ISolid li = N.make("Lithium", "Li");
+        uint256 supply = li.totalSupply();
+        assertEq(li.totalSupply(), supply);
+        assertEq(li.balanceOf(address(this)), 0, "creator should have 0% of supply");
+        assertEq(li.balanceOf(address(li)), supply, "pool should have 100% of supply");
+        assertEq(address(li).balance, 0, "pool should have 0 ETH");
     }
 
     function test_BuyDoesNotCreateTokens() public {

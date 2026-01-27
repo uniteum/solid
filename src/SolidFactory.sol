@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {Solid, ISolid} from "./Solid.sol";
+import {Solid} from "./Solid.sol";
 
 /**
  * @notice Factory for batch creation of Solid tokens
