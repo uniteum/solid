@@ -29,17 +29,17 @@ contract SolidFactoryTest is BaseTest {
     }
 
     function test_MadeWithEmptyArray() public view {
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](0);
-        SolidFactory.SolidMade[] memory mades = factory.made(solids);
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](0);
+        SolidFactory.MakeOut[] memory mades = factory.made(solids);
 
         assertEq(mades.length, 0, "should have no results");
     }
 
     function test_MadeWithOneNonExisting() public view {
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
-        solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](1);
+        solids[0] = SolidFactory.MakeIn({name: "Hydrogen", symbol: "H"});
 
-        SolidFactory.SolidMade[] memory mades = factory.made(solids);
+        SolidFactory.MakeOut[] memory mades = factory.made(solids);
 
         assertEq(mades.length, 1, "should have one result");
         assertFalse(mades[0].made, "should not exist yet");
@@ -52,10 +52,10 @@ contract SolidFactoryTest is BaseTest {
         // Create Hydrogen first
         N.make("Hydrogen", "H");
 
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
-        solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](1);
+        solids[0] = SolidFactory.MakeIn({name: "Hydrogen", symbol: "H"});
 
-        SolidFactory.SolidMade[] memory mades = factory.made(solids);
+        SolidFactory.MakeOut[] memory mades = factory.made(solids);
 
         assertEq(mades.length, 1, "should have one result");
         assertTrue(mades[0].made, "should exist");
@@ -68,13 +68,13 @@ contract SolidFactoryTest is BaseTest {
         N.make("Hydrogen", "H");
         N.make("Helium", "He");
 
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](4);
-        solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"}); // existing
-        solids[1] = SolidFactory.SolidSpec({name: "Lithium", symbol: "Li"}); // new
-        solids[2] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"}); // existing
-        solids[3] = SolidFactory.SolidSpec({name: "Beryllium", symbol: "Be"}); // new
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](4);
+        solids[0] = SolidFactory.MakeIn({name: "Hydrogen", symbol: "H"}); // existing
+        solids[1] = SolidFactory.MakeIn({name: "Lithium", symbol: "Li"}); // new
+        solids[2] = SolidFactory.MakeIn({name: "Helium", symbol: "He"}); // existing
+        solids[3] = SolidFactory.MakeIn({name: "Beryllium", symbol: "Be"}); // new
 
-        SolidFactory.SolidMade[] memory mades = factory.made(solids);
+        SolidFactory.MakeOut[] memory mades = factory.made(solids);
 
         assertEq(mades.length, 4, "should have four results");
 
@@ -97,17 +97,17 @@ contract SolidFactoryTest is BaseTest {
     }
 
     function test_MakeWithEmptyArray() public {
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](0);
-        SolidFactory.SolidMade[] memory mades = factory.make(solids);
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](0);
+        SolidFactory.MakeOut[] memory mades = factory.make(solids);
 
         assertEq(mades.length, 0, "should have no results");
     }
 
     function test_MakeWithOneNewSolid() public {
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](1);
-        solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](1);
+        solids[0] = SolidFactory.MakeIn({name: "Hydrogen", symbol: "H"});
 
-        SolidFactory.SolidMade[] memory mades = factory.make(solids);
+        SolidFactory.MakeOut[] memory mades = factory.make(solids);
 
         assertEq(mades.length, 1, "should have one result");
         // Note: mades[0].made is false because it was checked BEFORE creation
@@ -121,12 +121,12 @@ contract SolidFactoryTest is BaseTest {
     }
 
     function test_MakeWithMultipleNewSolids() public {
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](3);
-        solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
-        solids[1] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"});
-        solids[2] = SolidFactory.SolidSpec({name: "Lithium", symbol: "Li"});
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](3);
+        solids[0] = SolidFactory.MakeIn({name: "Hydrogen", symbol: "H"});
+        solids[1] = SolidFactory.MakeIn({name: "Helium", symbol: "He"});
+        solids[2] = SolidFactory.MakeIn({name: "Lithium", symbol: "Li"});
 
-        SolidFactory.SolidMade[] memory mades = factory.make(solids);
+        SolidFactory.MakeOut[] memory mades = factory.make(solids);
 
         assertEq(mades.length, 3, "should have three results");
         assertEq(mades[0].name, "Hydrogen", "first name should match");
@@ -149,12 +149,12 @@ contract SolidFactoryTest is BaseTest {
         // Create Hydrogen first
         N.make("Hydrogen", "H");
 
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](3);
-        solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"}); // existing
-        solids[1] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"}); // new
-        solids[2] = SolidFactory.SolidSpec({name: "Lithium", symbol: "Li"}); // new
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](3);
+        solids[0] = SolidFactory.MakeIn({name: "Hydrogen", symbol: "H"}); // existing
+        solids[1] = SolidFactory.MakeIn({name: "Helium", symbol: "He"}); // new
+        solids[2] = SolidFactory.MakeIn({name: "Lithium", symbol: "Li"}); // new
 
-        SolidFactory.SolidMade[] memory mades = factory.make(solids);
+        SolidFactory.MakeOut[] memory mades = factory.make(solids);
 
         assertEq(mades.length, 3, "should have three results");
 
@@ -184,11 +184,11 @@ contract SolidFactoryTest is BaseTest {
         N.make("Hydrogen", "H");
         N.make("Helium", "He");
 
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](2);
-        solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
-        solids[1] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"});
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](2);
+        solids[0] = SolidFactory.MakeIn({name: "Hydrogen", symbol: "H"});
+        solids[1] = SolidFactory.MakeIn({name: "Helium", symbol: "He"});
 
-        SolidFactory.SolidMade[] memory mades = factory.make(solids);
+        SolidFactory.MakeOut[] memory mades = factory.make(solids);
 
         assertEq(mades.length, 2, "should have two results");
         assertTrue(mades[0].made, "Hydrogen should exist");
@@ -196,10 +196,10 @@ contract SolidFactoryTest is BaseTest {
     }
 
     function test_MakeEmitsMadeBatchEvent() public {
-        SolidFactory.SolidSpec[] memory solids = new SolidFactory.SolidSpec[](3);
-        solids[0] = SolidFactory.SolidSpec({name: "Hydrogen", symbol: "H"});
-        solids[1] = SolidFactory.SolidSpec({name: "Helium", symbol: "He"});
-        solids[2] = SolidFactory.SolidSpec({name: "Lithium", symbol: "Li"});
+        SolidFactory.MakeIn[] memory solids = new SolidFactory.MakeIn[](3);
+        solids[0] = SolidFactory.MakeIn({name: "Hydrogen", symbol: "H"});
+        solids[1] = SolidFactory.MakeIn({name: "Helium", symbol: "He"});
+        solids[2] = SolidFactory.MakeIn({name: "Lithium", symbol: "Li"});
 
         // Create Hydrogen first
         N.make("Hydrogen", "H");
@@ -215,10 +215,10 @@ contract SolidFactoryTest is BaseTest {
     receive() external payable {}
 
     function test_BuyWithOneNewSolid() public {
-        SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](1);
-        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        SolidFactory.BuyIn[] memory specs = new SolidFactory.BuyIn[](1);
+        specs[0] = SolidFactory.BuyIn({eth: 1 ether, name: "Hydrogen", symbol: "H"});
 
-        SolidFactory.BuyResult[] memory results = factory.buy{value: 1 ether}(specs);
+        SolidFactory.BuyOut[] memory results = factory.buy{value: 1 ether}(specs);
 
         assertEq(results.length, 1, "should have one result");
         assertEq(results[0].eth, 1 ether, "eth should match");
@@ -233,12 +233,12 @@ contract SolidFactoryTest is BaseTest {
     }
 
     function test_BuyWithMultipleSolids() public {
-        SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](3);
-        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
-        specs[1] = SolidFactory.BuySpec({eth: 2 ether, name: "Helium", symbol: "He"});
-        specs[2] = SolidFactory.BuySpec({eth: 0.5 ether, name: "Lithium", symbol: "Li"});
+        SolidFactory.BuyIn[] memory specs = new SolidFactory.BuyIn[](3);
+        specs[0] = SolidFactory.BuyIn({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        specs[1] = SolidFactory.BuyIn({eth: 2 ether, name: "Helium", symbol: "He"});
+        specs[2] = SolidFactory.BuyIn({eth: 0.5 ether, name: "Lithium", symbol: "Li"});
 
-        SolidFactory.BuyResult[] memory results = factory.buy{value: 3.5 ether}(specs);
+        SolidFactory.BuyOut[] memory results = factory.buy{value: 3.5 ether}(specs);
 
         assertEq(results.length, 3, "should have three results");
 
@@ -267,10 +267,10 @@ contract SolidFactoryTest is BaseTest {
         ISolid H = N.make("Hydrogen", "H");
         vm.deal(address(H), 5 ether);
 
-        SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](1);
-        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        SolidFactory.BuyIn[] memory specs = new SolidFactory.BuyIn[](1);
+        specs[0] = SolidFactory.BuyIn({eth: 1 ether, name: "Hydrogen", symbol: "H"});
 
-        SolidFactory.BuyResult[] memory results = factory.buy{value: 1 ether}(specs);
+        SolidFactory.BuyOut[] memory results = factory.buy{value: 1 ether}(specs);
 
         assertEq(results.length, 1, "should have one result");
         assertEq(address(results[0].solid), address(H), "should be same Solid");
@@ -278,17 +278,17 @@ contract SolidFactoryTest is BaseTest {
     }
 
     function test_BuyRevertsWithInsufficientETH() public {
-        SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](2);
-        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
-        specs[1] = SolidFactory.BuySpec({eth: 2 ether, name: "Helium", symbol: "He"});
+        SolidFactory.BuyIn[] memory specs = new SolidFactory.BuyIn[](2);
+        specs[0] = SolidFactory.BuyIn({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        specs[1] = SolidFactory.BuyIn({eth: 2 ether, name: "Helium", symbol: "He"});
 
         vm.expectRevert(abi.encodeWithSelector(SolidFactory.InsufficientETH.selector, 3 ether, 2 ether));
         factory.buy{value: 2 ether}(specs);
     }
 
     function test_BuyRefundsExcessETH() public {
-        SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](1);
-        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        SolidFactory.BuyIn[] memory specs = new SolidFactory.BuyIn[](1);
+        specs[0] = SolidFactory.BuyIn({eth: 1 ether, name: "Hydrogen", symbol: "H"});
 
         uint256 balanceBefore = address(this).balance;
         factory.buy{value: 5 ether}(specs);
@@ -299,9 +299,9 @@ contract SolidFactoryTest is BaseTest {
     }
 
     function test_BuyEmitsBoughtBatchEvent() public {
-        SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](2);
-        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
-        specs[1] = SolidFactory.BuySpec({eth: 2 ether, name: "Helium", symbol: "He"});
+        SolidFactory.BuyIn[] memory specs = new SolidFactory.BuyIn[](2);
+        specs[0] = SolidFactory.BuyIn({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        specs[1] = SolidFactory.BuyIn({eth: 2 ether, name: "Helium", symbol: "He"});
 
         vm.expectEmit(true, true, true, true, address(factory));
         emit SolidFactory.BoughtBatch(2, 3 ether);

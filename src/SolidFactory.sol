@@ -10,25 +10,25 @@ import {Solid} from "./Solid.sol";
 contract SolidFactory {
     Solid public immutable NOTHING;
 
-    struct SolidMade {
+    struct MakeIn {
+        string name;
+        string symbol;
+    }
+
+    struct MakeOut {
         address home;
         bool made;
         string name;
         string symbol;
     }
 
-    struct SolidSpec {
-        string name;
-        string symbol;
-    }
-
-    struct BuySpec {
+    struct BuyIn {
         uint256 eth;
         string name;
         string symbol;
     }
 
-    struct BuyResult {
+    struct BuyOut {
         uint256 eth;
         string name;
         ISolid solid;
@@ -48,24 +48,24 @@ contract SolidFactory {
     /**
      * @notice Check which solids exist and which don't
      * @param solids Array of solids to check
-     * @return mades Array of SolidMade structs with details about each solid
+     * @return mades Array of MakeOut structs with details about each solid
      */
-    function made(SolidSpec[] calldata solids) public view returns (SolidMade[] memory mades) {
-        mades = new SolidMade[](solids.length);
+    function made(MakeIn[] calldata solids) public view returns (MakeOut[] memory mades) {
+        mades = new MakeOut[](solids.length);
 
         // First pass: count
         for (uint256 i = 0; i < solids.length; i++) {
             (bool yes, address home,) = NOTHING.made(solids[i].name, solids[i].symbol);
-            mades[i] = SolidMade({home: home, made: yes, name: solids[i].name, symbol: solids[i].symbol});
+            mades[i] = MakeOut({home: home, made: yes, name: solids[i].name, symbol: solids[i].symbol});
         }
     }
 
     /**
      * @notice Create multiple Solids in a single transaction
      * @param solids Array of solids to create
-     * @return mades Array of SolidMade structs with details about each solid
+     * @return mades Array of MakeOut structs with details about each solid
      */
-    function make(SolidSpec[] calldata solids) external returns (SolidMade[] memory mades) {
+    function make(MakeIn[] calldata solids) external returns (MakeOut[] memory mades) {
         // Get arrays of done and TBD solids
         mades = made(solids);
         uint256 created = 0;
@@ -83,11 +83,11 @@ contract SolidFactory {
 
     /**
      * @notice Buy multiple Solids in a single transaction, creating them if needed
-     * @param specs Array of BuySpec with name, symbol, and ETH amount for each
-     * @return results Array of BuyResult with details about each purchase
+     * @param specs Array of BuyIn with name, symbol, and ETH amount for each
+     * @return results Array of BuyOut with details about each purchase
      */
-    function buy(BuySpec[] calldata specs) external payable returns (BuyResult[] memory results) {
-        results = new BuyResult[](specs.length);
+    function buy(BuyIn[] calldata specs) external payable returns (BuyOut[] memory results) {
+        results = new BuyOut[](specs.length);
         uint256 totalEth = 0;
 
         for (uint256 i = 0; i < specs.length; i++) {
@@ -103,9 +103,8 @@ contract SolidFactory {
             uint256 tokens = solid.buy{value: specs[i].eth}();
             solid.transfer(msg.sender, tokens);
 
-            results[i] = BuyResult({
-                eth: specs[i].eth, name: specs[i].name, solid: solid, symbol: specs[i].symbol, tokens: tokens
-            });
+            results[i] =
+                BuyOut({eth: specs[i].eth, name: specs[i].name, solid: solid, symbol: specs[i].symbol, tokens: tokens});
         }
 
         // Refund excess ETH

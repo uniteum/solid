@@ -21,7 +21,7 @@ contract MakeSolids is Script {
         // forge-lint: disable-next-line(unsafe-cheatcode)
         string memory json = vm.readFile(fullPath);
 
-        SolidFactory.SolidSpec[] memory solids = abi.decode(vm.parseJson(json, "$"), (SolidFactory.SolidSpec[]));
+        SolidFactory.MakeIn[] memory solids = abi.decode(vm.parseJson(json, "$"), (SolidFactory.MakeIn[]));
 
         console2.log("Found", solids.length, "solids to create");
 
@@ -29,7 +29,7 @@ contract MakeSolids is Script {
         SolidFactory factory = SolidFactory(factoryAddress);
 
         // Check which solids already exist BEFORE broadcast
-        SolidFactory.SolidMade[] memory mades = factory.made(solids);
+        SolidFactory.MakeOut[] memory mades = factory.made(solids);
 
         // Count existing and to-create
         uint256 existingCount = 0;
@@ -74,7 +74,7 @@ contract MakeSolids is Script {
 
         console2.log("\nStarting broadcast...");
         vm.startBroadcast();
-        SolidFactory.SolidMade[] memory results = factory.make(solids);
+        SolidFactory.MakeOut[] memory results = factory.make(solids);
 
         // Count created (those with made=false in the results, since it's checked before creation)
         uint256 createdCount = 0;
