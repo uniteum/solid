@@ -23,14 +23,16 @@ contract SolidFactory {
     }
 
     struct BuySpec {
+        uint256 eth;
         string name;
         string symbol;
-        uint256 eth;
     }
 
     struct BuyResult {
-        ISolid solid;
         uint256 eth;
+        string name;
+        ISolid solid;
+        string symbol;
         uint256 tokens;
     }
 
@@ -101,7 +103,9 @@ contract SolidFactory {
             uint256 tokens = solid.buy{value: specs[i].eth}();
             solid.transfer(msg.sender, tokens);
 
-            results[i] = BuyResult({solid: solid, eth: specs[i].eth, tokens: tokens});
+            results[i] = BuyResult({
+                eth: specs[i].eth, name: specs[i].name, solid: solid, symbol: specs[i].symbol, tokens: tokens
+            });
         }
 
         // Refund excess ETH

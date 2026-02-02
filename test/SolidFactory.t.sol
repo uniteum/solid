@@ -216,12 +216,14 @@ contract SolidFactoryTest is BaseTest {
 
     function test_BuyWithOneNewSolid() public {
         SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](1);
-        specs[0] = SolidFactory.BuySpec({name: "Hydrogen", symbol: "H", eth: 1 ether});
+        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
 
         SolidFactory.BuyResult[] memory results = factory.buy{value: 1 ether}(specs);
 
         assertEq(results.length, 1, "should have one result");
         assertEq(results[0].eth, 1 ether, "eth should match");
+        assertEq(results[0].name, "Hydrogen", "name should match");
+        assertEq(results[0].symbol, "H", "symbol should match");
         assertGt(results[0].tokens, 0, "should receive tokens");
         assertEq(results[0].solid.balanceOf(address(this)), results[0].tokens, "balance should match tokens");
 
@@ -232,9 +234,9 @@ contract SolidFactoryTest is BaseTest {
 
     function test_BuyWithMultipleSolids() public {
         SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](3);
-        specs[0] = SolidFactory.BuySpec({name: "Hydrogen", symbol: "H", eth: 1 ether});
-        specs[1] = SolidFactory.BuySpec({name: "Helium", symbol: "He", eth: 2 ether});
-        specs[2] = SolidFactory.BuySpec({name: "Lithium", symbol: "Li", eth: 0.5 ether});
+        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        specs[1] = SolidFactory.BuySpec({eth: 2 ether, name: "Helium", symbol: "He"});
+        specs[2] = SolidFactory.BuySpec({eth: 0.5 ether, name: "Lithium", symbol: "Li"});
 
         SolidFactory.BuyResult[] memory results = factory.buy{value: 3.5 ether}(specs);
 
@@ -242,14 +244,20 @@ contract SolidFactoryTest is BaseTest {
 
         // Check each result
         assertEq(results[0].eth, 1 ether, "first eth should match");
+        assertEq(results[0].name, "Hydrogen", "first name should match");
+        assertEq(results[0].symbol, "H", "first symbol should match");
         assertGt(results[0].tokens, 0, "should receive Hydrogen tokens");
         assertEq(results[0].solid.balanceOf(address(this)), results[0].tokens, "Hydrogen balance should match");
 
         assertEq(results[1].eth, 2 ether, "second eth should match");
+        assertEq(results[1].name, "Helium", "second name should match");
+        assertEq(results[1].symbol, "He", "second symbol should match");
         assertGt(results[1].tokens, 0, "should receive Helium tokens");
         assertEq(results[1].solid.balanceOf(address(this)), results[1].tokens, "Helium balance should match");
 
         assertEq(results[2].eth, 0.5 ether, "third eth should match");
+        assertEq(results[2].name, "Lithium", "third name should match");
+        assertEq(results[2].symbol, "Li", "third symbol should match");
         assertGt(results[2].tokens, 0, "should receive Lithium tokens");
         assertEq(results[2].solid.balanceOf(address(this)), results[2].tokens, "Lithium balance should match");
     }
@@ -260,7 +268,7 @@ contract SolidFactoryTest is BaseTest {
         vm.deal(address(H), 5 ether);
 
         SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](1);
-        specs[0] = SolidFactory.BuySpec({name: "Hydrogen", symbol: "H", eth: 1 ether});
+        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
 
         SolidFactory.BuyResult[] memory results = factory.buy{value: 1 ether}(specs);
 
@@ -271,8 +279,8 @@ contract SolidFactoryTest is BaseTest {
 
     function test_BuyRevertsWithInsufficientETH() public {
         SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](2);
-        specs[0] = SolidFactory.BuySpec({name: "Hydrogen", symbol: "H", eth: 1 ether});
-        specs[1] = SolidFactory.BuySpec({name: "Helium", symbol: "He", eth: 2 ether});
+        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        specs[1] = SolidFactory.BuySpec({eth: 2 ether, name: "Helium", symbol: "He"});
 
         vm.expectRevert(abi.encodeWithSelector(SolidFactory.InsufficientETH.selector, 3 ether, 2 ether));
         factory.buy{value: 2 ether}(specs);
@@ -280,7 +288,7 @@ contract SolidFactoryTest is BaseTest {
 
     function test_BuyRefundsExcessETH() public {
         SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](1);
-        specs[0] = SolidFactory.BuySpec({name: "Hydrogen", symbol: "H", eth: 1 ether});
+        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
 
         uint256 balanceBefore = address(this).balance;
         factory.buy{value: 5 ether}(specs);
@@ -292,8 +300,8 @@ contract SolidFactoryTest is BaseTest {
 
     function test_BuyEmitsBoughtBatchEvent() public {
         SolidFactory.BuySpec[] memory specs = new SolidFactory.BuySpec[](2);
-        specs[0] = SolidFactory.BuySpec({name: "Hydrogen", symbol: "H", eth: 1 ether});
-        specs[1] = SolidFactory.BuySpec({name: "Helium", symbol: "He", eth: 2 ether});
+        specs[0] = SolidFactory.BuySpec({eth: 1 ether, name: "Hydrogen", symbol: "H"});
+        specs[1] = SolidFactory.BuySpec({eth: 2 ether, name: "Helium", symbol: "He"});
 
         vm.expectEmit(true, true, true, true, address(factory));
         emit SolidFactory.BoughtBatch(2, 3 ether);
