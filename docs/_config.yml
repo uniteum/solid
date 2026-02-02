@@ -40,21 +40,6 @@ back_to_top_text: "Back to top"
 
 # Exclude from processing
 exclude:
-  - .git/
-  - .gitignore
-  - .github/
   - node_modules/
   - vendor/
-  - lib/
-  - src/
-  - script/
-  - test/
-  - broadcast/
-  - cache/
-  - out/
-  - foundry.toml
-  - remappings.txt
-  - CLAUDE.md
   - Gemfile.lock
-  - "*.sol"
-  - "*.json"
