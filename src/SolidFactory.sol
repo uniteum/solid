@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {ISolid} from "isolid/ISolid.sol";
 import {Solid} from "./Solid.sol";
 
 /**
- * @notice Factory for batch creation of Solid tokens
+ * @notice Factory for batch creation and purchasing of Solid tokens
  */
 contract SolidFactory {
     Solid public immutable NOTHING;
@@ -21,7 +22,22 @@ contract SolidFactory {
         string symbol;
     }
 
+    struct BuySpec {
+        string name;
+        string symbol;
+        uint256 eth;
+    }
+
+    struct BuyResult {
+        ISolid solid;
+        uint256 eth;
+        uint256 tokens;
+    }
+
+    error InsufficientETH(uint256 required, uint256 sent);
+
     event MadeBatch(uint256 created, uint256 total);
+    event BoughtBatch(uint256 total, uint256 ethSpent);
 
     constructor(Solid solid) {
         NOTHING = solid;
@@ -61,5 +77,40 @@ contract SolidFactory {
         }
 
         emit MadeBatch(created, solids.length);
+    }
+
+    /**
+     * @notice Buy multiple Solids in a single transaction, creating them if needed
+     * @param specs Array of BuySpec with name, symbol, and ETH amount for each
+     * @return results Array of BuyResult with details about each purchase
+     */
+    function buy(BuySpec[] calldata specs) external payable returns (BuyResult[] memory results) {
+        results = new BuyResult[](specs.length);
+        uint256 totalEth = 0;
+
+        for (uint256 i = 0; i < specs.length; i++) {
+            totalEth += specs[i].eth;
+        }
+
+        if (msg.value < totalEth) {
+            revert InsufficientETH(totalEth, msg.value);
+        }
+
+        for (uint256 i = 0; i < specs.length; i++) {
+            ISolid solid = NOTHING.make(specs[i].name, specs[i].symbol);
+            uint256 tokens = solid.buy{value: specs[i].eth}();
+            solid.transfer(msg.sender, tokens);
+
+            results[i] = BuyResult({solid: solid, eth: specs[i].eth, tokens: tokens});
+        }
+
+        // Refund excess ETH
+        uint256 excess = msg.value - totalEth;
+        if (excess > 0) {
+            (bool ok,) = msg.sender.call{value: excess}("");
+            require(ok, "ETH refund failed");
+        }
+
+        emit BoughtBatch(specs.length, totalEth);
     }
 }
