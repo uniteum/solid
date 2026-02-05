@@ -78,5 +78,7 @@ bitsy    = "https://rpc.bitsy.network"
 13337    = "https://build.onbeam.com/rpc/testnet"           # Beam Testnet
 130      = "https://mainnet.unichain.org"                   # Unichain Mainnet
 1301     = "https://sepolia.unichain.org"                   # Unichain Testnet
+80094    = "https://rpc.berachain.com"                      # Berachain Mainnet
+80069    = "https://bepolia.rpc.berachain.com"              # Berachain Testnet
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

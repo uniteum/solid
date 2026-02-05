@@ -46,3 +46,5 @@ export chain=4337       # Beam Mainnet
 export chain=13337      # Beam Testnet
 export chain=130        # Unichain Mainnet
 export chain=1301       # Unichain Testnet
+export chain=80094      # Berachain Mainnet
+export chain=80069      # Berachain Testnet
