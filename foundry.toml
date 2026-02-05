@@ -76,5 +76,7 @@ bitsy    = "https://rpc.bitsy.network"
 2021     = "https://saigon-testnet.roninchain.com/rpc"      # Ronin Saigon Testnet
 4337     = "https://build.onbeam.com/rpc"                   # Beam Mainnet
 13337    = "https://build.onbeam.com/rpc/testnet"           # Beam Testnet
+130      = "https://mainnet.unichain.org"                   # Unichain Mainnet
+1301     = "https://sepolia.unichain.org"                   # Unichain Testnet
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
