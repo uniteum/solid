@@ -66,14 +66,14 @@ This file provides context for AI assistants (primarily Claude) to understand th
 
 ## Overview
 
-**Solid** is a constant-product AMM protocol on Ethereum where Solid tokens are traded against ETH with deterministic deployment.
+**Solid** is a constant-product AMM protocol where Solid tokens are traded against the network's native currency (ETH, POL, BNB, etc.) with deterministic deployment. Deployed on Ethereum and multiple EVM-compatible chains.
 
 ### Core Concepts
 
 - **Solid tokens** = ERC-20 tokens created by the protocol (state variable: balances)
-- **ETH** = Native Ethereum currency used for liquidity
+- **Native currency** = The chain's native token used for liquidity (ETH on Ethereum, POL on Polygon, BNB on BNB Chain, etc.). Solidity's `ether` unit and `msg.value` work with whatever native currency the chain uses — code examples in this doc use "ETH" as shorthand.
 - **NOTHING** = Base Solid instance used as factory for creating new Solids
-- **Pool** = Contract balances of Solid tokens and ETH
+- **Pool** = Contract balances of Solid tokens and native currency
 - **SUPPLY** = Immutable total supply set at construction (configurable per deployment)
 - **Starting Price** = SUPPLY / 10^18 solids per ETH (e.g., 1e23 supply → 1e5 solids per ETH)
 - **Price Floor** = Virtual 1 ETH guarantees sell price never falls below starting price
@@ -773,7 +773,7 @@ uint256 supply = solid.SUPPLY();      // Total supply
 ## Key Differences from Traditional AMMs
 
 1. **Fixed Supply**: Total supply is SUPPLY (set at construction, never changes)
-2. **Native ETH**: Uses ETH directly (not WETH)
+2. **Native Currency**: Uses the chain's native token directly (not wrapped versions like WETH)
 3. **Deterministic Addresses**: CREATE2 based on name+symbol
 4. **Factory Pattern**: NOTHING instance creates all Solids
 5. **Zero Maker Share**: Creator receives 0% (100% goes to pool), must buy separately
