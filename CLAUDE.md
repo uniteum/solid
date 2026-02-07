@@ -57,6 +57,7 @@ This file provides context for AI assistants (primarily Claude) to understand th
 ### Related Documentation Files
 
 - [README.md](README.md) - User-facing introduction
+- [docs/](docs/) - Jekyll website content (solid.uniteum.one)
 - [foundry.toml](foundry.toml) - Build configuration (authoritative source)
 - [src/Solid.sol](src/Solid.sol) - Source of truth for all mechanics
 - [lib/isolid/ISolid.sol](lib/isolid/ISolid.sol) - Interface definitions
@@ -554,6 +555,46 @@ function makeHydrogen(uint256 seed) public returns (ISolid H, uint256 h, uint256
 ```
 
 This creates a Hydrogen Solid with random ETH in the pool for fuzz testing.
+
+## Website & Content Guidelines
+
+The Jekyll website ([docs/](docs/)) at solid.uniteum.one is the public face of the protocol. The site is early — new pages will be added over time. These guidelines apply to **all** website content and supporting documents (README, use-case pages, future guides, etc.).
+
+### Voice & Tone
+
+**Write for a curious non-expert.** Assume the reader is smart but unfamiliar with blockchain, AMMs, or Solidity. They should be able to understand what Solid does and why it matters without prior crypto knowledge.
+
+- **Lead with what people can do**, not how the protocol works internally. "Create your own token in seconds" before "uses CREATE2 with deterministic addressing."
+- **Use plain language first.** Introduce concepts in everyday terms, then offer technical depth for those who want it. "Tokens are always tradeable" before "constant-product AMM."
+- **Show, don't spec.** Concrete scenarios and stories (like Mara in the gift certificates page) are more effective than feature lists or function signatures.
+- **Be honest and direct.** Don't oversell. Solid's strengths — fairness, transparency, simplicity — speak for themselves when explained clearly.
+- **Keep it warm but not fluffy.** Conversational is good. Marketing-speak and hype are not.
+
+### Jargon Rules
+
+- **Never assume the reader knows**: AMM, ERC-20, liquidity pool, constant-product, CREATE2, EIP-anything, gas, wei, reentrancy, proxy pattern
+- **When a technical term is necessary**, explain it inline on first use. Example: "Each token has a built-in trading pool — a reserve of tokens and ETH that automatically sets the price."
+- **Solidity code blocks are fine** in developer-facing sections, but always pair them with a plain-English summary of what they mean for the user.
+- **Reserve deep jargon** (EIP numbers, implementation details) for explicitly developer-targeted pages.
+
+### Content Principles
+
+1. **Approachable first, accurate always.** Simplify language, never simplify the truth. If something is complex, explain it clearly rather than glossing over it.
+2. **Narrative over enumeration.** Favor stories and scenarios over bullet-point feature lists. The gift certificates page is the model to follow.
+3. **Progressive disclosure.** Start simple, let readers go deeper if they choose. Not everyone needs to see the formula.
+4. **Respect the reader's time.** Short pages that say something meaningful beat long pages that cover everything.
+5. **The site is growing.** Each new page should feel like it belongs with the others. Consistency matters more than any single page being perfect.
+
+### Page Structure Guidance
+
+- **Opening:** What is this page about and why should I care? (1-2 sentences, no jargon)
+- **Middle:** The substance — stories, examples, explanations. Build understanding gradually.
+- **Closing:** What to take away or do next. Link to related pages or actions.
+- **Avoid** starting pages with definitions, technical specs, or contract addresses.
+
+### Existing Content Reference
+
+The [use-cases/gift-certificates.md](docs/use-cases/gift-certificates.md) page (Mara's story) exemplifies the target tone: narrative, human, technically accurate without being technical. Use it as a benchmark when writing new content.
 
 ## Deployment
 
