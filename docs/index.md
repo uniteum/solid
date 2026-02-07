@@ -56,7 +56,7 @@ The links below point to [Uniteum 1 (1)](https://etherscan.io/token/{{site.data.
 | [pool()](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F9){:target="_blank"} | See the current token and currency balances in the pool |
 | [made(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#readContract#F7){:target="_blank"} | Check if a Solid already exists and find its address |
 
-If you'd like to support continued development of this protocol, buying some [1](https://etherscan.io/token/{{site.data.solids.1.address}}){:target="_blank"} is a simple way to do so.
+If you'd like to support continued development of this protocol, buying some [Uniteum 1]({{ site.baseurl }}/uniteum-1) is a simple way to do so.
 
 ## Resources
 
