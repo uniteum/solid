@@ -6,58 +6,59 @@ nav_order: 1
 
 # Solid Protocol
 
-Solids are Ethereum tokens that have uniquely powerful properties:
-- **Instantly Tradeable** - Each Solid has its own ETH liquidity pool with buy and sell functions
-- **Fair Launch** - 100% of supply goes to the liquidity pool upon creation
-- **Price Floor** - Virtual 1 ETH ensures tokens always have minimum value
-- **Permissionless** - Anyone can make a new Solid: no exchange, operator, or custom UI is required
-- **Easy to Make** - Anyone can make their own token in a few simple steps using major block explorers
-- **Inexpensive** - Each token is deployed as a minimal proxy contract (clone), needing little gas
-- **Deterministic** - Token addresses are predictable via CREATE2 based on name and symbol
+Solid lets anyone create a token that's instantly tradeable, backed by real ETH, and fully owned by no one.
 
-## Why Use Solids?
+There's no launch process. No exchange listing. No middleman. You pick a name and a symbol, and the protocol does the rest — your token gets its own trading pool, a fair starting price, and a built-in price floor, all in a single transaction.
 
-Solids are useful when you need transparent, trustless value transfer without intermediaries. Examples so far include:
+## What can you do with it?
 
-- **Personal gift certificates** - Back tokens with ETH to create gifts that gently encourage spending through curve dynamics
-- **Game currencies** - Model energy, life, time, and reputation as explicit economic resources rather than hard-coded rules
+Solid is a building block. The protocol doesn't tell you *what* to create — it just makes certain kinds of value transfer simple, transparent, and trustworthy.
 
-These are just the beginning. See [Use Cases]({{ site.baseurl }}/use-cases) for details and emerging applications.
+Here are some things people are already exploring:
 
-## How It Works
+- **Personal gift certificates** — Back a token with ETH and send it to friends. The trading curve gently encourages them to actually use it, without deadlines or penalties.
+- **Game currencies** — Model energy, life, time, and reputation as real economic resources instead of arbitrary numbers.
 
-Each Solid token is an ERC-20 with a built-in constant-product AMM. All functions can be called directly through block explorers like [Etherscan](https://etherscan.io){:target="_blank"} or [Blockscout](https://eth.blockscout.com){:target="_blank"}—no custom interface required.
+These are just the beginning. See [Use Cases]({{ site.baseurl }}/use-cases) for the full stories and emerging ideas.
 
-### Write Operations
+## Why it works
 
-1. **make** - Call [make(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#writeContract#F3){:target="_blank"} on any Solid to create a new one
-2. **buy** - Send ETH when calling [buy()](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F2){:target="_blank"} to receive Solid tokens from the pool
-3. **sell** - Call [sell(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F4){:target="_blank"} to exchange Solid tokens back for ETH
-4. **sellFor** - Call [sellFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F5){:target="_blank"} to swap one Solid for another in a single transaction (no approval needed)
+Every Solid token has a few properties that make it different from most tokens:
 
-### Read Operations
+- **Always tradeable.** Each token has its own pool of ETH. You can buy or sell at any time — no exchange or counterparty needed.
+- **Fair from the start.** When a token is created, 100% of the supply goes into the trading pool. The creator doesn't get free tokens — they buy in like everyone else.
+- **Price floor built in.** The pool includes a virtual 1 ETH reserve, which means tokens always have a minimum value. The price can go up, but it can never collapse to zero.
+- **No one controls it.** Once created, a Solid can't be frozen, modified, or revoked. The rules are set by math, not by an operator.
+- **Anyone can create one.** Making a new Solid is inexpensive and permissionless. You don't need a custom app — you can do it directly through a block explorer.
 
-1. **pool** - Call [pool()](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F9){:target="_blank"} to get the current pool state (Solid balance, virtual ETH balance)
-2. **buys** - Call [buys(ethAmount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F5){:target="_blank"} to preview how many tokens you'd receive for a given ETH amount
-3. **sells** - Call [sells(solidAmount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F10){:target="_blank"} to preview how much ETH you'd receive for selling tokens
-4. **sellsFor** - Call [sellsFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F11){:target="_blank"} to preview a Solid-to-Solid swap
-5. **made** - Call [made(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#readContract#F7){:target="_blank"} to check if a Solid exists and get its address
+## Try it
 
-The protocol uses the constant product formula (`x * y = k`) for pricing, ensuring liquidity is always available.
+You can interact with any Solid directly on [Etherscan](https://etherscan.io){:target="_blank"} or [Blockscout](https://eth.blockscout.com){:target="_blank"} — no special interface required.
 
-The example links above point to [Uniteum 1 (1)](https://etherscan.io/token/{{site.data.solids.1.address}}){:target="_blank"}—to interact with a different Solid, navigate to that token's page on the block explorer. If you'd like to support continued development of this protocol, buying some 1 is a simple way to do so.
+The links below point to [Uniteum 1 (1)](https://etherscan.io/token/{{site.data.solids.1.address}}){:target="_blank"} as an example. To work with a different Solid, just navigate to that token's page on the block explorer.
 
-## Key Properties
+### Create and trade
 
-| Property | Value |
-|:---------|:------|
-| Total Supply | 6.02214076 × 10²³ (Avogadro's number) |
-| Starting Price | ~602,214 solids per ETH |
-| Price Floor | Guaranteed by virtual 1 ETH |
-| Decimals | 18 |
+| Action | What it does |
+|:-------|:-------------|
+| [make(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#writeContract#F3){:target="_blank"} | Create a new Solid with your chosen name and symbol |
+| [buy()](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F2){:target="_blank"} | Send ETH to receive tokens from the pool |
+| [sell(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F4){:target="_blank"} | Return tokens to the pool and receive ETH |
+| [sellFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F5){:target="_blank"} | Swap one Solid for another in a single step |
+
+### Check prices and status
+
+| Action | What it does |
+|:-------|:-------------|
+| [buys(ethAmount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F5){:target="_blank"} | Preview how many tokens you'd get for a given amount of ETH |
+| [sells(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F10){:target="_blank"} | Preview how much ETH you'd get for selling tokens |
+| [sellsFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F11){:target="_blank"} | Preview a Solid-to-Solid swap |
+| [pool()](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F9){:target="_blank"} | See the current token and ETH balances in the pool |
+| [made(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#readContract#F7){:target="_blank"} | Check if a Solid already exists and find its address |
+
+If you'd like to support continued development of this protocol, buying some [1](https://etherscan.io/token/{{site.data.solids.1.address}}){:target="_blank"} is a simple way to do so.
 
 ## Resources
 
 - [GitHub Repository](https://github.com/uniteum/solid)
-- [Foundry Book](https://book.getfoundry.sh/)
-- [EIP-1167 Clones](https://eips.ethereum.org/EIPS/eip-1167)
+- [Use Cases]({{ site.baseurl }}/use-cases)
