@@ -54,3 +54,12 @@ It's not a donation. It's not an investment. It's somewhere in between — a way
 | **Network** | Ethereum Mainnet |
 
 You can interact with Uniteum 1 directly on [Etherscan](https://etherscan.io/token/{{site.data.solids.1.address}}){:target="_blank"} — no special interface required.
+
+## What's ahead
+
+Uniteum 1 is planned to become the Hub currency for two upcoming protocols:
+
+- **[Liquid](https://liquid.uniteum.one){:target="_blank"}** — a liquidity protocol that's nearly complete and approaching launch
+- **[Unit](https://uniteum.one){:target="_blank"}** — an algebraic liquidity protocol where tokens compose dimensionally, like `meter/second` or `USD/BTC`
+
+As the Hub currency, Uniteum 1 would sit at the center of these systems — connecting pools and enabling routing across them. More details will follow as those protocols come online.
