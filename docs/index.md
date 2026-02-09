@@ -6,57 +6,111 @@ nav_order: 1
 
 # Solid Protocol
 
-Solid lets anyone create a token that's instantly tradeable, backed by real value, and fully owned by no one.
+**Make a token that starts fair, stays tradeable, and never goes to zero.**
 
-There's no launch process. No exchange listing. No middleman. You pick a name and a symbol, and the protocol does the rest — your token gets its own trading pool, a fair starting price, and a built-in price floor, all in a single transaction.
+Solid is a protocol for making tokens that are immediately usable as real economic objects — not promises, not IOUs, not hype vehicles.
 
-## What can you do with it?
+You pick a name and a symbol.  
+In a single transaction, the protocol makes the token, its trading pool, a fair starting price, and a permanent price floor.
 
-Solid is a building block. The protocol doesn't tell you *what* to create — it just makes certain kinds of value transfer simple, transparent, and trustworthy.
+No launch.  
+No listing.  
+No operator.
 
-Here are some things people are already exploring:
+---
 
-- **Personal gift certificates** — Back a token with real currency and send it to friends. The trading curve gently encourages them to actually use it, without deadlines or penalties.
-- **Game currencies** — Model energy, life, time, and reputation as real economic resources instead of arbitrary numbers.
+## Why this is interesting
 
-These are just the beginning. See [Use Cases]({{ site.baseurl }}/use-cases) for the full stories and emerging ideas.
+Most tokens depend on people behaving well.
+Solid tokens don’t.
 
-## Why it works
+Every Solid is governed entirely by on-chain rules that make certain outcomes unavoidable:
 
-Every Solid token has a few properties that make it different from most tokens:
+- Tokens are **always tradeable**
+- Makers receive **no free allocation**
+- Prices can rise, but **never collapse to zero**
+- No one can freeze, pause, or rewrite the rules
 
-- **Always tradeable.** Each token has its own pool backed by the network's native currency. You can buy or sell at any time — no exchange or counterparty needed.
-- **Fair from the start.** When a token is created, 100% of the supply goes into the trading pool. The creator doesn't get free tokens — they buy in like everyone else.
-- **Price floor built in.** The pool includes a virtual reserve, which means tokens always have a minimum value. The price can go up, but it can never collapse to zero.
-- **No one controls it.** Once created, a Solid can't be frozen, modified, or revoked. The rules are set by math, not by an operator.
-- **Anyone can create one.** Making a new Solid is inexpensive and permissionless. You don't need a custom app — you can do it directly through a block explorer.
+This makes Solids useful as *economic building blocks*, not just speculative assets.
 
-## Try it
+---
 
-You can interact with any Solid directly on [Etherscan](https://etherscan.io){:target="_blank"} or [Blockscout](https://eth.blockscout.com){:target="_blank"} — no special interface required.
+## What can you make?
 
-The links below point to [Uniteum 1 (1)](https://etherscan.io/token/{{site.data.solids.1.address}}){:target="_blank"} as an example. To work with a different Solid, just navigate to that token's page on the block explorer.
+Solid doesn’t prescribe meaning — it provides structure.
 
-### Create and trade
+People are already experimenting with:
+
+- **Personal gift certificates**  
+  Tokens backed by real currency that gently encourage spending without deadlines or penalties.
+
+- **Game currencies**  
+  Energy, life, time, or reputation modeled as scarce economic resources instead of arbitrary counters.
+
+- **Small community or experimental economies**  
+  Transparent value systems with fixed rules and no central issuer.
+
+See [Use Cases]({{ site.baseurl }}/use-cases) for full narratives and concrete examples.
+
+---
+
+## Why Solid works
+
+Every Solid has the same invariant structure:
+
+- **Always tradeable**  
+  Each Solid has its own pool backed by the network’s native currency. You can buy or sell at any time — no counterparty required.
+
+- **Fair from the start**  
+  100% of the supply begins in the pool. The maker buys in like everyone else.
+
+- **Permanent price floor**  
+  A virtual reserve ensures the Solid always retains some minimum value.
+
+- **No one controls it**  
+  Once made, a Solid cannot be modified, frozen, or revoked.
+
+- **Permissionless**  
+  You don’t need a custom app. Solids can be made directly through a block explorer.
+
+These rules are enforced by math, not governance.
+
+---
+
+## Try it directly on-chain
+
+You can interact with any Solid using standard tools like  
+[Etherscan](https://etherscan.io){:target="_blank"} or  
+[Blockscout](https://eth.blockscout.com){:target="_blank"}.
+
+The links below reference  
+[Uniteum 1 (1)](https://etherscan.io/token/{{site.data.solids.1.address}}){:target="_blank"}  
+as a live example. Any Solid works the same way.
+
+### Make and trade
 
 | Action | What it does |
 |:-------|:-------------|
-| [make(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#writeContract#F3){:target="_blank"} | Create a new Solid with your chosen name and symbol |
-| [buy()](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F2){:target="_blank"} | Send native currency to receive tokens from the pool |
-| [sell(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F4){:target="_blank"} | Return tokens to the pool and receive native currency |
-| [sellFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F5){:target="_blank"} | Swap one Solid for another in a single step |
+| [make(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#writeContract#F3){:target="_blank"} | Make a new Solid |
+| [buy()](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F2){:target="_blank"} | Buy tokens from the pool |
+| [sell(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F4){:target="_blank"} | Sell tokens back to the pool |
+| [sellFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#writeContract#F5){:target="_blank"} | Swap one Solid for another |
 
-### Check prices and status
+### Inspect prices and state
 
-| Action | What it does |
-|:-------|:-------------|
-| [buys(ethAmount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F5){:target="_blank"} | Preview how many tokens you'd get for a given amount |
-| [sells(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F10){:target="_blank"} | Preview how much you'd receive for selling tokens |
+| Action | What it shows |
+|:-------|:--------------|
+| [buys(ethAmount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F5){:target="_blank"} | Tokens received for a given input |
+| [sells(amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F10){:target="_blank"} | Currency received for selling |
 | [sellsFor(solid, amount)](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F11){:target="_blank"} | Preview a Solid-to-Solid swap |
-| [pool()](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F9){:target="_blank"} | See the current token and currency balances in the pool |
-| [made(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#readContract#F7){:target="_blank"} | Check if a Solid already exists and find its address |
+| [pool()](https://etherscan.io/token/{{site.data.solids.1.address}}#readContract#F9){:target="_blank"} | Current pool balances |
+| [made(name, symbol)](https://etherscan.io/token/{{site.data.solids.NOTHING.address}}#readContract#F7){:target="_blank"} | Check if a Solid already exists |
 
-If you'd like to support continued development of this protocol, buying some [Uniteum 1]({{ site.baseurl }}/uniteum-1) is a simple way to do so.
+If you’d like to support continued development, acquiring some  
+[Uniteum 1]({{ site.baseurl }}/uniteum-1)  
+is a simple way to do so.
+
+---
 
 ## Resources
 
