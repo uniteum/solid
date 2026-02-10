@@ -24,16 +24,35 @@ All Solids share the same logic. Differences between Solids are limited to name,
 
 ---
 
+## NOTHING and the implementation
+
+All Solids are deployed as minimal proxy clones of a single implementation contract named **NOTHING**.
+
+NOTHING is the canonical implementation of Solid behavior:
+- it defines all ERC-20 logic
+- it defines pool mechanics and pricing
+- it enforces all economic invariants
+
+Individual Solids do not have their own logic contracts.  
+They delegate all behavior to NOTHING while maintaining independent state.
+
+For details on NOTHING itself, see  
+[What is NOTHING?]({{ site.baseurl }}/nothing)
+
+---
+
 ## Making a Solid
 
-New Solids are made using the `make(name, symbol)` function.
+New Solids are made by calling the `make(name, symbol)` function **on NOTHING**.
 
 Making a Solid is not minting in the traditional sense:
 - there is no privileged issuer
 - no allocation is reserved for the maker
 - no tokens are granted for free
 
-When a Solid is made:
+When `make(name, symbol)` is called on NOTHING:
+
+- a new Solid is deployed as a minimal clone
 - 100% of its supply is placed into its trading pool
 - the pool is initialized with both real and virtual reserves
 - a fair starting price and a permanent price floor are established
@@ -41,6 +60,22 @@ When a Solid is made:
 The maker participates in the market the same way as anyone else: by buying from the pool.
 
 This is why the protocol uses the word **make** rather than *create*.
+
+---
+
+## Existence checks
+
+The protocol exposes the function `made(name, symbol)` **on NOTHING**.
+
+This function allows anyone to determine whether a Solid with a given name and symbol already exists.
+
+If a Solid has not been made, the lookup resolves to **NOTHING**.  
+If it has been made, the lookup resolves to the address of that Solid.
+
+This makes existence:
+- explicit
+- on-chain
+- and inspectable via standard tools
 
 ---
 
@@ -118,11 +153,54 @@ There is no mechanism to remove the price floor once a Solid is made.
 
 ## Cloning and shared logic
 
-All Solids are deployed as minimal clones of a single implementation.
+All Solids are deployed as **ERC-1167 minimal proxy clones** of NOTHING.
 
-This design choice ensures:
+This design ensures:
 
 - identical behavior across all Solids
 - a small, auditable code surface
 - predictable gas costs
-- consistent economic guar
+- consistent economic guarantees
+
+Each Solid has its own independent storage, but **no Solid has its own logic**.
+
+Behavior is fixed at the implementation level.  
+If rules change, a new protocol is required.
+
+---
+
+## What Solid does not do
+
+Solid is intentionally limited.
+
+It does **not** provide:
+- governance
+- admin controls
+- upgrade mechanisms
+- oracle integrations
+- guarantees of profit or stability
+- protection from bad ideas
+
+Solid enforces rules.  
+It does not judge outcomes.
+
+---
+
+## Why this design
+
+Solid explores a simple question:
+
+> What kinds of economic behavior emerge when fairness, liquidity, and irreversibility are enforced at the protocol level?
+
+By removing:
+- discretionary control
+- issuance privilege
+- and conditional liquidity
+
+Solid becomes a neutral substrate for experimentation.
+
+Some Solids will be useful.  
+Some will fail.  
+All will follow the same rules.
+
+That symmetry is the point.
