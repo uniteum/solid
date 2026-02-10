@@ -75,6 +75,8 @@ Every Solid has the same invariant structure:
 
 These rules are enforced by math, not governance.
 
+For a deeper look at the design, see the [Protocol]({{ site.baseurl }}/protocol) page.
+
 ---
 
 ## Try it directly on-chain
@@ -115,4 +117,5 @@ is a simple way to do so.
 ## Resources
 
 - [GitHub Repository](https://github.com/uniteum/solid)
+- [Protocol]({{ site.baseurl }}/protocol)
 - [Use Cases]({{ site.baseurl }}/use-cases)
