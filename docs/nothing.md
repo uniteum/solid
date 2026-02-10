@@ -50,9 +50,9 @@ There is exactly one place where Solid behavior is defined: NOTHING.
 Solids use the standard **ERC-1167 minimal proxy pattern**.
 
 - Specification:  
-  https://eips.ethereum.org/EIPS/eip-1167
+  [https://eips.ethereum.org/EIPS/eip-1167](https://eips.ethereum.org/EIPS/eip-1167)
 - Common implementation:  
-  https://docs.openzeppelin.com/contracts/4.x/api/proxy#Clones
+  [https://docs.openzeppelin.com/contracts/4.x/api/proxy#Clones](https://docs.openzeppelin.com/contracts/4.x/api/proxy#Clones)
 
 This pattern means:
 
