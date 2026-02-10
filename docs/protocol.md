@@ -43,7 +43,9 @@ For details on NOTHING itself, see
 
 ## Making a Solid
 
-New Solids are made by calling the `make(name, symbol)` function **on NOTHING**.
+New Solids are typically made by calling the `make(name, symbol)` function on **NOTHING**.
+
+Calling make or made on any Solid will behave identically to calling it on NOTHING. In practice, these functions are conceptually associated with NOTHING, and calling them on other Solids is supported but unconventional.
 
 Making a Solid is not minting in the traditional sense:
 - there is no privileged issuer
