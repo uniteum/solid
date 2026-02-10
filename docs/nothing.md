@@ -2,6 +2,7 @@
 layout: page
 title: NOTHING
 permalink: /nothing
+nav_order: 5
 ---
 
 **NOTHING** is the canonical implementation contract for the Solid protocol.

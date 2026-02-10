@@ -2,6 +2,7 @@
 layout: page
 title: Protocol
 permalink: /protocol
+nav_order: 4
 ---
 
 This page describes how the Solid protocol works, the economic rules it enforces, and the design choices behind it.
